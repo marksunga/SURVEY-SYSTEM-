@@ -231,3 +231,4 @@ When deploying to a live Supabase project:
    - `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase Service Role Key
    - `FEEDBACK_ENCRYPTION_KEY`: A secure 64-character hex key (32 bytes)
    - `USE_LOCAL_MOCK_STORAGE`: `false`
+
