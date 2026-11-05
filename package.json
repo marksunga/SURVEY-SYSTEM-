@@ -1,0 +1,54 @@
+{
+  "name": "it-feedback-survey",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "prebuild": "node -e \"const fs=require('fs');['types','static/chunks','server'].forEach(d=>fs.mkdirSync('.next/'+d+'/app',{recursive:true}))\"",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test:crypto": "tsc scripts/test-crypto.ts --target es2022 --module commonjs --outDir dist-test && node dist-test/scripts/test-crypto.js && node -e \"require('fs').rmSync('dist-test',{recursive:true,force:true})\"",
+    "test:system": "tsc scripts/test-survey-flow.ts --target es2022 --module commonjs --outDir dist-test && node dist-test/scripts/test-survey-flow.js && node -e \"require('fs').rmSync('dist-test',{recursive:true,force:true})\""
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.2",
+    "@radix-ui/react-dropdown-menu": "^2.1.2",
+    "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-popover": "^1.1.2",
+    "@radix-ui/react-progress": "^1.1.0",
+    "@radix-ui/react-select": "^2.1.2",
+    "@radix-ui/react-separator": "^1.1.0",
+    "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-tabs": "^1.1.1",
+    "@radix-ui/react-tooltip": "^1.1.4",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.47.10",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "html5-qrcode": "^2.3.8",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
+    "lucide-react": "^0.468.0",
+    "next": "14.2.23",
+    "papaparse": "^5.4.1",
+    "qrcode": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.15.0",
+    "tailwind-merge": "^2.5.5",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/papaparse": "^5.3.15",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
+  }
+}
+

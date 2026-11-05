@@ -1,0 +1,866 @@
+import type {
+  Profile,
+  Survey,
+  SurveyQuestion,
+  SurveyResponse,
+  ResponseAnswer,
+  SurveyParticipationReceipt,
+  Feedback,
+  QRCodeRecord,
+  SystemNotification,
+  AuditLog,
+  SystemBackup,
+  UserRole,
+} from '../types/database';
+import { encryptAES256, decryptAES256, generateSubmissionToken } from '../crypto/aes';
+
+// Initial pre-seeded mock database
+interface MockDatabaseState {
+  profiles: Profile[];
+  surveys: Survey[];
+  questions: SurveyQuestion[];
+  responses: SurveyResponse[];
+  answers: ResponseAnswer[];
+  receipts: SurveyParticipationReceipt[];
+  feedback: Feedback[];
+  qrCodes: QRCodeRecord[];
+  notifications: SystemNotification[];
+  auditLogs: AuditLog[];
+  backups: SystemBackup[];
+}
+
+const INITIAL_PROFILES: Profile[] = [
+  {
+    id: '11111111-1111-1111-1111-111111111111',
+    role_id: 'ADMINISTRATOR',
+    full_name: 'Dr. Evelyn Vance (Admin)',
+    email: 'admin@itdept.edu',
+    department: 'IT Administration',
+    id_number: 'ADMIN-001',
+    is_active: true,
+    created_at: new Date('2026-01-10').toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: '22222222-2222-2222-2222-222222222222',
+    role_id: 'IT_OFFICER',
+    full_name: 'Marcus Brody (IT Officer)',
+    email: 'officer@itdept.edu',
+    department: 'Network Operations',
+    id_number: 'OFF-104',
+    is_active: true,
+    created_at: new Date('2026-01-15').toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: '33333333-3333-3333-3333-333333333333',
+    role_id: 'IT_PROFESSOR',
+    full_name: 'Prof. Raymond Cruz (Faculty)',
+    email: 'professor@itdept.edu',
+    department: 'Computer Science Dept',
+    id_number: 'FAC-802',
+    is_active: true,
+    created_at: new Date('2026-01-20').toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: '44444444-4444-4444-4444-444444444444',
+    role_id: 'STUDENT',
+    full_name: 'Samantha Hayes (Student)',
+    email: 'student@itdept.edu',
+    department: 'Information Technology',
+    id_number: 'STU-2026-089',
+    is_active: true,
+    created_at: new Date('2026-02-01').toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+];
+
+const INITIAL_SURVEYS: Survey[] = [
+  {
+    id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    title: 'Mid-Term IT Course & Instructor Evaluation',
+    description: 'Please provide objective evaluation on IT curriculum pacing, instructor guidance, and clarity of laboratory instructions.',
+    category: 'ACADEMIC',
+    status: 'ACTIVE',
+    target_roles: ['STUDENT'],
+    is_anonymous_allowed: true,
+    start_date: new Date(Date.now() - 3 * 86400000).toISOString(),
+    end_date: new Date(Date.now() + 14 * 86400000).toISOString(),
+    created_by: '11111111-1111-1111-1111-111111111111',
+    creator_name: 'Dr. Evelyn Vance (Admin)',
+    created_at: new Date(Date.now() - 3 * 86400000).toISOString(),
+    updated_at: new Date().toISOString(),
+    questions_count: 6,
+    responses_count: 12,
+  },
+  {
+    id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    title: 'IT Laboratory Hardware & Software Readiness',
+    description: 'Survey on the reliability of workstation hardware, Linux dual-boot setups, and developer tooling in Labs 401-404.',
+    category: 'FACILITY',
+    status: 'ACTIVE',
+    target_roles: ['STUDENT', 'IT_PROFESSOR'],
+    is_anonymous_allowed: true,
+    start_date: new Date(Date.now() - 1 * 86400000).toISOString(),
+    end_date: new Date(Date.now() + 10 * 86400000).toISOString(),
+    created_by: '22222222-2222-2222-2222-222222222222',
+    creator_name: 'Marcus Brody (IT Officer)',
+    created_at: new Date(Date.now() - 1 * 86400000).toISOString(),
+    updated_at: new Date().toISOString(),
+    questions_count: 3,
+    responses_count: 8,
+  },
+  {
+    id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+    title: 'Campus Wi-Fi 6 & VPN Infrastructure Assessment',
+    description: 'Feedback on coverage gaps, connection stability during exam hours, and multi-factor authentication responsiveness.',
+    category: 'IT_INFRASTRUCTURE',
+    status: 'SCHEDULED',
+    target_roles: ['STUDENT', 'IT_PROFESSOR', 'IT_OFFICER'],
+    is_anonymous_allowed: true,
+    start_date: new Date(Date.now() + 2 * 86400000).toISOString(),
+    end_date: new Date(Date.now() + 20 * 86400000).toISOString(),
+    created_by: '11111111-1111-1111-1111-111111111111',
+    creator_name: 'Dr. Evelyn Vance (Admin)',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    questions_count: 2,
+    responses_count: 0,
+  },
+  {
+    id: 'dddddddd-dddd-dddd-dddd-dddddddddddd',
+    title: 'Annual IT Department Strategic Services Review',
+    description: 'Comprehensive annual review of IT service desk tickets, lab maintenance SLAs, and student self-service tools.',
+    category: 'DEPARTMENT_SERVICES',
+    status: 'DRAFT',
+    target_roles: ['STUDENT', 'IT_PROFESSOR'],
+    is_anonymous_allowed: false,
+    start_date: new Date(Date.now() + 30 * 86400000).toISOString(),
+    end_date: new Date(Date.now() + 60 * 86400000).toISOString(),
+    created_by: '11111111-1111-1111-1111-111111111111',
+    creator_name: 'Dr. Evelyn Vance (Admin)',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    questions_count: 0,
+    responses_count: 0,
+  },
+];
+
+const INITIAL_QUESTIONS: SurveyQuestion[] = [
+  // Survey A questions
+  {
+    id: 'a1111111-1111-1111-1111-111111111111',
+    survey_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    question_text: 'Overall, how would you rate the effectiveness and clarity of the course instruction?',
+    question_type: 'RATING_SCALE',
+    options: { min: 1, max: 5, minLabel: 'Needs Improvement', maxLabel: 'Exceptional' },
+    is_required: true,
+    order_index: 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'a2222222-2222-2222-2222-222222222222',
+    survey_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    question_text: 'Which major course modules did you find most engaging and informative?',
+    question_type: 'CHECKBOX',
+    options: ['Cloud Architecture & DevOps', 'Full-Stack Web Engineering', 'Database Systems & SQL Optimization', 'Cybersecurity & Cryptography'],
+    is_required: true,
+    order_index: 1,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'a3333333-3333-3333-3333-333333333333',
+    survey_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    question_text: 'Did you receive timely constructive feedback on your weekly lab assignments?',
+    question_type: 'YES_NO',
+    options: ['Yes', 'No'],
+    is_required: true,
+    order_index: 2,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'a4444444-4444-4444-4444-444444444444',
+    survey_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    question_text: 'What was your primary learning environment during this semester?',
+    question_type: 'MULTIPLE_CHOICE',
+    options: ['Campus Computer Labs', 'Personal Laptop (Mac/Windows)', 'Virtual Desktop Infrastructure (VDI)', 'Hybrid'],
+    is_required: true,
+    order_index: 3,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'a5555555-5555-5555-5555-555555555555',
+    survey_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    question_text: 'What was the single most valuable technical skill you gained from this course?',
+    question_type: 'SHORT_ANSWER',
+    options: { placeholder: 'e.g., PostgreSQL query tuning or Next.js server actions' },
+    is_required: false,
+    order_index: 4,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'a6666666-6666-6666-6666-666666666666',
+    survey_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    question_text: 'Please provide recommendations to improve subsequent iterations of this curriculum.',
+    question_type: 'PARAGRAPH',
+    options: { placeholder: 'Type your detailed thoughts and recommendations here...' },
+    is_required: false,
+    order_index: 5,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  // Survey B questions
+  {
+    id: 'b1111111-1111-1111-1111-111111111111',
+    survey_id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    question_text: 'Rate the performance and speed of the lab workstations during coding sessions.',
+    question_type: 'RATING_SCALE',
+    options: { min: 1, max: 5, minLabel: 'Sluggish / Unusable', maxLabel: 'Lightning Fast' },
+    is_required: true,
+    order_index: 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'b2222222-2222-2222-2222-222222222222',
+    survey_id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    question_text: 'Have you encountered any malfunctioning monitors or peripherals in the labs?',
+    question_type: 'YES_NO',
+    options: ['Yes', 'No'],
+    is_required: true,
+    order_index: 1,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'b3333333-3333-3333-3333-333333333333',
+    survey_id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    question_text: 'Which developer utilities should be pre-installed on the lab image?',
+    question_type: 'CHECKBOX',
+    options: ['Docker Desktop & Podman', 'VS Code with Remote SSH', 'Postman / Bruno API Client', 'Node.js & Python SDKs', 'PostgreSQL Admin GUI (DBeaver)'],
+    is_required: true,
+    order_index: 2,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+];
+
+const INITIAL_QR_CODES: QRCodeRecord[] = [
+  {
+    id: 'q1111111-1111-1111-1111-111111111111',
+    survey_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    code_data: 'QR-SRV-MIDTERM-2026',
+    access_url: '/surveys/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    qr_image_data: '',
+    is_active: true,
+    scans_count: 18,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'q2222222-2222-2222-2222-222222222222',
+    survey_id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    code_data: 'QR-SRV-LABS-2026',
+    access_url: '/surveys/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    qr_image_data: '',
+    is_active: true,
+    scans_count: 9,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+];
+
+const INITIAL_NOTIFICATIONS: SystemNotification[] = [
+  {
+    id: 'n1111111-1111-1111-1111-111111111111',
+    user_id: null,
+    target_role: 'STUDENT',
+    title: 'New Mid-Term Survey Published',
+    message: 'Please complete the Mid-Term IT Course Evaluation before the deadline.',
+    link: '/surveys/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    type: 'SURVEY_INVITE',
+    is_read: false,
+    created_at: new Date(Date.now() - 3600000).toISOString(),
+  },
+  {
+    id: 'n2222222-2222-2222-2222-222222222222',
+    user_id: null,
+    target_role: 'IT_PROFESSOR',
+    title: 'Laboratory Readiness Feedback Requested',
+    message: 'Department officers have opened the IT Lab Hardware & Software survey.',
+    link: '/surveys/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    type: 'SURVEY_INVITE',
+    is_read: false,
+    created_at: new Date(Date.now() - 7200000).toISOString(),
+  },
+  {
+    id: 'n3333333-3333-3333-3333-333333333333',
+    user_id: '44444444-4444-4444-4444-444444444444',
+    target_role: null,
+    title: 'Survey Reminder',
+    message: 'Only 5 days left to submit your responses for Course Evaluation.',
+    link: '/surveys/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    type: 'DEADLINE_REMINDER',
+    is_read: false,
+    created_at: new Date(Date.now() - 14400000).toISOString(),
+  },
+];
+
+const INITIAL_AUDIT_LOGS: AuditLog[] = [
+  {
+    id: 'l1111111-1111-1111-1111-111111111111',
+    actor_id: '11111111-1111-1111-1111-111111111111',
+    actor_email: 'admin@itdept.edu',
+    action: 'SURVEY_CREATED',
+    entity_type: 'SURVEY',
+    entity_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    details: { title: 'Mid-Term IT Course & Instructor Evaluation' },
+    ip_address: '127.0.0.1',
+    created_at: new Date(Date.now() - 3 * 86400000).toISOString(),
+  },
+  {
+    id: 'l2222222-2222-2222-2222-222222222222',
+    actor_id: '11111111-1111-1111-1111-111111111111',
+    actor_email: 'admin@itdept.edu',
+    action: 'SURVEY_STATUS_CHANGED',
+    entity_type: 'SURVEY',
+    entity_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    details: { from: 'DRAFT', to: 'ACTIVE' },
+    ip_address: '127.0.0.1',
+    created_at: new Date(Date.now() - 3 * 86400000).toISOString(),
+  },
+  {
+    id: 'l3333333-3333-3333-3333-333333333333',
+    actor_id: '22222222-2222-2222-2222-222222222222',
+    actor_email: 'officer@itdept.edu',
+    action: 'QR_CODE_GENERATED',
+    entity_type: 'QR_CODE',
+    entity_id: 'q1111111-1111-1111-1111-111111111111',
+    details: { survey_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' },
+    ip_address: '192.168.1.45',
+    created_at: new Date(Date.now() - 86400000).toISOString(),
+  },
+];
+
+// Seed initial encrypted feedbacks
+const feedback1 = encryptAES256('The dual monitors in Lab 402 keep flickering during graphics rendering labs.');
+const feedback2 = encryptAES256('Need more cloud credits for the AWS Architecture final project capstone.');
+
+const INITIAL_FEEDBACK: Feedback[] = [
+  {
+    id: 'f1111111-1111-1111-1111-111111111111',
+    title: 'Monitor Flickering in Lab 402',
+    category: 'FACILITIES',
+    content_encrypted: feedback1.encrypted,
+    content_iv: feedback1.iv,
+    content_tag: feedback1.tag,
+    is_anonymous: false,
+    user_id: '44444444-4444-4444-4444-444444444444',
+    user_email: 'student@itdept.edu',
+    user_name: 'Samantha Hayes (Student)',
+    status: 'UNDER_REVIEW',
+    admin_notes: 'Technician dispatched to replace HDMI cables on Nov 4.',
+    created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'f2222222-2222-2222-2222-222222222222',
+    title: 'AWS Cloud Credit Allocation',
+    category: 'TECHNICAL_SUPPORT',
+    content_encrypted: feedback2.encrypted,
+    content_iv: feedback2.iv,
+    content_tag: feedback2.tag,
+    is_anonymous: true,
+    user_id: null,
+    user_email: null,
+    user_name: null,
+    status: 'PENDING',
+    admin_notes: null,
+    created_at: new Date(Date.now() - 86400000).toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+];
+
+// Singleton store in globalThis for Next.js hot reload persistence
+declare global {
+  var __mockDbState: MockDatabaseState | undefined;
+}
+
+if (!globalThis.__mockDbState) {
+  globalThis.__mockDbState = {
+    profiles: [...INITIAL_PROFILES],
+    surveys: [...INITIAL_SURVEYS],
+    questions: [...INITIAL_QUESTIONS],
+    responses: [],
+    answers: [],
+    receipts: [],
+    feedback: [...INITIAL_FEEDBACK],
+    qrCodes: [...INITIAL_QR_CODES],
+    notifications: [...INITIAL_NOTIFICATIONS],
+    auditLogs: [...INITIAL_AUDIT_LOGS],
+    backups: [],
+  };
+}
+
+const db = globalThis.__mockDbState;
+
+export const MockAdapter = {
+  // --- Profiles & Users ---
+  getProfiles(): Profile[] {
+    return [...db.profiles];
+  },
+
+  getProfileById(id: string): Profile | undefined {
+    return db.profiles.find((p) => p.id === id);
+  },
+
+  getProfileByEmail(email: string): Profile | undefined {
+    return db.profiles.find((p) => p.email.toLowerCase() === email.toLowerCase());
+  },
+
+  updateProfile(id: string, updates: Partial<Profile>): Profile | null {
+    const idx = db.profiles.findIndex((p) => p.id === id);
+    if (idx === -1) return null;
+    db.profiles[idx] = {
+      ...db.profiles[idx],
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+    return db.profiles[idx];
+  },
+
+  toggleUserActive(id: string): Profile | null {
+    const idx = db.profiles.findIndex((p) => p.id === id);
+    if (idx === -1) return null;
+    db.profiles[idx].is_active = !db.profiles[idx].is_active;
+    db.profiles[idx].updated_at = new Date().toISOString();
+    return db.profiles[idx];
+  },
+
+  updateUserRole(id: string, role: UserRole): Profile | null {
+    const idx = db.profiles.findIndex((p) => p.id === id);
+    if (idx === -1) return null;
+    db.profiles[idx].role_id = role;
+    db.profiles[idx].updated_at = new Date().toISOString();
+    return db.profiles[idx];
+  },
+
+  createUser(profile: Omit<Profile, 'created_at' | 'updated_at'>): Profile {
+    const newProfile: Profile = {
+      ...profile,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    db.profiles.push(newProfile);
+    return newProfile;
+  },
+
+  // --- Surveys ---
+  getSurveys(userRole?: UserRole): Survey[] {
+    let list = [...db.surveys];
+    if (userRole && userRole !== 'ADMINISTRATOR' && userRole !== 'IT_OFFICER') {
+      list = list.filter(
+        (s) => s.status === 'ACTIVE' && s.target_roles.includes(userRole)
+      );
+    }
+    return list.map((s) => ({
+      ...s,
+      questions_count: db.questions.filter((q) => q.survey_id === s.id).length,
+      responses_count: db.responses.filter((r) => r.survey_id === s.id).length,
+      qr_code: db.qrCodes.find((q) => q.survey_id === s.id),
+    }));
+  },
+
+  getSurveyById(id: string): Survey | undefined {
+    const survey = db.surveys.find((s) => s.id === id);
+    if (!survey) return undefined;
+    return {
+      ...survey,
+      questions_count: db.questions.filter((q) => q.survey_id === survey.id).length,
+      responses_count: db.responses.filter((r) => r.survey_id === survey.id).length,
+      qr_code: db.qrCodes.find((q) => q.survey_id === survey.id),
+    };
+  },
+
+  createSurvey(survey: Omit<Survey, 'id' | 'created_at' | 'updated_at'>): Survey {
+    const id = crypto.randomUUID();
+    const newSurvey: Survey = {
+      ...survey,
+      id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    db.surveys.unshift(newSurvey);
+    return newSurvey;
+  },
+
+  updateSurvey(id: string, updates: Partial<Survey>): Survey | null {
+    const idx = db.surveys.findIndex((s) => s.id === id);
+    if (idx === -1) return null;
+    db.surveys[idx] = {
+      ...db.surveys[idx],
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+    return db.surveys[idx];
+  },
+
+  deleteSurvey(id: string): boolean {
+    const idx = db.surveys.findIndex((s) => s.id === id);
+    if (idx === -1) return false;
+    db.surveys.splice(idx, 1);
+    db.questions = db.questions.filter((q) => q.survey_id !== id);
+    db.responses = db.responses.filter((r) => r.survey_id !== id);
+    db.qrCodes = db.qrCodes.filter((q) => q.survey_id !== id);
+    return true;
+  },
+
+  // --- Questions ---
+  getQuestionsBySurveyId(surveyId: string): SurveyQuestion[] {
+    return db.questions
+      .filter((q) => q.survey_id === surveyId)
+      .sort((a, b) => a.order_index - b.order_index);
+  },
+
+  createQuestion(question: Omit<SurveyQuestion, 'id' | 'created_at' | 'updated_at'>): SurveyQuestion {
+    const id = crypto.randomUUID();
+    const newQuestion: SurveyQuestion = {
+      ...question,
+      id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    db.questions.push(newQuestion);
+    return newQuestion;
+  },
+
+  updateQuestion(id: string, updates: Partial<SurveyQuestion>): SurveyQuestion | null {
+    const idx = db.questions.findIndex((q) => q.id === id);
+    if (idx === -1) return null;
+    db.questions[idx] = {
+      ...db.questions[idx],
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+    return db.questions[idx];
+  },
+
+  deleteQuestion(id: string): boolean {
+    const idx = db.questions.findIndex((q) => q.id === id);
+    if (idx === -1) return false;
+    db.questions.splice(idx, 1);
+    return true;
+  },
+
+  // --- Survey Submission & Zero-Knowledge Decoupling ---
+  hasUserCompletedSurvey(userId: string, surveyId: string): boolean {
+    return db.receipts.some((r) => r.user_id === userId && r.survey_id === surveyId);
+  },
+
+  getUserCompletedSurveyIds(userId: string): string[] {
+    return db.receipts.filter((r) => r.user_id === userId).map((r) => r.survey_id);
+  },
+
+  submitSurveyAnswers(
+    surveyId: string,
+    userId: string,
+    isAnonymous: boolean,
+    answers: Record<string, string | string[] | number | boolean>
+  ): { success: boolean; token: string } {
+    // 1. Check duplicate submission
+    if (this.hasUserCompletedSurvey(userId, surveyId)) {
+      throw new Error('You have already submitted this survey. Duplicate submissions are not permitted.');
+    }
+
+    // 2. Insert Participation Receipt (proves user completed it, but has zero reference to the answers)
+    db.receipts.push({
+      id: crypto.randomUUID(),
+      survey_id: surveyId,
+      user_id: userId,
+      created_at: new Date().toISOString(),
+    });
+
+    // 3. Generate Cryptographic Unlinked Token
+    const submissionToken = generateSubmissionToken();
+    const responseId = crypto.randomUUID();
+
+    // 4. Save response: In anonymous mode, user_id is strictly NULL
+    const responseRecord: SurveyResponse = {
+      id: responseId,
+      survey_id: surveyId,
+      user_id: isAnonymous ? null : userId,
+      is_anonymous: isAnonymous,
+      submission_token: submissionToken,
+      completed_at: new Date().toISOString(),
+    };
+    db.responses.push(responseRecord);
+
+    // 5. Save answers
+    for (const [questionId, val] of Object.entries(answers)) {
+      db.answers.push({
+        id: crypto.randomUUID(),
+        response_id: responseId,
+        question_id: questionId,
+        answer_value: val,
+        created_at: new Date().toISOString(),
+      });
+    }
+
+    return { success: true, token: submissionToken };
+  },
+
+  getSurveyResults(surveyId: string) {
+    const survey = this.getSurveyById(surveyId);
+    const questions = this.getQuestionsBySurveyId(surveyId);
+    const responses = db.responses.filter((r) => r.survey_id === surveyId);
+    const responseIds = responses.map((r) => r.id);
+    const answers = db.answers.filter((a) => responseIds.includes(a.response_id));
+
+    // Aggregate statistics per question
+    const aggregatedQuestions = questions.map((q) => {
+      const qAnswers = answers.filter((a) => a.question_id === q.id);
+      const totalAnswers = qAnswers.length;
+
+      let distribution: Record<string, number> = {};
+      let averageRating: number | null = null;
+      let textResponses: string[] = [];
+
+      if (q.question_type === 'RATING_SCALE') {
+        let sum = 0;
+        let count = 0;
+        for (const ans of qAnswers) {
+          const num = Number(ans.answer_value);
+          if (!isNaN(num)) {
+            sum += num;
+            count++;
+            distribution[num] = (distribution[num] || 0) + 1;
+          }
+        }
+        averageRating = count > 0 ? parseFloat((sum / count).toFixed(2)) : null;
+      } else if (
+        q.question_type === 'MULTIPLE_CHOICE' ||
+        q.question_type === 'YES_NO'
+      ) {
+        for (const ans of qAnswers) {
+          const val = String(ans.answer_value);
+          distribution[val] = (distribution[val] || 0) + 1;
+        }
+      } else if (q.question_type === 'CHECKBOX') {
+        for (const ans of qAnswers) {
+          const arr = Array.isArray(ans.answer_value)
+            ? (ans.answer_value as string[])
+            : [String(ans.answer_value)];
+          for (const item of arr) {
+            distribution[item] = (distribution[item] || 0) + 1;
+          }
+        }
+      } else {
+        textResponses = qAnswers.map((a) => String(a.answer_value));
+      }
+
+      return {
+        question: q,
+        totalAnswers,
+        distribution,
+        averageRating,
+        textResponses,
+      };
+    });
+
+    return {
+      survey,
+      totalResponses: responses.length,
+      anonymousResponses: responses.filter((r) => r.is_anonymous).length,
+      identifiedResponses: responses.filter((r) => !r.is_anonymous).length,
+      aggregatedQuestions,
+      responses,
+    };
+  },
+
+  // --- Feedback ---
+  getFeedbacks(userId?: string, userRole?: UserRole): Feedback[] {
+    let list = [...db.feedback];
+    if (userRole === 'STUDENT' && userId) {
+      list = list.filter((f) => f.user_id === userId && !f.is_anonymous);
+    }
+    // Decrypt content for return
+    return list
+      .map((f) => ({
+        ...f,
+        decrypted_content: decryptAES256(f.content_encrypted, f.content_iv, f.content_tag),
+      }))
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  },
+
+  submitFeedback(feedbackData: {
+    title: string;
+    category: Feedback['category'];
+    content: string;
+    is_anonymous: boolean;
+    user_id?: string | null;
+  }): Feedback {
+    const encrypted = encryptAES256(feedbackData.content);
+    const user = feedbackData.user_id ? this.getProfileById(feedbackData.user_id) : null;
+
+    const newFeedback: Feedback = {
+      id: crypto.randomUUID(),
+      title: feedbackData.title,
+      category: feedbackData.category,
+      content_encrypted: encrypted.encrypted,
+      content_iv: encrypted.iv,
+      content_tag: encrypted.tag,
+      is_anonymous: feedbackData.is_anonymous,
+      user_id: feedbackData.is_anonymous ? null : feedbackData.user_id,
+      user_email: feedbackData.is_anonymous ? null : user?.email,
+      user_name: feedbackData.is_anonymous ? null : user?.full_name,
+      status: 'PENDING',
+      admin_notes: null,
+      decrypted_content: feedbackData.content,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    db.feedback.unshift(newFeedback);
+    return newFeedback;
+  },
+
+  updateFeedbackStatus(id: string, status: Feedback['status'], adminNotes?: string): Feedback | null {
+    const idx = db.feedback.findIndex((f) => f.id === id);
+    if (idx === -1) return null;
+    db.feedback[idx].status = status;
+    if (adminNotes !== undefined) {
+      db.feedback[idx].admin_notes = adminNotes;
+    }
+    db.feedback[idx].updated_at = new Date().toISOString();
+    return {
+      ...db.feedback[idx],
+      decrypted_content: decryptAES256(
+        db.feedback[idx].content_encrypted,
+        db.feedback[idx].content_iv,
+        db.feedback[idx].content_tag
+      ),
+    };
+  },
+
+  // --- QR Codes ---
+  getQRCodeBySurveyId(surveyId: string): QRCodeRecord | undefined {
+    return db.qrCodes.find((q) => q.survey_id === surveyId);
+  },
+
+  getQRCodeByCodeData(codeData: string): QRCodeRecord | undefined {
+    return db.qrCodes.find((q) => q.code_data.toLowerCase() === codeData.trim().toLowerCase());
+  },
+
+  saveQRCode(qr: Omit<QRCodeRecord, 'id' | 'created_at' | 'updated_at' | 'scans_count'>): QRCodeRecord {
+    const existingIdx = db.qrCodes.findIndex((q) => q.survey_id === qr.survey_id);
+    if (existingIdx !== -1) {
+      db.qrCodes[existingIdx] = {
+        ...db.qrCodes[existingIdx],
+        ...qr,
+        updated_at: new Date().toISOString(),
+      };
+      return db.qrCodes[existingIdx];
+    }
+    const newQr: QRCodeRecord = {
+      ...qr,
+      id: crypto.randomUUID(),
+      scans_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    db.qrCodes.push(newQr);
+    return newQr;
+  },
+
+  incrementQRScan(id: string) {
+    const qr = db.qrCodes.find((q) => q.id === id);
+    if (qr) qr.scans_count++;
+  },
+
+  // --- Notifications ---
+  getNotifications(userId?: string, userRole?: UserRole): SystemNotification[] {
+    return db.notifications
+      .filter((n) => {
+        if (!userId) return true;
+        if (n.user_id === userId) return true;
+        if (n.target_role && userRole && n.target_role === userRole) return true;
+        if (!n.user_id && !n.target_role) return true;
+        return false;
+      })
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  },
+
+  markNotificationAsRead(id: string): boolean {
+    const notif = db.notifications.find((n) => n.id === id);
+    if (notif) {
+      notif.is_read = true;
+      return true;
+    }
+    return false;
+  },
+
+  createNotification(notif: Omit<SystemNotification, 'id' | 'created_at' | 'is_read'>): SystemNotification {
+    const newNotif: SystemNotification = {
+      ...notif,
+      id: crypto.randomUUID(),
+      is_read: false,
+      created_at: new Date().toISOString(),
+    };
+    db.notifications.unshift(newNotif);
+    return newNotif;
+  },
+
+  // --- Audit Logs ---
+  getAuditLogs(): AuditLog[] {
+    return [...db.auditLogs].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  },
+
+  logAudit(actorEmail: string, action: string, entityType: string, entityId?: string | null, details = {}, ip = '127.0.0.1'): AuditLog {
+    const actor = this.getProfileByEmail(actorEmail);
+    const newLog: AuditLog = {
+      id: crypto.randomUUID(),
+      actor_id: actor?.id || null,
+      actor_email: actorEmail,
+      action,
+      entity_type: entityType,
+      entity_id: entityId || null,
+      details,
+      ip_address: ip,
+      created_at: new Date().toISOString(),
+    };
+    db.auditLogs.unshift(newLog);
+    return newLog;
+  },
+
+  // --- Backups ---
+  getBackups(): SystemBackup[] {
+    return [...db.backups].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  },
+
+  createBackup(type: SystemBackup['backup_type'], actorId?: string): { backup: SystemBackup; data: string } {
+    const payload = JSON.stringify(db, null, 2);
+    const sizeBytes = Buffer.byteLength(payload, 'utf8');
+    const filename = `backup-itdept-${type.toLowerCase()}-${Date.now()}.json`;
+
+    const newBackup: SystemBackup = {
+      id: crypto.randomUUID(),
+      filename,
+      size_bytes: sizeBytes,
+      backup_type: type,
+      created_by: actorId || null,
+      created_at: new Date().toISOString(),
+    };
+    db.backups.unshift(newBackup);
+    return { backup: newBackup, data: payload };
+  },
+};
