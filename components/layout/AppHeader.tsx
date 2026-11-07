@@ -19,7 +19,6 @@ import {
   Users,
   PlusCircle,
   BarChart3,
-  ShieldAlert,
   Database,
   LogOut,
   Settings,
@@ -68,7 +67,6 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
     { href: '/admin/qr-codes', label: 'QR Code Hub', icon: QrCode },
     { href: '/admin/reports', label: 'Reports & Analytics', icon: BarChart3 },
     { href: '/admin/notifications', label: 'Broadcasts & Reminders', icon: Bell },
-    { href: '/admin/audit-logs', label: 'Security Audit', icon: ShieldAlert },
     { href: '/admin/backups', label: 'Database Backups', icon: Database },
     { href: '/admin/settings', label: 'System Settings', icon: Settings },
   ];

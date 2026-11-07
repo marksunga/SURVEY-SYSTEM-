@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Clock,
   MessageSquare,
-  ShieldAlert,
   ArrowRight,
   PlusCircle,
   FileText,
@@ -21,7 +20,7 @@ import {
   Bell,
   Database,
 } from 'lucide-react';
-import { formatDate, formatDateTime } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 
 export default async function AdminDashboardPage() {
   const admin = await requireRole(['ADMINISTRATOR']);
@@ -29,7 +28,6 @@ export default async function AdminDashboardPage() {
   const profiles = MockAdapter.getProfiles();
   const surveys = MockAdapter.getSurveys();
   const feedbacks = MockAdapter.getFeedbacks();
-  const auditLogs = MockAdapter.getAuditLogs().slice(0, 6);
 
   const studentCount = profiles.filter((p) => p.role_id === 'STUDENT').length;
   const totalUsers = profiles.length;
@@ -38,7 +36,6 @@ export default async function AdminDashboardPage() {
   const expiredSurveys = surveys.filter((s) => s.status === 'EXPIRED').length;
   const totalSubmissions = surveys.reduce((acc, s) => acc + (s.responses_count || 0), 0);
   const pendingFeedback = feedbacks.filter((f) => f.status === 'PENDING').length;
-  const recentFeedbacks = feedbacks.slice(0, 3);
   const participationRate =
     studentCount > 0 ? Math.min(100, Math.round((totalSubmissions / Math.max(1, studentCount * (activeSurveys || 1))) * 100)) : 0;
 
@@ -55,8 +52,8 @@ export default async function AdminDashboardPage() {
             Administrator Dashboard
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
-            Manage students, create and schedule academic surveys, moderate encrypted feedback,
-            and inspect system audits under strict role isolation.
+            Manage students, create and schedule academic surveys, and moderate encrypted feedback
+            under strict role isolation.
           </p>
         </div>
 
@@ -193,15 +190,15 @@ export default async function AdminDashboardPage() {
           </Link>
 
           <Link
-            href="/admin/audit-logs"
+            href="/admin/backups"
             className="p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-500 hover:shadow-sm transition-all group flex flex-col justify-between"
           >
             <div className="h-9 w-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center mb-2 group-hover:bg-slate-900 group-hover:text-white transition-colors">
-              <ShieldAlert className="h-5 w-5" />
+              <Database className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-xs font-bold text-slate-900">Security Audit Logs</div>
-              <div className="text-[11px] text-slate-500">Track system events</div>
+              <div className="text-xs font-bold text-slate-900">Database Backups</div>
+              <div className="text-[11px] text-slate-500">Export & restore snapshots</div>
             </div>
           </Link>
 
@@ -220,166 +217,89 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Main Grid: Surveys & Feedback Moderation */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Active Surveys Monitoring */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="border-slate-200">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <div>
-                <CardTitle className="text-base text-slate-900">Active Academic Surveys</CardTitle>
-                <p className="text-xs text-slate-500 mt-0.5">Surveys currently open for student submissions</p>
+      {/* Active Academic Surveys - Full Width Primary Section */}
+      <div className="w-full space-y-6">
+        <Card className="border-slate-200 shadow-xs">
+          <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-slate-100">
+            <div>
+              <CardTitle className="text-base sm:text-lg font-bold text-slate-900">
+                Active Academic Surveys
+              </CardTitle>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Surveys currently open for student submissions and evaluations
+              </p>
+            </div>
+            <Button asChild variant="ghost" size="sm" className="text-xs text-blue-600 hover:text-blue-700">
+              <Link href="/admin/surveys">
+                View All Surveys ({surveys.length})
+                <ArrowRight className="h-3.5 w-3.5 ml-1" />
+              </Link>
+            </Button>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-3">
+            {surveys.filter((s) => s.status === 'ACTIVE').length === 0 ? (
+              <div className="text-center py-12 text-xs text-slate-400">
+                No active surveys. Click Create Survey above to publish one.
               </div>
-              <Button asChild variant="ghost" size="sm" className="text-xs text-blue-600">
-                <Link href="/admin/surveys">
-                  View All Surveys ({surveys.length})
-                  <ArrowRight className="h-3.5 w-3.5 ml-1" />
-                </Link>
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {surveys.filter((s) => s.status === 'ACTIVE').length === 0 ? (
-                <div className="text-center py-8 text-xs text-slate-400">
-                  No active surveys. Click Create Survey above to publish one.
-                </div>
-              ) : (
-                surveys
-                  .filter((s) => s.status === 'ACTIVE')
-                  .slice(0, 4)
-                  .map((survey) => (
-                    <div
-                      key={survey.id}
-                      className="p-3.5 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 flex items-center justify-between gap-3 transition-colors"
-                    >
-                      <div className="space-y-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-800 truncate">
-                            {survey.title}
-                          </span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
-                            ACTIVE
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-slate-500 flex items-center gap-3">
-                          <span>{survey.questions_count} Questions</span>
-                          <span>•</span>
-                          <span className="font-semibold text-blue-600">
-                            {survey.responses_count} Responses
-                          </span>
-                          <span>•</span>
-                          <span>Closes {formatDate(survey.end_date)}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <Button asChild variant="outline" size="sm" className="h-8 text-xs">
-                          <Link href={`/admin/surveys/${survey.id}/results`}>
-                            Results
-                          </Link>
-                        </Button>
-                        <Button asChild size="sm" className="h-8 text-xs bg-slate-900 hover:bg-slate-800 text-white">
-                          <Link href={`/admin/surveys/${survey.id}/edit`}>
-                            Edit
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Recent Student Feedback */}
-          <Card className="border-slate-200">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <div>
-                <CardTitle className="text-base text-slate-900">Recent Student Feedback</CardTitle>
-                <p className="text-xs text-slate-500 mt-0.5">Encrypted student inquiries requiring moderation</p>
-              </div>
-              <Button asChild variant="ghost" size="sm" className="text-xs text-blue-600">
-                <Link href="/admin/feedback">
-                  Moderate Feedback
-                  <ArrowRight className="h-3.5 w-3.5 ml-1" />
-                </Link>
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {recentFeedbacks.length === 0 ? (
-                <div className="text-center py-6 text-xs text-slate-400">No recent feedback records.</div>
-              ) : (
-                recentFeedbacks.map((f) => (
-                  <div key={f.id} className="p-3.5 rounded-lg border border-slate-100 bg-slate-50/40 flex items-center justify-between gap-3">
-                    <div className="space-y-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-800 truncate">{f.title}</span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                          f.status === 'RESOLVED'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : f.status === 'UNDER_REVIEW'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {f.status}
+            ) : (
+              surveys
+                .filter((s) => s.status === 'ACTIVE')
+                .map((survey) => (
+                  <div
+                    key={survey.id}
+                    className="p-4 sm:p-5 rounded-xl border border-slate-200 bg-white hover:border-blue-400 hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  >
+                    <div className="space-y-1.5 min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-sm font-bold text-slate-900">
+                          {survey.title}
                         </span>
-                        {f.is_anonymous && (
-                          <span className="px-1.5 py-0.2 rounded text-[10px] bg-slate-200 text-slate-700 font-medium">
-                            Anonymous
-                          </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                          ACTIVE
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                          {survey.category}
+                        </span>
+                      </div>
+                      {survey.description && (
+                        <p className="text-xs text-slate-600 line-clamp-2">
+                          {survey.description}
+                        </p>
+                      )}
+                      <div className="text-xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
+                        <span className="font-medium text-slate-700">{survey.questions_count} Questions</span>
+                        <span>•</span>
+                        <span className="font-semibold text-blue-600">
+                          {survey.responses_count} Responses
+                        </span>
+                        <span>•</span>
+                        <span>Closes {formatDate(survey.end_date)}</span>
+                        {survey.is_anonymous_allowed && (
+                          <>
+                            <span>•</span>
+                            <span className="text-emerald-600 font-medium">Anonymous Submissions Allowed</span>
+                          </>
                         )}
                       </div>
-                      <div className="text-[11px] text-slate-500 flex items-center gap-2">
-                        <span>{f.category}</span>
-                        <span>•</span>
-                        <span>Submitted {formatDate(f.created_at)}</span>
-                      </div>
                     </div>
-                    <Button asChild variant="outline" size="sm" className="h-8 text-xs flex-shrink-0">
-                      <Link href="/admin/feedback">Review</Link>
-                    </Button>
+
+                    <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-center">
+                      <Button asChild variant="outline" size="sm" className="h-9 px-3.5 text-xs border-slate-300 hover:bg-slate-50">
+                        <Link href={`/admin/surveys/${survey.id}/results`}>
+                          Results
+                        </Link>
+                      </Button>
+                      <Button asChild size="sm" className="h-9 px-3.5 text-xs bg-slate-900 hover:bg-slate-800 text-white">
+                        <Link href={`/admin/surveys/${survey.id}/edit`}>
+                          Edit
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 ))
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Audit Log Stream */}
-        <div className="space-y-6">
-          <Card className="border-slate-200">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base text-slate-900">Security Audit Trail</CardTitle>
-                <ShieldAlert className="h-4 w-4 text-slate-400" />
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">Real-time log of administrative and auth events</p>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {auditLogs.map((log) => (
-                <div key={log.id} className="p-3 rounded-lg border border-slate-100 bg-slate-50/60 text-xs space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-slate-800">{log.action}</span>
-                    <span className="text-[10px] text-slate-400 font-mono">
-                      {formatDateTime(log.created_at)}
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-slate-500 flex items-center justify-between">
-                    <span className="truncate max-w-[160px]">{log.actor_email || 'System'}</span>
-                    <span className="px-1.5 py-0.2 rounded bg-slate-200/70 text-slate-700 font-mono text-[9px]">
-                      {log.entity_type}
-                    </span>
-                  </div>
-                </div>
-              ))}
-
-              <Button asChild variant="outline" size="sm" className="w-full text-xs mt-2 border-slate-200">
-                <Link href="/admin/audit-logs">
-                  View Full Audit Log
-                  <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

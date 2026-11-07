@@ -28,7 +28,7 @@ The platform enforces strict role isolation with dedicated login portals. The qu
 | Role | Dedicated Login Portal | Credentials | Primary Permissions & Capabilities |
 | :--- | :--- | :--- | :--- |
 | **STUDENT** | `/student/login` | `student@itdept.edu`<br/>`Password123!` | Access Student Dashboard (`/student/dashboard`), browse active surveys, submit responses, submit encrypted anonymous feedback, scan QR codes, view submission history with cryptographic tokens. Self-registration available at `/student/register`. |
-| **ADMINISTRATOR** | `/admin/login` | `admin@itdept.edu`<br/>`Password123!` | Access Administrator Dashboard (`/admin/dashboard`), manage students and user accounts, author and schedule surveys, moderate encrypted feedback, inspect audit logs, manage database backups, and export PDF/CSV analytical reports. Strictly provisioned accounts. |
+| **ADMINISTRATOR** | `/admin/login` | `admin@itdept.edu`<br/>`Password123!` | Access Administrator Dashboard (`/admin/dashboard`), manage students and user accounts, author and schedule surveys, moderate encrypted feedback, manage database backups, and export PDF/CSV analytical reports. Strictly provisioned accounts. |
 
 ---
 
@@ -77,7 +77,7 @@ Supports 6 interactive question types with real-time client & server validation:
 
 ### Module 8: Security & Data Protection
 - **Zero-Knowledge Anonymous Decoupling**: For anonymous surveys, the user's ID is stored only in a separate `survey_participation_receipts` table to enforce single-submission rules. The actual answers in `survey_responses` store `user_id = NULL` with a random cryptographic token (`SUB-XXXX`).
-- **Audit Logging**: Comprehensive security log (`/admin/audit-logs`) tracking logins, submissions, updates, and role alterations.
+- **Security & Data Isolation**: Comprehensive role isolation, password hashing, and token-based cryptographic verification.
 - **Database Backup Center** (`/admin/backups`): Create, inspect, verify SHA-256 checksums, and download database backup snapshots.
 
 ---
@@ -89,7 +89,7 @@ it-feedback-survey/
 ├── app/
 │   ├── (dashboard)/
 │   │   ├── admin/
-│   │   │   ├── audit-logs/page.tsx
+│   │   │   ├── backups/page.tsx
 │   │   │   ├── backups/page.tsx
 │   │   │   ├── feedback/page.tsx
 │   │   │   ├── notifications/page.tsx
