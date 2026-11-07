@@ -416,17 +416,17 @@ export default function SettingsPage() {
               </div>
 
               <hr className="border-slate-100" />
-              <h3 className="font-medium text-sm text-slate-700">Database Tables (12 total)</h3>
+              <h3 className="font-medium text-sm text-[#0F172A]">Database Tables (11 active)</h3>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {[
                   'profiles', 'roles', 'surveys', 'survey_questions',
                   'survey_responses', 'response_answers', 'feedback',
                   'qr_codes', 'notifications', 'audit_logs',
-                  'system_backups', 'survey_participation_receipts',
+                  'survey_participation_receipts',
                 ].map(table => (
-                  <div key={table} className="flex items-center gap-2 p-2 rounded-md bg-slate-50 border border-slate-200">
-                    <div className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
+                  <div key={table} className="flex items-center gap-2 p-2 rounded-md bg-[#F3F5F7] border border-slate-200">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                     <code className="text-xs text-slate-700">{table}</code>
                   </div>
                 ))}

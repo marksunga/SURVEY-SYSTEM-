@@ -41,31 +41,43 @@ export default async function StudentDashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Welcome Banner - School Institutional Identity */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 sm:p-7 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
-        <div className="space-y-1.5">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#EAF2F8] text-[#2C5E7D] text-xs font-semibold border border-[#D1E3EC]">
-            <GraduationCap className="h-3.5 w-3.5 text-[#4682A9]" />
+      {/* Welcome Banner - Blue Gradient Header Design with High-Contrast Visible Action Buttons */}
+      <div className="rounded-2xl bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 p-6 sm:p-8 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6 overflow-hidden">
+        <div className="space-y-2 min-w-0">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold backdrop-blur-xs border border-white/30">
+            <GraduationCap className="h-3.5 w-3.5 text-white" />
             <span>Student Academic Portal</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A]">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Welcome back, {user.full_name}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 max-w-xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-blue-100 max-w-xl leading-relaxed">
             Your voice directly influences IT curriculum pacing, laboratory hardware upgrades, and student support services.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          <Button asChild size="sm" className="bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs font-semibold shadow-xs min-h-[38px] px-4 cursor-pointer">
-            <Link href="/scan" className="flex items-center gap-1.5">
-              <QrCode className="h-4 w-4" />
+        {/* Action Buttons: Prominently displayed, responsive, properly aligned */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full sm:w-auto">
+          {/* Button 1: Scan Survey QR */}
+          <Button
+            asChild
+            size="sm"
+            className="bg-white text-blue-700 hover:bg-blue-50 font-bold text-xs shadow-md min-h-[42px] px-4 cursor-pointer transition-all border border-white flex items-center justify-center gap-2"
+          >
+            <Link href="/scan">
+              <QrCode className="h-4 w-4 text-blue-600" />
               <span>Scan Survey QR</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm" className="border-slate-300 bg-white text-[#0F172A] hover:bg-[#F3F5F7] text-xs font-semibold min-h-[38px] px-4 shadow-xs transition-all cursor-pointer">
-            <Link href="/feedback" className="flex items-center gap-1.5">
-              <MessageSquarePlus className="h-4 w-4 text-[#4682A9]" />
+
+          {/* Button 2: Submit Feedback - Visible, high contrast, readable */}
+          <Button
+            asChild
+            size="sm"
+            className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md min-h-[42px] px-4 cursor-pointer transition-all border border-white/20 flex items-center justify-center gap-2"
+          >
+            <Link href="/feedback">
+              <MessageSquarePlus className="h-4 w-4 text-blue-300" />
               <span>Submit Feedback</span>
             </Link>
           </Button>

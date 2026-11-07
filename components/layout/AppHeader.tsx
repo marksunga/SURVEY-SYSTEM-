@@ -138,22 +138,20 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                   {user.full_name}
                 </span>
                 <span
-                  className={`text-[10px] font-bold px-1.5 py-0.2 rounded uppercase ${
-                    isAdmin
+                  className={`text-[10px] font-bold px-1.5 py-0.2 rounded uppercase ${isAdmin
                       ? 'bg-[#0F172A] text-white'
                       : 'bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]'
-                  }`}
+                    }`}
                 >
                   {user.role_id}
                 </span>
               </div>
 
               <div
-                className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold uppercase flex-shrink-0 group-hover:scale-105 transition-transform ${
-                  isAdmin
+                className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold uppercase flex-shrink-0 group-hover:scale-105 transition-transform ${isAdmin
                     ? 'bg-[#0F172A] text-white'
                     : 'bg-[#4682A9] text-white'
-                }`}
+                  }`}
               >
                 {user.full_name.slice(0, 2)}
               </div>
@@ -198,22 +196,20 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
             title="View My Profile"
           >
             <div
-              className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 ${
-                isAdmin
+              className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 ${isAdmin
                   ? 'bg-[#0F172A] text-white'
                   : 'bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]'
-              }`}
+                }`}
             >
               {user.full_name.slice(0, 2)}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold text-[#0F172A] truncate">{user.full_name}</p>
               <span
-                className={`inline-block px-1.5 py-0.2 text-[10px] font-bold rounded uppercase ${
-                  isAdmin
+                className={`inline-block px-1.5 py-0.2 text-[10px] font-bold rounded uppercase ${isAdmin
                     ? 'bg-[#0F172A] text-white'
                     : 'bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]'
-                }`}
+                  }`}
               >
                 {user.role_id}
               </span>
@@ -235,11 +231,10 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                       key={item.href}
                       href={item.href}
                       onClick={() => setMobileNavOpen(false)}
-                      className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
-                        active
+                      className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${active
                           ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
                           : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <Icon className={`h-4 w-4 ${active ? 'text-[#4682A9]' : 'text-slate-400'}`} />
