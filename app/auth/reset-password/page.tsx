@@ -24,11 +24,13 @@ import { verifyResetTokenAction, resetPasswordWithTokenAction } from '@/app/acti
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
+  const portalParam = searchParams.get('portal') || '';
 
   const [verifying, setVerifying] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);
   const [tokenError, setTokenError] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [roleId, setRoleId] = useState<string | null>(null);
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -38,29 +40,33 @@ function ResetPasswordForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  const defaultInvalidMessage = 'Your password reset link is invalid or has expired. Please request a new recovery link.';
 
   useEffect(() => {
     async function checkToken() {
       if (!token) {
         setTokenValid(false);
-        setTokenError('Password recovery token is missing. Please request a new recovery link.');
+        setTokenError(defaultInvalidMessage);
         setVerifying(false);
         return;
       }
 
-      const res = await verifyResetTokenAction(token);
+      const res = await verifyResetTokenAction(token, portalParam);
       if (res.valid) {
         setTokenValid(true);
         setEmail(res.email || null);
+        setRoleId(res.roleId || null);
       } else {
         setTokenValid(false);
-        setTokenError(res.error || 'This recovery link is invalid or has expired.');
+        setTokenError(res.error || defaultInvalidMessage);
       }
       setVerifying(false);
     }
 
     checkToken();
-  }, [token]);
+  }, [token, portalParam]);
 
   // Real-time password requirement checks
   const criteria = useMemo(() => {
@@ -112,6 +118,9 @@ function ResetPasswordForm() {
     formData.append('token', token);
     formData.append('newPassword', newPassword);
     formData.append('confirmPassword', confirmPassword);
+    if (portalParam) {
+      formData.append('portal', portalParam);
+    }
 
     const res = await resetPasswordWithTokenAction(formData);
     setSubmitting(false);
@@ -120,19 +129,27 @@ function ResetPasswordForm() {
       setSubmitError(res.error);
     } else if (res?.success) {
       setSuccess(true);
+      setSuccessMessage(res.message || 'Your password has been changed successfully. You may now log in with your new credentials.');
+      if (res.roleId) {
+        setRoleId(res.roleId);
+      }
     }
   }
 
+  const isAdmin = roleId === 'ADMINISTRATOR' || portalParam === 'admin';
+
   return (
-    <Card className="border-slate-200 bg-white shadow-sm">
+    <Card className="border-slate-200 bg-white shadow-sm overflow-hidden">
       <CardHeader className="pb-4">
         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-[11px] font-semibold w-fit mb-1">
           <ShieldCheck className="h-3.5 w-3.5 text-blue-600" />
           <span>Cryptographic Credential Recovery</span>
         </div>
-        <CardTitle className="text-lg text-slate-900">Set New Password</CardTitle>
+        <CardTitle className="text-lg text-slate-900">
+          {isAdmin ? 'Reset Administrator Password' : 'Reset Student Password'}
+        </CardTitle>
         <CardDescription className="text-xs text-slate-500">
-          {email ? `Account: ${email}` : 'Enter your new password below.'}
+          {email ? `Verified Institutional Account: ${email}` : 'Enter your new password below.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -148,16 +165,22 @@ function ResetPasswordForm() {
             </div>
             <div className="space-y-1.5">
               <h3 className="text-sm font-bold text-slate-900">Recovery Link Invalid or Expired</h3>
-              <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
-                {tokenError || 'This password reset link is invalid, has expired, or has already been used.'}
+              <p className="text-xs text-slate-600 max-w-xs mx-auto leading-relaxed">
+                {tokenError || defaultInvalidMessage}
               </p>
             </div>
             <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white text-xs">
-              <Link href="/auth/forgot-password">Request New Recovery Link</Link>
+              <Link href={`/auth/forgot-password${portalParam ? `?portal=${portalParam}` : ''}`}>
+                Request New Recovery Link
+              </Link>
             </Button>
-            <div className="pt-2">
-              <Link href="/auth/login" className="text-xs text-slate-500 hover:text-slate-800 font-medium">
-                Return to Login
+            <div className="pt-2 flex justify-center gap-4 text-xs text-slate-500">
+              <Link href="/student/login" className="hover:text-slate-800 font-medium">
+                Student Login
+              </Link>
+              <span>•</span>
+              <Link href="/admin/login" className="hover:text-slate-800 font-medium">
+                Admin Login
               </Link>
             </div>
           </div>
@@ -168,17 +191,27 @@ function ResetPasswordForm() {
             </div>
             <div className="space-y-1.5">
               <h3 className="text-base font-bold text-slate-900">Password Reset Successful</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Your account credentials have been securely updated. All previous sessions have been revoked.
+              <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
+                {successMessage}
               </p>
             </div>
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-left text-[11px] text-slate-600 space-y-1">
+              <div className="flex items-center gap-1.5 font-semibold text-slate-800">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                <span>Single-Use Token Consumed</span>
+              </div>
+              <p>Your previous recovery link has been revoked and all existing sessions terminated.</p>
+            </div>
             <div className="pt-2 flex flex-col gap-2">
-              <Button asChild className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs h-10 font-semibold">
-                <Link href="/student/login">Sign In as Student</Link>
-              </Button>
-              <Button asChild variant="outline" className="w-full text-xs h-10">
-                <Link href="/admin/login">Sign In as Administrator</Link>
-              </Button>
+              {isAdmin ? (
+                <Button asChild className="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs h-10 font-semibold">
+                  <Link href="/admin/login">Sign In as Administrator</Link>
+                </Button>
+              ) : (
+                <Button asChild className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs h-10 font-semibold">
+                  <Link href="/student/login">Sign In to Student Portal</Link>
+                </Button>
+              )}
             </div>
           </div>
         ) : (
@@ -212,7 +245,7 @@ function ResetPasswordForm() {
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 focus:outline-none"
+                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
                   tabIndex={-1}
                   aria-label={showNewPassword ? 'Hide password' : 'Show password'}
                 >
@@ -240,7 +273,7 @@ function ResetPasswordForm() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 focus:outline-none"
+                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
                   tabIndex={-1}
                   aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                 >
@@ -337,18 +370,20 @@ function ResetPasswordForm() {
             <Button
               type="submit"
               disabled={submitting || strengthScore < 100 || !criteria.matches}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold h-10 shadow-xs disabled:opacity-50"
+              className={`w-full text-white text-xs font-semibold h-10 shadow-xs cursor-pointer disabled:opacity-50 ${
+                isAdmin ? 'bg-slate-900 hover:bg-slate-800' : 'bg-blue-600 hover:bg-blue-500'
+              }`}
             >
-              {submitting ? 'Updating Credentials...' : 'Reset Password'}
+              {submitting ? 'Updating Credentials...' : 'Submit New Password'}
             </Button>
 
             <div className="text-center pt-2">
               <Link
-                href="/auth/login"
+                href={isAdmin ? '/admin/login' : '/student/login'}
                 className="inline-flex items-center text-xs font-medium text-slate-500 hover:text-slate-800"
               >
                 <ArrowLeft className="h-3.5 w-3.5 mr-1" />
-                Return to Login
+                Back to {isAdmin ? 'Administrator' : 'Student'} Login
               </Link>
             </div>
           </form>

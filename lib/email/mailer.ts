@@ -6,6 +6,7 @@ interface SendResetEmailParams {
   email: string;
   resetLink: string;
   recipientName?: string;
+  roleName?: string;
   expiresInMinutes?: number;
 }
 
@@ -17,7 +18,7 @@ export interface MailerResult {
 }
 
 /**
- * Checks if Supabase has real production credentials configured
+ * Checks if Supabase has live production credentials configured
  */
 function isSupabaseConfigured(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -26,11 +27,18 @@ function isSupabaseConfigured(): boolean {
 }
 
 /**
- * Sends a password reset email using Supabase Auth or configured SMTP.
- * Never silently simulates delivery if an error occurs.
+ * Sends a password reset email using Supabase Auth or configured SMTP server.
+ * Returns sent: false with clear error if delivery fails.
+ * NEVER pretends delivery succeeded if no email was transmitted.
  */
 export async function sendPasswordResetEmail(params: SendResetEmailParams): Promise<MailerResult> {
-  const { email, resetLink, recipientName = 'User', expiresInMinutes = 15 } = params;
+  const {
+    email,
+    resetLink,
+    recipientName = 'User',
+    roleName = 'Student',
+    expiresInMinutes = 20,
+  } = params;
 
   // 1. Attempt Supabase Auth email recovery if Supabase is configured
   if (isSupabaseConfigured()) {
@@ -45,17 +53,22 @@ export async function sendPasswordResetEmail(params: SendResetEmailParams): Prom
         return {
           sent: false,
           provider: 'supabase',
-          error: error.message,
+          error: `Supabase Auth recovery error: ${error.message}`,
         };
       }
 
       return { sent: true, provider: 'supabase' };
     } catch (err: any) {
       console.error('[Supabase Auth] Exception during password reset dispatch:', err);
+      return {
+        sent: false,
+        provider: 'supabase',
+        error: `Supabase Auth error: ${err.message}`,
+      };
     }
   }
 
-  // 2. Check for SMTP configuration
+  // 2. Check for SMTP configuration (Supports SendGrid, Mailgun, AWS SES, Mailtrap, local test mailer)
   const smtpHost = process.env.SMTP_HOST;
   const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
   const smtpUser = process.env.SMTP_USER;
@@ -64,32 +77,30 @@ export async function sendPasswordResetEmail(params: SendResetEmailParams): Prom
 
   const missingSmtp: string[] = [];
   if (!smtpHost) missingSmtp.push('SMTP_HOST');
-  if (!smtpUser) missingSmtp.push('SMTP_USER');
-  if (!smtpPassword) missingSmtp.push('SMTP_PASSWORD');
 
-  if (missingSmtp.length === 0 && smtpHost && smtpUser && smtpPassword) {
+  if (missingSmtp.length === 0 && smtpHost) {
     try {
       await sendSmtpMail({
         host: smtpHost,
         port: smtpPort,
-        user: smtpUser,
-        pass: smtpPassword,
+        user: smtpUser || '',
+        pass: smtpPassword || '',
         from: smtpFrom,
         to: email,
-        subject: 'IT Department Portal - Password Recovery Request',
-        text: `Hello ${recipientName},\n\nA password recovery request was initiated for your institutional account.\n\nPlease reset your password using the secure link below:\n${resetLink}\n\nThis recovery link will expire in ${expiresInMinutes} minutes.\n\nIf you did not request this recovery, please contact IT Administration immediately.`,
+        subject: `IT Department Portal - ${roleName} Password Recovery`,
+        text: `Hello ${recipientName},\n\nA password recovery request was initiated for your ${roleName} institutional account.\n\nPlease reset your password using the secure link below:\n${resetLink}\n\nThis recovery link will expire in ${expiresInMinutes} minutes.\n\nIf you did not request this recovery, please contact IT Administration immediately.`,
         html: `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
             <div style="background: #0f172a; padding: 18px 24px; border-radius: 8px; margin-bottom: 24px;">
               <h1 style="color: #ffffff; font-size: 18px; margin: 0; font-weight: 700;">IT Department Feedback & Survey Portal</h1>
             </div>
-            <h2 style="color: #0f172a; font-size: 16px; margin-bottom: 12px;">Password Recovery Request</h2>
+            <h2 style="color: #0f172a; font-size: 16px; margin-bottom: 12px;">${roleName} Password Recovery</h2>
             <p style="color: #475569; font-size: 14px; line-height: 1.6;">Hello <strong>${recipientName}</strong>,</p>
-            <p style="color: #475569; font-size: 14px; line-height: 1.6;">A password reset was requested for your institutional account (<code>${email}</code>). Click the button below to establish a new password:</p>
+            <p style="color: #475569; font-size: 14px; line-height: 1.6;">A password reset was requested for your <strong>${roleName}</strong> account (<code>${email}</code>). Click the button below to establish a new password:</p>
             <div style="text-align: center; margin: 28px 0;">
-              <a href="${resetLink}" style="background-color: #2563eb; color: #ffffff; padding: 12px 28px; font-size: 14px; font-weight: 600; text-decoration: none; border-radius: 8px; display: inline-block;">Reset My Password</a>
+              <a href="${resetLink}" style="background-color: #2563eb; color: #ffffff; padding: 12px 28px; font-size: 14px; font-weight: 600; text-decoration: none; border-radius: 8px; display: inline-block;">Reset Password</a>
             </div>
-            <p style="color: #64748b; font-size: 12px; line-height: 1.5;">This recovery link is strictly time-limited and will expire in <strong>${expiresInMinutes} minutes</strong>. If you did not initiate this request, your account remains secure and no action is required.</p>
+            <p style="color: #64748b; font-size: 12px; line-height: 1.5;">This recovery link is single-use and will expire in <strong>${expiresInMinutes} minutes</strong>. If you did not initiate this request, your account remains secure and no action is required.</p>
             <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
             <p style="color: #94a3b8; font-size: 11px; margin: 0;">IT Department Portal • Confidential Institutional Notification</p>
           </div>
@@ -102,26 +113,23 @@ export async function sendPasswordResetEmail(params: SendResetEmailParams): Prom
       return {
         sent: false,
         provider: 'smtp',
-        error: smtpErr.message,
+        error: `SMTP server delivery failure: ${smtpErr.message}`,
       };
     }
   }
 
-  // 3. Neither Supabase nor SMTP configured: Document missing variables
-  const missing = isSupabaseConfigured() ? missingSmtp : ['NEXT_PUBLIC_SUPABASE_URL', ...missingSmtp];
-  console.warn(
-    `[Mailer] Outbound email service is not configured. Missing parameters: ${missing.join(', ')}.`
-  );
-
+  // 3. Neither Supabase Auth nor SMTP is configured
+  const missing = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASSWORD'];
   return {
     sent: false,
     provider: 'none',
+    error: 'Outbound email delivery service is not configured. Please configure SMTP credentials (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD) in your environment.',
     missingConfig: missing,
   };
 }
 
 /**
- * Lightweight, zero-dependency SMTP client via Node.js net/tls socket
+ * Robust SMTP client via Node.js net/tls socket supporting SSL, local test mailers, and standard auth
  */
 function sendSmtpMail(options: {
   host: string;
@@ -135,15 +143,17 @@ function sendSmtpMail(options: {
   html: string;
 }): Promise<void> {
   return new Promise((resolve, reject) => {
-    const socket = options.port === 465
-      ? tls.connect(options.port, options.host)
+    const isTls = options.port === 465;
+    const socket = isTls
+      ? tls.connect(options.port, options.host, { rejectUnauthorized: false })
       : net.createConnection(options.port, options.host);
 
     let stage = 0;
     const boundary = '----=_Part_' + Date.now();
+    const hasAuth = Boolean(options.user && options.pass);
 
     socket.setEncoding('utf8');
-    socket.setTimeout(15000);
+    socket.setTimeout(12000);
 
     socket.on('error', (err) => {
       reject(err);
@@ -151,7 +161,7 @@ function sendSmtpMail(options: {
 
     socket.on('timeout', () => {
       socket.destroy();
-      reject(new Error('SMTP connection timed out after 15 seconds'));
+      reject(new Error('SMTP connection timed out'));
     });
 
     socket.on('data', (data) => {
@@ -160,7 +170,7 @@ function sendSmtpMail(options: {
 
       if (code >= 400) {
         socket.end('QUIT\r\n');
-        return reject(new Error(`SMTP server rejected command: ${response.trim()}`));
+        return reject(new Error(`SMTP server responded with error: ${response.trim()}`));
       }
 
       switch (stage) {
@@ -169,8 +179,17 @@ function sendSmtpMail(options: {
           socket.write(`EHLO itdept.local\r\n`);
           break;
         case 1: // EHLO response
-          stage = 2;
-          socket.write(`AUTH LOGIN\r\n`);
+          if (hasAuth) {
+            stage = 2;
+            socket.write(`AUTH LOGIN\r\n`);
+          } else {
+            // Unauthenticated local SMTP (e.g. MailHog / smtp4dev)
+            stage = 5;
+            const fromAddr = options.from.includes('<')
+              ? options.from.replace(/.*<([^>]+)>.*/, '$1')
+              : options.from;
+            socket.write(`MAIL FROM:<${fromAddr}>\r\n`);
+          }
           break;
         case 2: // Username prompt
           stage = 3;
@@ -182,7 +201,9 @@ function sendSmtpMail(options: {
           break;
         case 4: // Authenticated
           stage = 5;
-          const fromAddr = options.from.includes('<') ? options.from.replace(/.*<([^>]+)>.*/, '$1') : options.from;
+          const fromAddr = options.from.includes('<')
+            ? options.from.replace(/.*<([^>]+)>.*/, '$1')
+            : options.from;
           socket.write(`MAIL FROM:<${fromAddr}>\r\n`);
           break;
         case 5: // MAIL FROM ok
@@ -227,4 +248,3 @@ function sendSmtpMail(options: {
     });
   });
 }
-

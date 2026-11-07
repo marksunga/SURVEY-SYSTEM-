@@ -20,6 +20,7 @@ export interface PasswordResetToken {
   id: string;
   userId: string;
   email: string;
+  roleId: UserRole;
   tokenHash: string;
   expiresAt: number;
   consumed: boolean;
@@ -496,19 +497,72 @@ export const MockAdapter = {
     return true;
   },
 
-  createPasswordResetToken(email: string): { token: string; expiresAt: Date; email: string } | null {
+  createPasswordResetToken(
+    email: string,
+    expectedRole?: UserRole
+  ): {
+    token?: string;
+    expiresAt?: Date;
+    email?: string;
+    roleId?: UserRole;
+    recipientName?: string;
+    error?: string;
+  } {
     const cleanEmail = email.trim().toLowerCase();
     const profile = this.getProfileByEmail(cleanEmail);
-    if (!profile) return null;
 
+    if (!profile) {
+      return { error: 'No active account found with this institutional email address.' };
+    }
+
+    if (!profile.is_active) {
+      return { error: 'This account has been deactivated. Please contact IT Administration.' };
+    }
+
+    // Strict role isolation: Students cannot recover admin accounts; Admins cannot recover student accounts
+    if (expectedRole && profile.role_id !== expectedRole) {
+      const portalLabel = expectedRole === 'ADMINISTRATOR' ? 'Administrator' : 'Student';
+      const oppositeLabel = expectedRole === 'ADMINISTRATOR' ? 'Student' : 'Administrator';
+      return {
+        error: `Access denied: This email belongs to a ${oppositeLabel} account. Please use the ${oppositeLabel} recovery portal.`,
+      };
+    }
+
+    // Rate Limiting: Max 3 requests per 15 minutes per email
+    const now = Date.now();
+    const existingRate = (globalThis as any).__resetRateLimits?.get(cleanEmail);
+    if (existingRate && existingRate.resetAt > now) {
+      if (existingRate.count >= 3) {
+        const waitMinutes = Math.ceil((existingRate.resetAt - now) / 60000);
+        return {
+          error: `Too many password reset requests. For security, please wait ${waitMinutes} minute(s) before requesting again.`,
+        };
+      }
+      existingRate.count += 1;
+    } else {
+      if (!(globalThis as any).__resetRateLimits) {
+        (globalThis as any).__resetRateLimits = new Map<string, { count: number; resetAt: number }>();
+      }
+      (globalThis as any).__resetRateLimits.set(cleanEmail, { count: 1, resetAt: now + 15 * 60 * 1000 });
+    }
+
+    // Invalidate any previously generated, unconsumed reset tokens for this user
+    for (const t of db.passwordResetTokens) {
+      if (t.userId === profile.id && !t.consumed) {
+        t.consumed = true;
+      }
+    }
+
+    // Generate cryptographically secure random token (32 bytes hex)
     const rawToken = crypto.randomBytes(32).toString('hex');
     const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
-    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes
+    const expiresAt = now + 20 * 60 * 1000; // 20 minutes
 
     const record: PasswordResetToken = {
       id: crypto.randomUUID(),
       userId: profile.id,
       email: profile.email,
+      roleId: profile.role_id,
       tokenHash,
       expiresAt,
       consumed: false,
@@ -521,36 +575,54 @@ export const MockAdapter = {
       token: rawToken,
       expiresAt: new Date(expiresAt),
       email: profile.email,
+      roleId: profile.role_id,
+      recipientName: profile.full_name,
     };
   },
 
-  verifyPasswordResetToken(token: string): { valid: boolean; userId?: string; email?: string; error?: string } {
+  verifyPasswordResetToken(
+    token: string,
+    expectedRole?: UserRole
+  ): { valid: boolean; userId?: string; email?: string; roleId?: UserRole; error?: string } {
+    const invalidMessage = 'Your password reset link is invalid or has expired. Please request a new recovery link.';
+
     if (!token || typeof token !== 'string') {
-      return { valid: false, error: 'Password recovery token is missing.' };
+      return { valid: false, error: invalidMessage };
     }
 
     const tokenHash = crypto.createHash('sha256').update(token.trim()).digest('hex');
     const record = db.passwordResetTokens.find((t) => t.tokenHash === tokenHash);
 
     if (!record) {
-      return { valid: false, error: 'Invalid or unrecognized recovery token.' };
+      return { valid: false, error: invalidMessage };
     }
 
     if (record.consumed) {
-      return { valid: false, error: 'This password recovery link has already been used.' };
+      return { valid: false, error: invalidMessage };
     }
 
     if (Date.now() > record.expiresAt) {
-      return { valid: false, error: 'This password recovery link has expired (links are valid for 15 minutes).' };
+      return { valid: false, error: invalidMessage };
     }
 
-    return { valid: true, userId: record.userId, email: record.email };
+    if (expectedRole && record.roleId !== expectedRole) {
+      return {
+        valid: false,
+        error: `Access denied: This recovery link is designated for ${record.roleId === 'ADMINISTRATOR' ? 'Administrator' : 'Student'} accounts only.`,
+      };
+    }
+
+    return { valid: true, userId: record.userId, email: record.email, roleId: record.roleId };
   },
 
-  consumePasswordResetToken(token: string, newPassword: string): { success: boolean; error?: string } {
-    const verification = this.verifyPasswordResetToken(token);
+  consumePasswordResetToken(
+    token: string,
+    newPassword: string,
+    expectedRole?: UserRole
+  ): { success: boolean; roleId?: UserRole; error?: string } {
+    const verification = this.verifyPasswordResetToken(token, expectedRole);
     if (!verification.valid || !verification.userId) {
-      return { success: false, error: verification.error || 'Invalid token' };
+      return { success: false, error: verification.error || 'Your password reset link is invalid or has expired. Please request a new recovery link.' };
     }
 
     const strength = validatePasswordStrength(newPassword);
@@ -561,14 +633,18 @@ export const MockAdapter = {
     // Update password with one-way scrypt hash
     db.credentials[verification.userId] = hashPassword(newPassword);
 
-    // Invalidate token
+    // Invalidate token immediately
     const tokenHash = crypto.createHash('sha256').update(token.trim()).digest('hex');
     const record = db.passwordResetTokens.find((t) => t.tokenHash === tokenHash);
     if (record) {
       record.consumed = true;
     }
 
-    return { success: true };
+    this.logAudit(verification.email || 'user', 'PASSWORD_RESET_COMPLETED', 'USER', verification.userId, {
+      role: verification.roleId,
+    });
+
+    return { success: true, roleId: verification.roleId };
   },
 
   updateProfile(id: string, updates: Partial<Profile>): Profile | null {

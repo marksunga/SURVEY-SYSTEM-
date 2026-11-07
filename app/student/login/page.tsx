@@ -103,7 +103,7 @@ export default function StudentLoginPage() {
                     Password
                   </Label>
                   <Link
-                    href="/auth/forgot-password"
+                    href="/auth/forgot-password?portal=student"
                     className="text-xs font-medium text-blue-600 hover:text-blue-500 hover:underline"
                   >
                     Forgot password?

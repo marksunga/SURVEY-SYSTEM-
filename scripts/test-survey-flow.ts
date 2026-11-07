@@ -292,44 +292,87 @@ function runAutomatedVerification() {
   }
   console.log('✓ Verified: Nonexistent account is strictly rejected.');
 
-  // E. Password recovery workflow
-  const tokenRecord = MockAdapter.createPasswordResetToken('student@itdept.edu');
+  // E. Password recovery workflow & Role Isolation
+  // 1. Unknown email address rejection
+  const unknownEmailToken = MockAdapter.createPasswordResetToken('nonexistent@itdept.edu');
+  if (!unknownEmailToken.error) {
+    throw new Error('CRITICAL: Unknown email was allowed to generate a recovery token!');
+  }
+  console.log('✓ Verified: Unknown institutional email cannot request password reset.');
+
+  // 2. Strict Role Isolation on Token Creation
+  const crossRoleStudentToAdmin = MockAdapter.createPasswordResetToken('admin@itdept.edu', 'STUDENT');
+  if (!crossRoleStudentToAdmin.error || !crossRoleStudentToAdmin.error.includes('Access denied')) {
+    throw new Error('CRITICAL: Student portal was allowed to initiate recovery for Administrator account!');
+  }
+  console.log('✓ Verified: Student recovery portal strictly rejects Administrator accounts.');
+
+  const crossRoleAdminToStudent = MockAdapter.createPasswordResetToken('student@itdept.edu', 'ADMINISTRATOR');
+  if (!crossRoleAdminToStudent.error || !crossRoleAdminToStudent.error.includes('Access denied')) {
+    throw new Error('CRITICAL: Admin portal was allowed to initiate recovery for Student account!');
+  }
+  console.log('✓ Verified: Administrator recovery portal strictly rejects Student accounts.');
+
+  // 3. Valid token generation
+  const tokenRecord = MockAdapter.createPasswordResetToken('student@itdept.edu', 'STUDENT');
   if (!tokenRecord || !tokenRecord.token) {
     throw new Error('Failed to generate password recovery token');
   }
-  console.log('✓ Verified: Cryptographic password recovery token generated.');
+  console.log('✓ Verified: Cryptographic password recovery token generated for Student account.');
 
-  // Verify token
-  const tokenVerify = MockAdapter.verifyPasswordResetToken(tokenRecord.token);
+  // 4. Token Invalidation when new token requested
+  const tokenRecord2 = MockAdapter.createPasswordResetToken('student@itdept.edu', 'STUDENT');
+  const verifyOldToken = MockAdapter.verifyPasswordResetToken(tokenRecord.token);
+  if (verifyOldToken.valid) {
+    throw new Error('CRITICAL: Old recovery token remained valid after a newer token was requested!');
+  }
+  console.log('✓ Verified: Requesting a new token invalidates previously unconsumed tokens.');
+
+  // 5. Cross-role verification rejection
+  const crossRoleVerify = MockAdapter.verifyPasswordResetToken(tokenRecord2.token!, 'ADMINISTRATOR');
+  if (crossRoleVerify.valid) {
+    throw new Error('CRITICAL: Student recovery token was accepted by Administrator verification!');
+  }
+  console.log('✓ Verified: Student recovery token cannot be verified as Administrator.');
+
+  // 6. Valid token verification
+  const tokenVerify = MockAdapter.verifyPasswordResetToken(tokenRecord2.token!, 'STUDENT');
   if (!tokenVerify.valid) {
     throw new Error('Valid recovery token failed verification');
   }
   console.log('✓ Verified: Recovery token successfully validated.');
 
-  // Reset password to new value
+  // 7. Invalid/fake token rejection
+  const fakeTokenVerify = MockAdapter.verifyPasswordResetToken('fake-token-0123456789abcdef');
+  if (fakeTokenVerify.valid) {
+    throw new Error('CRITICAL: Fake recovery token was accepted!');
+  }
+  console.log('✓ Verified: Invalid or fabricated token is strictly rejected.');
+
+  // 8. Reset password to new value
   const newSecretPassword = 'NewSecretP@ssw0rd2026!';
-  const resetResult = MockAdapter.consumePasswordResetToken(tokenRecord.token, newSecretPassword);
+  const resetResult = MockAdapter.consumePasswordResetToken(tokenRecord2.token!, newSecretPassword, 'STUDENT');
   if (!resetResult.success) {
     throw new Error(`Password reset failed: ${resetResult.error}`);
   }
   console.log('✓ Verified: Password reset completed successfully.');
 
-  // Old password must fail
+  // 9. Old password must fail
   const oldPasswordCheck = MockAdapter.verifyUserCredentials('student@itdept.edu', 'Password123!');
   if (oldPasswordCheck.success) {
     throw new Error('CRITICAL: Old password still works after password reset!');
   }
   console.log('✓ Verified: Old password is immediately invalidated.');
 
-  // New password must succeed
+  // 10. New password must succeed
   const newPasswordCheck = MockAdapter.verifyUserCredentials('student@itdept.edu', newSecretPassword);
   if (!newPasswordCheck.success) {
     throw new Error('New password failed authentication!');
   }
   console.log('✓ Verified: New password successfully authenticates.');
 
-  // Attempt to reuse consumed token must fail
-  const reuseCheck = MockAdapter.consumePasswordResetToken(tokenRecord.token, 'AnotherPassword123!');
+  // 11. Attempt to reuse consumed token must fail
+  const reuseCheck = MockAdapter.consumePasswordResetToken(tokenRecord2.token!, 'AnotherPassword123!');
   if (reuseCheck.success) {
     throw new Error('CRITICAL: Single-use recovery token was reused!');
   }

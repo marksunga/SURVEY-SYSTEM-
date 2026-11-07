@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
+import { UserRole } from '@/lib/types/database';
 import { setSessionUser, clearSessionUser, getCurrentUser } from '@/lib/auth/session';
 import { validatePasswordStrength, verifyPassword, hashPassword } from '@/lib/crypto/passwords';
 import { sendPasswordResetEmail } from '@/lib/email/mailer';
@@ -285,9 +286,11 @@ export async function updatePasswordAction(formData: FormData) {
  * Forgot Password Action
  * Generates a cryptographically secure, time-limited recovery link and dispatches
  * via configured email service (Supabase Auth / SMTP).
+ * Strictly requires confirmed email delivery. NEVER returns fake success or dev recovery links.
  */
 export async function forgotPasswordAction(formData: FormData) {
   const email = (formData.get('email') as string)?.trim().toLowerCase();
+  const portal = (formData.get('portal') as string)?.trim().toLowerCase(); // 'student' or 'admin'
 
   if (!email) {
     return { error: 'Institutional email address is required.' };
@@ -295,74 +298,114 @@ export async function forgotPasswordAction(formData: FormData) {
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    return { error: 'Please enter a valid institutional email address.' };
+    return { error: 'Please enter a valid institutional email address (e.g. yourname@itdept.edu).' };
   }
+
+  const expectedRole: UserRole | undefined =
+    portal === 'admin' ? 'ADMINISTRATOR' : portal === 'student' ? 'STUDENT' : undefined;
 
   const profile = MockAdapter.getProfileByEmail(email);
 
-  // Security best practice: Always return generic confirmation to prevent user enumeration
-  if (profile && profile.is_active) {
-    const tokenResult = MockAdapter.createPasswordResetToken(profile.email);
+  if (!profile) {
+    return { error: 'No active account found with this institutional email address.' };
+  }
 
-    if (tokenResult) {
-      const baseUrl = getAppBaseUrl();
-      const resetLink = `${baseUrl}/auth/reset-password?token=${tokenResult.token}`;
+  if (!profile.is_active) {
+    return { error: 'This account has been deactivated. Please contact IT Administration.' };
+  }
 
-      // Dispatch recovery email through configured email service
-      const mailerResult = await sendPasswordResetEmail({
-        email: profile.email,
-        resetLink,
-        recipientName: profile.full_name,
-        expiresInMinutes: 15,
-      });
+  // Strict role isolation: Students cannot recover admin accounts; Admins cannot recover student accounts
+  if (expectedRole && profile.role_id !== expectedRole) {
+    const portalName = expectedRole === 'ADMINISTRATOR' ? 'Administrator' : 'Student';
+    const actualRole = profile.role_id === 'ADMINISTRATOR' ? 'Administrator' : 'Student';
+    return {
+      error: `Access denied: This institutional email belongs to a ${actualRole} account. Please use the ${actualRole} recovery portal.`,
+    };
+  }
 
-      MockAdapter.logAudit(profile.email, 'PASSWORD_RESET_REQUESTED', 'USER', profile.id, {
-        provider: mailerResult.provider,
-        sent: mailerResult.sent,
-      });
+  const effectiveRole = expectedRole || profile.role_id;
+  const tokenResult = MockAdapter.createPasswordResetToken(profile.email, effectiveRole);
 
-      // If in development and no email provider is configured, return the link for verification
-      const isDev = process.env.NODE_ENV !== 'production';
-      if (!mailerResult.sent && isDev) {
-        return {
-          success: true,
-          message:
-            'A secure password recovery link has been generated. (Email service is not yet configured; link provided below for testing).',
-          devResetLink: resetLink,
-        };
-      }
-    }
+  if (tokenResult.error || !tokenResult.token) {
+    return { error: tokenResult.error || 'Failed to generate recovery token.' };
+  }
+
+  const baseUrl = getAppBaseUrl();
+  const portalParam = portal ? `&portal=${portal}` : (effectiveRole === 'ADMINISTRATOR' ? '&portal=admin' : '&portal=student');
+  const resetLink = `${baseUrl}/auth/reset-password?token=${tokenResult.token}${portalParam}`;
+
+  // Dispatch recovery email through configured email delivery service
+  const mailerResult = await sendPasswordResetEmail({
+    email: profile.email,
+    resetLink,
+    recipientName: profile.full_name,
+    roleName: profile.role_id === 'ADMINISTRATOR' ? 'Administrator' : 'Student',
+    expiresInMinutes: 20,
+  });
+
+  MockAdapter.logAudit(profile.email, 'PASSWORD_RESET_REQUESTED', 'USER', profile.id, {
+    provider: mailerResult.provider,
+    sent: mailerResult.sent,
+    portal: portal || profile.role_id,
+  });
+
+  // CRITICAL REQUIREMENT: Do not display "Recovery email sent" if no email was actually sent.
+  // NEVER return fake success or development direct link.
+  if (!mailerResult.sent) {
+    return {
+      error:
+        mailerResult.error ||
+        'Failed to dispatch recovery email. Outbound email service is not configured. Please verify your SMTP settings in environment variables.',
+    };
   }
 
   return {
     success: true,
-    message:
-      'If your institutional email is registered in our system, password recovery instructions have been dispatched. Please check your inbox within 15 minutes.',
+    message: `A secure password recovery email has been successfully dispatched to ${profile.email}. Please open the link in your email within 20 minutes to reset your password.`,
   };
 }
 
 /**
  * Verify Recovery Token Action (Used by /auth/reset-password page)
+ * Enforces token validity, expiration (20 min), single-use status, and role isolation.
  */
-export async function verifyResetTokenAction(token: string) {
-  if (!token) {
-    return { valid: false, error: 'Password recovery token is missing.' };
+export async function verifyResetTokenAction(token: string, portal?: string) {
+  const invalidMessage = 'Your password reset link is invalid or has expired. Please request a new recovery link.';
+
+  if (!token || typeof token !== 'string') {
+    return { valid: false, error: invalidMessage };
   }
 
-  return MockAdapter.verifyPasswordResetToken(token);
+  const expectedRole: UserRole | undefined =
+    portal === 'admin' ? 'ADMINISTRATOR' : portal === 'student' ? 'STUDENT' : undefined;
+
+  const result = MockAdapter.verifyPasswordResetToken(token, expectedRole);
+  if (!result.valid) {
+    return { valid: false, error: result.error || invalidMessage };
+  }
+
+  return {
+    valid: true,
+    email: result.email,
+    roleId: result.roleId,
+  };
 }
 
 /**
  * Reset Password with Token Action
  * Consumes the recovery token (single-use), updates the password hash, and revokes sessions.
+ * Passwords CANNOT be changed without a valid, unconsumed email verification token.
  */
 export async function resetPasswordWithTokenAction(formData: FormData) {
   const token = (formData.get('token') as string)?.trim();
+  const portal = (formData.get('portal') as string)?.trim().toLowerCase();
   const newPassword = formData.get('newPassword') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
 
+  const invalidMessage = 'Your password reset link is invalid or has expired. Please request a new recovery link.';
+
   if (!token) {
-    return { error: 'Missing recovery token. Please request a new recovery link.' };
+    return { error: invalidMessage };
   }
 
   if (!newPassword || !confirmPassword) {
@@ -378,9 +421,12 @@ export async function resetPasswordWithTokenAction(formData: FormData) {
     return { error: strength.errors[0] };
   }
 
-  const consumeResult = MockAdapter.consumePasswordResetToken(token, newPassword);
+  const expectedRole: UserRole | undefined =
+    portal === 'admin' ? 'ADMINISTRATOR' : portal === 'student' ? 'STUDENT' : undefined;
+
+  const consumeResult = MockAdapter.consumePasswordResetToken(token, newPassword, expectedRole);
   if (!consumeResult.success) {
-    return { error: consumeResult.error || 'Failed to reset password. The link may have expired or been used.' };
+    return { error: consumeResult.error || invalidMessage };
   }
 
   // Revoke existing sessions
@@ -388,6 +434,7 @@ export async function resetPasswordWithTokenAction(formData: FormData) {
 
   return {
     success: true,
-    message: 'Your password has been reset successfully. Please sign in with your new credentials.',
+    roleId: consumeResult.roleId,
+    message: 'Your password has been changed successfully. You may now log in with your new credentials.',
   };
 }
