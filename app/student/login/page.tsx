@@ -7,11 +7,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { GraduationCap, Lock, Mail, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import {
+  GraduationCap,
+  Lock,
+  Mail,
+  AlertCircle,
+  ArrowRight,
+  ShieldCheck,
+  UserPlus,
+  Eye,
+  EyeOff,
+} from 'lucide-react';
 
 export default function StudentLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -103,14 +114,22 @@ export default function StudentLoginPage() {
                   <Input
                     id="student-password"
                     name="password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     required
                     autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-9 text-xs h-10 border-slate-300 focus-visible:ring-blue-500"
+                    className="pl-9 pr-10 text-xs h-10 border-slate-300 focus-visible:ring-blue-500"
                     placeholder="••••••••••••"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-2 top-2 p-1.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
 
@@ -124,7 +143,18 @@ export default function StudentLoginPage() {
               </Button>
             </form>
 
-            <div className="pt-4 border-t border-slate-100 text-center">
+            {/* Registration Callout Section with Divider */}
+            <div className="pt-4 border-t border-slate-100 flex flex-col items-center gap-1.5 text-center">
+              <span className="text-xs text-slate-500">Don&apos;t have a student account?</span>
+              <Button asChild variant="outline" className="w-full border-blue-200 bg-blue-50/50 hover:bg-blue-100/60 text-blue-700 text-xs font-bold min-h-[44px] cursor-pointer shadow-xs">
+                <Link href="/student/register" className="flex items-center justify-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  <span>Create Student Account</span>
+                </Link>
+              </Button>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 text-center">
               <span className="text-xs text-slate-500">IT Department Administrator? </span>
               <Link
                 href="/admin/login"
@@ -139,4 +169,3 @@ export default function StudentLoginPage() {
     </div>
   );
 }
-

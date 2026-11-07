@@ -76,23 +76,52 @@ export async function studentLoginAction(formData: FormData) {
 }
 
 export async function studentRegisterAction(formData: FormData) {
-  const email = (formData.get('email') as string)?.trim();
+  const email = (formData.get('email') as string)?.trim().toLowerCase();
   const fullName = (formData.get('fullName') as string)?.trim();
-  const password = formData.get('password') as string;
-  const department = (formData.get('department') as string) || 'Information Technology';
   const idNumber = (formData.get('idNumber') as string)?.trim();
+  const department = (formData.get('department') as string)?.trim() || 'Information Technology';
+  const password = formData.get('password') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
 
-  if (!email || !fullName) {
-    return { error: 'Student Name and Institutional Email are required.' };
+  // 1. Required fields validation
+  if (!fullName) {
+    return { error: 'Student full name is required.' };
+  }
+  if (!idNumber) {
+    return { error: 'Student ID number is required.' };
+  }
+  if (!email) {
+    return { error: 'Student institutional email is required.' };
+  }
+  if (!password) {
+    return { error: 'Password is required.' };
   }
 
-  if (password && password.length < 6) {
-    return { error: 'Password must be at least 6 characters.' };
+  // 2. Email format validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return { error: 'Please enter a valid institutional email address (e.g. yourname@itdept.edu).' };
   }
 
-  const existing = MockAdapter.getProfileByEmail(email);
-  if (existing) {
+  // 3. Password requirements validation
+  if (password.length < 6) {
+    return { error: 'Password must be at least 6 characters long.' };
+  }
+  if (confirmPassword !== undefined && password !== confirmPassword) {
+    return { error: 'Passwords do not match. Please ensure both password fields match.' };
+  }
+
+  // 4. Duplicate checks
+  const existingEmail = MockAdapter.getProfileByEmail(email);
+  if (existingEmail) {
     return { error: 'An account with this institutional email already exists. Please sign in.' };
+  }
+
+  const existingId = MockAdapter.getProfiles().find(
+    (p) => p.id_number && p.id_number.trim().toLowerCase() === idNumber.toLowerCase()
+  );
+  if (existingId) {
+    return { error: 'A student account with this Student ID Number is already registered.' };
   }
 
   const id = crypto.randomUUID();
@@ -103,7 +132,7 @@ export async function studentRegisterAction(formData: FormData) {
     full_name: fullName,
     role_id: 'STUDENT',
     department,
-    id_number: idNumber || `STU-${Math.floor(Math.random() * 90000 + 10000)}`,
+    id_number: idNumber,
     is_active: true,
   });
 
@@ -111,6 +140,7 @@ export async function studentRegisterAction(formData: FormData) {
 
   MockAdapter.logAudit(newProfile.email, 'STUDENT_REGISTERED', 'USER', newProfile.id, {
     role: 'STUDENT',
+    id_number: idNumber,
   });
 
   revalidatePath('/');

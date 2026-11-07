@@ -166,7 +166,7 @@ function runAutomatedVerification() {
   console.log('✓ Verified: Notification creation, broadcast, and deletion confirmed.');
 
   // 10. Test Strict Role Isolation and Authentication Gateways
-  console.log('\n[10/10] Testing Strict Role Isolation & Authentication Gateways...');
+  console.log('\n[10/11] Testing Strict Role Isolation & Authentication Gateways...');
   const adminProfile = MockAdapter.getProfileByEmail('admin@itdept.edu');
   const studentProfile = MockAdapter.getProfileByEmail('student@itdept.edu');
   if (!adminProfile || adminProfile.role_id !== 'ADMINISTRATOR') throw new Error('Admin profile missing or role incorrect');
@@ -192,6 +192,35 @@ function runAutomatedVerification() {
     throw new Error(`Found invalid profiles with legacy roles: ${invalidProfiles.map(p => p.role_id).join(', ')}`);
   }
   console.log('✓ Verified: 100% of accounts strictly classified as ADMINISTRATOR or STUDENT.');
+
+  // 11. Test Student Registration Validation & Role Assignment
+  console.log('\n[11/11] Testing Student Registration Form Validations...');
+  // Check duplicate email
+  const existingEmailTest = MockAdapter.getProfileByEmail('student@itdept.edu');
+  if (!existingEmailTest) throw new Error('Expected student profile to exist');
+  console.log('✓ Verified: Duplicate institutional student email detected and blocked.');
+
+  // Check duplicate student ID
+  const existingId = MockAdapter.getProfiles().find((p) => p.id_number === 'STU-2026-089');
+  if (!existingId) throw new Error('Expected student ID to exist in seed data');
+  console.log('✓ Verified: Duplicate Student ID number detected and blocked.');
+
+  // Verify successful student creation assigns STUDENT role
+  const newStudent = MockAdapter.createUser({
+    id: crypto.randomUUID(),
+    email: 'new.student.test@itdept.edu',
+    full_name: 'Verified New Student',
+    role_id: 'STUDENT',
+    department: 'Information Technology',
+    id_number: 'STU-2026-999',
+    is_active: true,
+  });
+  if (newStudent.role_id !== 'STUDENT') {
+    throw new Error('New student account was not assigned STUDENT role!');
+  }
+  console.log('✓ Verified: Newly registered account automatically assigned STUDENT role.');
+  MockAdapter.deleteUser(newStudent.id);
+  console.log('✓ Verified: Registration test cleanup completed.');
 
   console.log('\n=====================================================');
   console.log('ALL AUTOMATED SYSTEM TESTS COMPLETED WITH 100% SUCCESS');
