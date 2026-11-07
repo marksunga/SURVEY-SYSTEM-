@@ -519,12 +519,17 @@ export const MockAdapter = {
       return { error: 'This account has been deactivated. Please contact IT Administration.' };
     }
 
-    // Strict role isolation: Students cannot recover admin accounts; Admins cannot recover student accounts
-    if (expectedRole && profile.role_id !== expectedRole) {
-      const portalLabel = expectedRole === 'ADMINISTRATOR' ? 'Administrator' : 'Student';
-      const oppositeLabel = expectedRole === 'ADMINISTRATOR' ? 'Student' : 'Administrator';
+    // Administrator accounts cannot be recovered via self-service; must be provisioned directly
+    if (profile.role_id === 'ADMINISTRATOR') {
       return {
-        error: `Access denied: This email belongs to a ${oppositeLabel} account. Please use the ${oppositeLabel} recovery portal.`,
+        error: 'Access denied: Administrator accounts cannot be reset via online self-service. Please contact IT Department Administration.',
+      };
+    }
+
+    // Strict role isolation: Only STUDENT accounts permitted for self-service recovery
+    if (expectedRole && profile.role_id !== expectedRole) {
+      return {
+        error: 'Access denied: Self-service recovery is exclusively available for student accounts.',
       };
     }
 

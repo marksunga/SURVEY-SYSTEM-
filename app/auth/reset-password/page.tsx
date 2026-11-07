@@ -24,13 +24,11 @@ import { verifyResetTokenAction, resetPasswordWithTokenAction } from '@/app/acti
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
-  const portalParam = searchParams.get('portal') || '';
 
   const [verifying, setVerifying] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);
   const [tokenError, setTokenError] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
-  const [roleId, setRoleId] = useState<string | null>(null);
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -42,7 +40,8 @@ function ResetPasswordForm() {
   const [success, setSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
-  const defaultInvalidMessage = 'Your password reset link is invalid or has expired. Please request a new recovery link.';
+  const defaultInvalidMessage =
+    'Your password reset link is invalid or has expired. Please request a new recovery link.';
 
   useEffect(() => {
     async function checkToken() {
@@ -53,11 +52,10 @@ function ResetPasswordForm() {
         return;
       }
 
-      const res = await verifyResetTokenAction(token, portalParam);
+      const res = await verifyResetTokenAction(token);
       if (res.valid) {
         setTokenValid(true);
         setEmail(res.email || null);
-        setRoleId(res.roleId || null);
       } else {
         setTokenValid(false);
         setTokenError(res.error || defaultInvalidMessage);
@@ -66,7 +64,7 @@ function ResetPasswordForm() {
     }
 
     checkToken();
-  }, [token, portalParam]);
+  }, [token]);
 
   // Real-time password requirement checks
   const criteria = useMemo(() => {
@@ -118,9 +116,6 @@ function ResetPasswordForm() {
     formData.append('token', token);
     formData.append('newPassword', newPassword);
     formData.append('confirmPassword', confirmPassword);
-    if (portalParam) {
-      formData.append('portal', portalParam);
-    }
 
     const res = await resetPasswordWithTokenAction(formData);
     setSubmitting(false);
@@ -129,27 +124,25 @@ function ResetPasswordForm() {
       setSubmitError(res.error);
     } else if (res?.success) {
       setSuccess(true);
-      setSuccessMessage(res.message || 'Your password has been changed successfully. You may now log in with your new credentials.');
-      if (res.roleId) {
-        setRoleId(res.roleId);
-      }
+      setSuccessMessage(
+        res.message ||
+          'Your password has been changed successfully. You may now log in with your new credentials.'
+      );
     }
   }
-
-  const isAdmin = roleId === 'ADMINISTRATOR' || portalParam === 'admin';
 
   return (
     <Card className="border-slate-200 bg-white shadow-sm overflow-hidden">
       <CardHeader className="pb-4">
         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-[11px] font-semibold w-fit mb-1">
           <ShieldCheck className="h-3.5 w-3.5 text-blue-600" />
-          <span>Cryptographic Credential Recovery</span>
+          <span>Student Security & Recovery</span>
         </div>
         <CardTitle className="text-lg text-slate-900">
-          {isAdmin ? 'Reset Administrator Password' : 'Reset Student Password'}
+          Reset Student Password
         </CardTitle>
         <CardDescription className="text-xs text-slate-500">
-          {email ? `Verified Institutional Account: ${email}` : 'Enter your new password below.'}
+          {email ? `Verified Student Account: ${email}` : 'Enter your new student password below.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -170,17 +163,13 @@ function ResetPasswordForm() {
               </p>
             </div>
             <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white text-xs">
-              <Link href={`/auth/forgot-password${portalParam ? `?portal=${portalParam}` : ''}`}>
+              <Link href="/auth/forgot-password">
                 Request New Recovery Link
               </Link>
             </Button>
-            <div className="pt-2 flex justify-center gap-4 text-xs text-slate-500">
+            <div className="pt-2 text-center text-xs text-slate-500">
               <Link href="/student/login" className="hover:text-slate-800 font-medium">
-                Student Login
-              </Link>
-              <span>•</span>
-              <Link href="/admin/login" className="hover:text-slate-800 font-medium">
-                Admin Login
+                Back to Student Login
               </Link>
             </div>
           </div>
@@ -200,18 +189,12 @@ function ResetPasswordForm() {
                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                 <span>Single-Use Token Consumed</span>
               </div>
-              <p>Your previous recovery link has been revoked and all existing sessions terminated.</p>
+              <p>Your recovery link has been revoked and all existing sessions terminated.</p>
             </div>
-            <div className="pt-2 flex flex-col gap-2">
-              {isAdmin ? (
-                <Button asChild className="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs h-10 font-semibold">
-                  <Link href="/admin/login">Sign In as Administrator</Link>
-                </Button>
-              ) : (
-                <Button asChild className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs h-10 font-semibold">
-                  <Link href="/student/login">Sign In to Student Portal</Link>
-                </Button>
-              )}
+            <div className="pt-2">
+              <Button asChild className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs h-11 min-h-[44px] font-semibold cursor-pointer shadow-xs">
+                <Link href="/student/login">Sign In to Student Portal</Link>
+              </Button>
             </div>
           </div>
         ) : (
@@ -229,7 +212,7 @@ function ResetPasswordForm() {
             {/* New Password Field */}
             <div className="space-y-1.5">
               <Label htmlFor="new-password" className="text-xs font-semibold text-slate-700">
-                New Password
+                New Student Password
               </Label>
               <div className="relative">
                 <Lock className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
@@ -370,20 +353,18 @@ function ResetPasswordForm() {
             <Button
               type="submit"
               disabled={submitting || strengthScore < 100 || !criteria.matches}
-              className={`w-full text-white text-xs font-semibold h-10 shadow-xs cursor-pointer disabled:opacity-50 ${
-                isAdmin ? 'bg-slate-900 hover:bg-slate-800' : 'bg-blue-600 hover:bg-blue-500'
-              }`}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold h-11 min-h-[44px] shadow-xs cursor-pointer disabled:opacity-50"
             >
               {submitting ? 'Updating Credentials...' : 'Submit New Password'}
             </Button>
 
             <div className="text-center pt-2">
               <Link
-                href={isAdmin ? '/admin/login' : '/student/login'}
-                className="inline-flex items-center text-xs font-medium text-slate-500 hover:text-slate-800"
+                href="/student/login"
+                className="inline-flex items-center text-xs font-medium text-slate-500 hover:text-slate-800 min-h-[44px] px-2"
               >
                 <ArrowLeft className="h-3.5 w-3.5 mr-1" />
-                Back to {isAdmin ? 'Administrator' : 'Student'} Login
+                Back to Student Login
               </Link>
             </div>
           </form>
@@ -407,7 +388,7 @@ export default function ResetPasswordPage() {
           Reset Your Password
         </h1>
         <p className="mt-1 text-xs text-slate-500">
-          Establish new security credentials for your verified institutional account.
+          Establish new security credentials for your verified student account.
         </p>
       </div>
 

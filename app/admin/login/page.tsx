@@ -88,17 +88,9 @@ export default function AdminLoginPage() {
               </div>
 
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="admin-password" className="text-xs text-slate-200 font-medium">
-                    Password
-                  </Label>
-                  <Link
-                    href="/auth/forgot-password?portal=admin"
-                    className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
+                <Label htmlFor="admin-password" className="text-xs text-slate-200 font-medium">
+                  Administrator Password
+                </Label>
                 <div className="relative">
                   <Lock className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
                   <Input

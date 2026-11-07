@@ -283,17 +283,16 @@ export async function updatePasswordAction(formData: FormData) {
 }
 
 /**
- * Forgot Password Action
- * Generates a cryptographically secure, time-limited recovery link and dispatches
- * via configured email service (Supabase Auth / SMTP).
- * Strictly requires confirmed email delivery. NEVER returns fake success or dev recovery links.
+ * Student Forgot Password Action
+ * Generates a cryptographically secure, time-limited recovery link for Student accounts
+ * and dispatches via configured email service (Supabase Auth / SMTP).
+ * Administrator account recovery is disabled by design.
  */
 export async function forgotPasswordAction(formData: FormData) {
   const email = (formData.get('email') as string)?.trim().toLowerCase();
-  const portal = (formData.get('portal') as string)?.trim().toLowerCase(); // 'student' or 'admin'
 
   if (!email) {
-    return { error: 'Institutional email address is required.' };
+    return { error: 'Student institutional email address is required.' };
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -301,56 +300,48 @@ export async function forgotPasswordAction(formData: FormData) {
     return { error: 'Please enter a valid institutional email address (e.g. yourname@itdept.edu).' };
   }
 
-  const expectedRole: UserRole | undefined =
-    portal === 'admin' ? 'ADMINISTRATOR' : portal === 'student' ? 'STUDENT' : undefined;
-
   const profile = MockAdapter.getProfileByEmail(email);
 
   if (!profile) {
-    return { error: 'No active account found with this institutional email address.' };
+    return { error: 'No active student account found with this institutional email address.' };
   }
 
   if (!profile.is_active) {
     return { error: 'This account has been deactivated. Please contact IT Administration.' };
   }
 
-  // Strict role isolation: Students cannot recover admin accounts; Admins cannot recover student accounts
-  if (expectedRole && profile.role_id !== expectedRole) {
-    const portalName = expectedRole === 'ADMINISTRATOR' ? 'Administrator' : 'Student';
-    const actualRole = profile.role_id === 'ADMINISTRATOR' ? 'Administrator' : 'Student';
+  // Administrator accounts cannot be reset via online self-service
+  if (profile.role_id === 'ADMINISTRATOR') {
     return {
-      error: `Access denied: This institutional email belongs to a ${actualRole} account. Please use the ${actualRole} recovery portal.`,
+      error: 'Administrator accounts cannot be reset via online self-service. Please contact IT Department Administration directly.',
     };
   }
 
-  const effectiveRole = expectedRole || profile.role_id;
-  const tokenResult = MockAdapter.createPasswordResetToken(profile.email, effectiveRole);
+  const tokenResult = MockAdapter.createPasswordResetToken(profile.email, 'STUDENT');
 
   if (tokenResult.error || !tokenResult.token) {
     return { error: tokenResult.error || 'Failed to generate recovery token.' };
   }
 
   const baseUrl = getAppBaseUrl();
-  const portalParam = portal ? `&portal=${portal}` : (effectiveRole === 'ADMINISTRATOR' ? '&portal=admin' : '&portal=student');
-  const resetLink = `${baseUrl}/auth/reset-password?token=${tokenResult.token}${portalParam}`;
+  const resetLink = `${baseUrl}/auth/reset-password?token=${tokenResult.token}`;
 
   // Dispatch recovery email through configured email delivery service
   const mailerResult = await sendPasswordResetEmail({
     email: profile.email,
     resetLink,
     recipientName: profile.full_name,
-    roleName: profile.role_id === 'ADMINISTRATOR' ? 'Administrator' : 'Student',
+    roleName: 'Student',
     expiresInMinutes: 20,
   });
 
   MockAdapter.logAudit(profile.email, 'PASSWORD_RESET_REQUESTED', 'USER', profile.id, {
     provider: mailerResult.provider,
     sent: mailerResult.sent,
-    portal: portal || profile.role_id,
+    portal: 'STUDENT',
   });
 
-  // CRITICAL REQUIREMENT: Do not display "Recovery email sent" if no email was actually sent.
-  // NEVER return fake success or development direct link.
+  // CRITICAL: Do not display fake success if email was not transmitted
   if (!mailerResult.sent) {
     return {
       error:
@@ -367,19 +358,16 @@ export async function forgotPasswordAction(formData: FormData) {
 
 /**
  * Verify Recovery Token Action (Used by /auth/reset-password page)
- * Enforces token validity, expiration (20 min), single-use status, and role isolation.
+ * Enforces token validity, expiration (20 min), single-use status, and student-only scope.
  */
-export async function verifyResetTokenAction(token: string, portal?: string) {
+export async function verifyResetTokenAction(token: string) {
   const invalidMessage = 'Your password reset link is invalid or has expired. Please request a new recovery link.';
 
   if (!token || typeof token !== 'string') {
     return { valid: false, error: invalidMessage };
   }
 
-  const expectedRole: UserRole | undefined =
-    portal === 'admin' ? 'ADMINISTRATOR' : portal === 'student' ? 'STUDENT' : undefined;
-
-  const result = MockAdapter.verifyPasswordResetToken(token, expectedRole);
+  const result = MockAdapter.verifyPasswordResetToken(token, 'STUDENT');
   if (!result.valid) {
     return { valid: false, error: result.error || invalidMessage };
   }
@@ -394,11 +382,10 @@ export async function verifyResetTokenAction(token: string, portal?: string) {
 /**
  * Reset Password with Token Action
  * Consumes the recovery token (single-use), updates the password hash, and revokes sessions.
- * Passwords CANNOT be changed without a valid, unconsumed email verification token.
+ * Exclusively permits Student accounts.
  */
 export async function resetPasswordWithTokenAction(formData: FormData) {
   const token = (formData.get('token') as string)?.trim();
-  const portal = (formData.get('portal') as string)?.trim().toLowerCase();
   const newPassword = formData.get('newPassword') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
 
@@ -421,10 +408,7 @@ export async function resetPasswordWithTokenAction(formData: FormData) {
     return { error: strength.errors[0] };
   }
 
-  const expectedRole: UserRole | undefined =
-    portal === 'admin' ? 'ADMINISTRATOR' : portal === 'student' ? 'STUDENT' : undefined;
-
-  const consumeResult = MockAdapter.consumePasswordResetToken(token, newPassword, expectedRole);
+  const consumeResult = MockAdapter.consumePasswordResetToken(token, newPassword, 'STUDENT');
   if (!consumeResult.success) {
     return { error: consumeResult.error || invalidMessage };
   }

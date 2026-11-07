@@ -300,18 +300,18 @@ function runAutomatedVerification() {
   }
   console.log('✓ Verified: Unknown institutional email cannot request password reset.');
 
-  // 2. Strict Role Isolation on Token Creation
-  const crossRoleStudentToAdmin = MockAdapter.createPasswordResetToken('admin@itdept.edu', 'STUDENT');
-  if (!crossRoleStudentToAdmin.error || !crossRoleStudentToAdmin.error.includes('Access denied')) {
-    throw new Error('CRITICAL: Student portal was allowed to initiate recovery for Administrator account!');
+  // 2. Strict Prohibition of Administrator Account Recovery
+  const adminRecoveryAttempt = MockAdapter.createPasswordResetToken('admin@itdept.edu');
+  if (!adminRecoveryAttempt.error || !adminRecoveryAttempt.error.includes('Access denied')) {
+    throw new Error('CRITICAL: Administrator account was allowed to initiate self-service recovery!');
   }
-  console.log('✓ Verified: Student recovery portal strictly rejects Administrator accounts.');
+  console.log('✓ Verified: Administrator accounts are completely blocked from self-service recovery.');
 
-  const crossRoleAdminToStudent = MockAdapter.createPasswordResetToken('student@itdept.edu', 'ADMINISTRATOR');
-  if (!crossRoleAdminToStudent.error || !crossRoleAdminToStudent.error.includes('Access denied')) {
-    throw new Error('CRITICAL: Admin portal was allowed to initiate recovery for Student account!');
+  const adminRecoveryWithRole = MockAdapter.createPasswordResetToken('admin@itdept.edu', 'STUDENT');
+  if (!adminRecoveryWithRole.error || !adminRecoveryWithRole.error.includes('Access denied')) {
+    throw new Error('CRITICAL: Administrator account bypassed recovery prohibition with STUDENT parameter!');
   }
-  console.log('✓ Verified: Administrator recovery portal strictly rejects Student accounts.');
+  console.log('✓ Verified: Administrator recovery remains strictly prohibited under all parameters.');
 
   // 3. Valid token generation
   const tokenRecord = MockAdapter.createPasswordResetToken('student@itdept.edu', 'STUDENT');
