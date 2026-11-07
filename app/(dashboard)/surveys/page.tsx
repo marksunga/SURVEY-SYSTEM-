@@ -14,7 +14,7 @@ import {
   ArrowRight,
   Filter,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatDateTime } from '@/lib/utils';
 
 export default async function AvailableSurveysPage({
   searchParams,
@@ -139,7 +139,7 @@ export default async function AvailableSurveysPage({
                   <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-3 text-xs">
                     <div className="text-slate-400 text-[11px] space-y-0.5">
                       <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" /> Ends: {formatDate(survey.end_date)}
+                        <Clock className="h-3 w-3 text-slate-500" /> Deadline: {formatDateTime(survey.end_date)}
                       </div>
                       <div>{survey.questions_count} questions configured</div>
                     </div>

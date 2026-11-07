@@ -13,6 +13,16 @@ import { createSurveyAction } from '@/app/actions/surveys';
 import { ArrowLeft, Save, PlusCircle, AlertCircle, Sparkles } from 'lucide-react';
 import { SurveyCategory, SurveyStatus, UserRole } from '@/lib/types/database';
 
+function toLocalDateTimeString(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const year = d.getFullYear();
+  const month = pad(d.getMonth() + 1);
+  const day = pad(d.getDate());
+  const hours = pad(d.getHours());
+  const minutes = pad(d.getMinutes());
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 export default function CreateSurveyPage() {
   const router = useRouter();
   const [title, setTitle] = useState('');
@@ -21,10 +31,16 @@ export default function CreateSurveyPage() {
   const [status, setStatus] = useState<SurveyStatus>('ACTIVE');
   const [targetRoles, setTargetRoles] = useState<UserRole[]>(['STUDENT']);
   const [isAnonymousAllowed, setIsAnonymousAllowed] = useState(true);
-  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(
-    new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]
-  );
+
+  // Initialize start date-time to current moment
+  const [startDate, setStartDate] = useState(() => toLocalDateTimeString(new Date()));
+
+  // Initialize due date-time to 14 days from now at 11:59 PM (23:59)
+  const [endDate, setEndDate] = useState(() => {
+    const end = new Date(Date.now() + 14 * 86400000);
+    end.setHours(23, 59, 0, 0);
+    return toLocalDateTimeString(end);
+  });
   const [questions, setQuestions] = useState<DraftQuestion[]>([
     {
       question_text: 'Overall, how would you rate the effectiveness of this program/course?',
@@ -62,6 +78,11 @@ export default function CreateSurveyPage() {
     }
     if (questions.length === 0) {
       setError('Please add at least one question.');
+      return;
+    }
+
+    if (new Date(endDate).getTime() <= new Date(startDate).getTime()) {
+      setError('Survey Due Date & Time cannot be earlier than or equal to Start Date & Time.');
       return;
     }
 
@@ -178,9 +199,9 @@ export default function CreateSurveyPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs">Start Date</Label>
+                <Label className="text-xs font-semibold text-slate-700">Start Date & Time</Label>
                 <Input
-                  type="date"
+                  type="datetime-local"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   className="text-xs"
@@ -188,9 +209,9 @@ export default function CreateSurveyPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs">Expiration Date *</Label>
+                <Label className="text-xs font-semibold text-slate-700">Due Date & Time (Deadline) *</Label>
                 <Input
-                  type="date"
+                  type="datetime-local"
                   required
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}

@@ -82,6 +82,28 @@ function runAutomatedVerification() {
     }
   }
 
+  // 4b. Test Survey Deadline / Due Date & Time Expiration Enforcement
+  const expiredSurvey = MockAdapter.createSurvey({
+    title: 'Past Deadline Survey Test',
+    description: 'Testing deadline expiration',
+    category: 'GENERAL',
+    status: 'ACTIVE',
+    target_roles: ['STUDENT'],
+    is_anonymous_allowed: true,
+    start_date: new Date(Date.now() - 3600000).toISOString(),
+    end_date: new Date(Date.now() - 1000).toISOString(),
+  });
+  try {
+    MockAdapter.submitSurveyAnswers(expiredSurvey.id, '44444444-4444-4444-4444-444444444444', true, {});
+    throw new Error('CRITICAL: Submission was permitted after the survey deadline!');
+  } catch (err: any) {
+    if (!err.message.includes('deadline')) {
+      throw err;
+    }
+    console.log('✓ Verified: Submissions strictly rejected when survey has passed its Due Date & Time.');
+  }
+  MockAdapter.deleteSurvey(expiredSurvey.id);
+
   // 5. Test AES-256 Feedback Encryption & Decryption
   console.log('\n[5/7] Testing Feedback AES-256-GCM Encryption...');
   const feedbackText = 'Lab 401 workstations need RAM upgrades from 8GB to 32GB for Docker containers.';
@@ -205,7 +227,7 @@ function runAutomatedVerification() {
   if (!existingId) throw new Error('Expected student ID to exist in seed data');
   console.log('✓ Verified: Duplicate Student ID number detected and blocked.');
 
-  // Verify successful student creation assigns STUDENT role
+  // Verify successful student creation assigns STUDENT role (with and without ID Number)
   const newStudent = MockAdapter.createUser({
     id: crypto.randomUUID(),
     email: 'new.student.test@itdept.edu',
@@ -220,6 +242,21 @@ function runAutomatedVerification() {
   }
   console.log('✓ Verified: Newly registered account automatically assigned STUDENT role.');
   MockAdapter.deleteUser(newStudent.id);
+
+  // Verify student registration works without requiring Student ID Number
+  const newStudentWithoutId = MockAdapter.createUser({
+    id: crypto.randomUUID(),
+    email: 'noid.student@itdept.edu',
+    full_name: 'No ID Student',
+    role_id: 'STUDENT',
+    department: 'Information Technology',
+    is_active: true,
+  });
+  if (newStudentWithoutId.role_id !== 'STUDENT') {
+    throw new Error('Student without ID account failed creation');
+  }
+  console.log('✓ Verified: Student registration functions without requiring Student ID Number.');
+  MockAdapter.deleteUser(newStudentWithoutId.id);
   console.log('✓ Verified: Registration test cleanup completed.');
 
   // 12. Test Separated Account Management & Role Immutability

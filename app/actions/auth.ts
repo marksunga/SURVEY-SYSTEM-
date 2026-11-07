@@ -116,9 +116,6 @@ export async function studentRegisterAction(formData: FormData) {
   if (!fullName) {
     return { error: 'Student full name is required.' };
   }
-  if (!idNumber) {
-    return { error: 'Student ID number is required.' };
-  }
   if (!email) {
     return { error: 'Student institutional email is required.' };
   }
@@ -147,11 +144,13 @@ export async function studentRegisterAction(formData: FormData) {
     return { error: 'An account with this institutional email already exists. Please sign in.' };
   }
 
-  const existingId = MockAdapter.getProfiles().find(
-    (p) => p.id_number && p.id_number.trim().toLowerCase() === idNumber.toLowerCase()
-  );
-  if (existingId) {
-    return { error: 'A student account with this Student ID Number is already registered.' };
+  if (idNumber) {
+    const existingId = MockAdapter.getProfiles().find(
+      (p) => p.id_number && p.id_number.trim().toLowerCase() === idNumber.toLowerCase()
+    );
+    if (existingId) {
+      return { error: 'A student account with this Student ID Number is already registered.' };
+    }
   }
 
   const id = crypto.randomUUID();
@@ -164,7 +163,7 @@ export async function studentRegisterAction(formData: FormData) {
       full_name: fullName,
       role_id: 'STUDENT',
       department,
-      id_number: idNumber,
+      id_number: idNumber || '',
       is_active: true,
     },
     password

@@ -21,6 +21,12 @@ export async function createSurveyAction(data: {
   try {
     const user = await requireRole(['ADMINISTRATOR']);
 
+    // Validate due date & time
+    const startDate = data.start_date || new Date().toISOString();
+    if (new Date(data.end_date).getTime() <= new Date(startDate).getTime()) {
+      return { success: false, error: 'Survey Due Date & Time cannot be earlier than or equal to Start Date & Time.' };
+    }
+
     // 1. Create survey
     const newSurvey = MockAdapter.createSurvey({
       title: data.title,
@@ -29,7 +35,7 @@ export async function createSurveyAction(data: {
       status: data.status,
       target_roles: data.target_roles,
       is_anonymous_allowed: data.is_anonymous_allowed,
-      start_date: data.start_date || new Date().toISOString(),
+      start_date: startDate,
       end_date: data.end_date,
       created_by: user.id,
       creator_name: user.full_name,
@@ -162,6 +168,13 @@ export async function submitSurveyAnswersAction(
   const survey = MockAdapter.getSurveyById(surveyId);
   if (!survey) {
     return { error: 'Survey not found.' };
+  }
+
+  // Exact server-side deadline verification using server time
+  const now = Date.now();
+  const deadlineTime = new Date(survey.end_date).getTime();
+  if (now > deadlineTime || survey.status === 'EXPIRED') {
+    return { error: 'This survey has passed its scheduled deadline and is no longer accepting responses.' };
   }
 
   if (survey.status !== 'ACTIVE') {

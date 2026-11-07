@@ -17,13 +17,11 @@ import {
   BadgeCheck,
   Eye,
   EyeOff,
-  IdCard,
   ArrowLeft,
 } from 'lucide-react';
 
 export default function StudentRegisterPage() {
   const [fullName, setFullName] = useState('');
-  const [idNumber, setIdNumber] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -115,25 +113,6 @@ export default function StudentRegisterPage() {
                     onChange={(e) => setFullName(e.target.value)}
                     className="pl-9 text-xs h-10 border-slate-300 focus-visible:ring-blue-500"
                     placeholder="e.g. Samantha Hayes"
-                  />
-                </div>
-              </div>
-
-              {/* Student ID Number */}
-              <div className="space-y-1">
-                <Label htmlFor="idNumber" className="text-xs font-semibold text-slate-700">
-                  Student ID Number <span className="text-rose-500">*</span>
-                </Label>
-                <div className="relative">
-                  <IdCard className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
-                  <Input
-                    id="idNumber"
-                    name="idNumber"
-                    required
-                    value={idNumber}
-                    onChange={(e) => setIdNumber(e.target.value)}
-                    className="pl-9 text-xs h-10 border-slate-300 font-mono focus-visible:ring-blue-500"
-                    placeholder="e.g. STU-2026-001"
                   />
                 </div>
               </div>

@@ -237,8 +237,8 @@ export default function SurveyTakingPage({ params }: SurveyTakingPageProps) {
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 uppercase">
               {survey.category.replace('_', ' ')}
             </span>
-            <span className="text-xs text-slate-400">
-              Closes {new Date(survey.end_date).toLocaleDateString()}
+            <span className="text-xs text-slate-500 font-medium">
+              Deadline: {new Date(survey.end_date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
             </span>
           </div>
 

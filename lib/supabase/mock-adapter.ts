@@ -830,6 +830,17 @@ export const MockAdapter = {
     isAnonymous: boolean,
     answers: Record<string, string | string[] | number | boolean>
   ): { success: boolean; token: string } {
+    // 0. Verify deadline and active status
+    const survey = db.surveys.find((s) => s.id === surveyId);
+    if (!survey) {
+      throw new Error('Survey not found.');
+    }
+    const now = Date.now();
+    if (now > new Date(survey.end_date).getTime() || survey.status === 'EXPIRED') {
+      survey.status = 'EXPIRED';
+      throw new Error('This survey has passed its scheduled deadline and is no longer accepting responses.');
+    }
+
     // 1. Check duplicate submission
     if (this.hasUserCompletedSurvey(userId, surveyId)) {
       throw new Error('You have already submitted this survey. Duplicate submissions are not permitted.');

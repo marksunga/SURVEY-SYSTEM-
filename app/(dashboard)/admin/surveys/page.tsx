@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { updateSurveyStatusAction, deleteSurveyAction } from '@/app/actions/surveys';
 import { Survey, SurveyStatus } from '@/lib/types/database';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatDateTime } from '@/lib/utils';
 
 export default function AdminSurveysPage() {
   const [surveys, setSurveys] = useState<Survey[]>([]);
@@ -141,7 +141,7 @@ export default function AdminSurveysPage() {
                     </td>
 
                     <td className="p-3.5 text-slate-600 space-y-0.5">
-                      <div className="text-[11px]">Ends: {formatDate(s.end_date)}</div>
+                      <div className="text-[11px] font-medium text-slate-800">Due: {formatDateTime(s.end_date)}</div>
                       <div className="text-[10px] text-slate-400">Created: {formatDate(s.created_at)}</div>
                     </td>
 

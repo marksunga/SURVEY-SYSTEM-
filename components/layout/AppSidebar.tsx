@@ -62,7 +62,7 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
     { href: '/admin/qr-codes', label: 'QR Code Hub', icon: QrCode },
     { href: '/admin/reports', label: 'Reports & Analytics', icon: BarChart3 },
     { href: '/admin/notifications', label: 'Broadcasts & Reminders', icon: Bell },
-    { href: '/admin/backups', label: 'Database Backups', icon: Database },
+    { href: '/admin/profile', label: 'My Profile', icon: User },
     { href: '/admin/settings', label: 'System Settings', icon: Settings },
   ];
 
@@ -83,17 +83,23 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
         </div>
       </div>
 
-      {/* Profile snippet */}
-      <div className="p-3 border-b border-slate-100 bg-slate-50/60 flex items-center gap-3">
+      {/* Profile snippet - Clickable navigation to respective My Profile */}
+      <Link
+        href={isAdmin ? '/admin/profile' : '/profile'}
+        className="p-3 border-b border-slate-100 bg-slate-50/60 hover:bg-slate-100/90 transition-colors flex items-center gap-3 cursor-pointer group"
+        title="View My Profile"
+      >
         <div
-          className={`h-9 w-9 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 ${
+          className={`h-9 w-9 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 group-hover:scale-105 transition-transform ${
             isAdmin ? 'bg-slate-900 text-white' : 'bg-blue-100 text-blue-700'
           }`}
         >
           {user.full_name.slice(0, 2)}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold text-slate-800 truncate">{user.full_name}</p>
+          <p className="text-xs font-semibold text-slate-800 truncate group-hover:text-blue-600 transition-colors">
+            {user.full_name}
+          </p>
           <span
             className={`inline-block mt-0.5 px-1.5 py-0.2 text-[10px] font-bold rounded uppercase tracking-wide ${
               isAdmin ? 'bg-slate-900 text-white' : 'bg-blue-100 text-blue-800'
@@ -102,7 +108,7 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
             {user.role_id}
           </span>
         </div>
-      </div>
+      </Link>
 
       {/* Navigation Scroll */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">

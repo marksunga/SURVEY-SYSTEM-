@@ -15,7 +15,7 @@ import {
   Sparkles,
   ShieldCheck,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatDateTime } from '@/lib/utils';
 
 export default async function StudentDashboardPage() {
   const user = await getCurrentUser();
@@ -56,17 +56,17 @@ export default async function StudentDashboardPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button asChild size="sm" className="bg-white text-blue-700 hover:bg-blue-50 text-xs font-semibold shadow-sm min-h-[38px]">
-            <Link href="/scan">
-              <QrCode className="h-4 w-4 mr-1.5 text-blue-600" />
-              Scan Survey QR
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <Button asChild size="sm" className="bg-white text-blue-700 hover:bg-blue-50 text-xs font-semibold shadow-sm min-h-[40px] px-4 cursor-pointer">
+            <Link href="/scan" className="flex items-center gap-1.5">
+              <QrCode className="h-4 w-4 text-blue-600" />
+              <span>Scan Survey QR</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10 text-xs min-h-[38px]">
-            <Link href="/feedback">
-              <MessageSquarePlus className="h-4 w-4 mr-1.5" />
-              Submit Feedback
+          <Button asChild size="sm" className="bg-blue-900/40 border border-white/30 text-white hover:bg-blue-900/60 hover:border-white/50 text-xs font-semibold backdrop-blur-sm min-h-[40px] px-4 shadow-sm transition-all cursor-pointer">
+            <Link href="/feedback" className="flex items-center gap-1.5">
+              <MessageSquarePlus className="h-4 w-4 text-blue-200" />
+              <span>Submit Feedback</span>
             </Link>
           </Button>
         </div>
@@ -161,7 +161,7 @@ export default async function StudentDashboardPage() {
                       <span>•</span>
                       <span>{survey.responses_count} submitted</span>
                       <span>•</span>
-                      <span>Deadline: {formatDate(survey.end_date)}</span>
+                      <span>Deadline: {formatDateTime(survey.end_date)}</span>
                     </div>
                   </div>
 

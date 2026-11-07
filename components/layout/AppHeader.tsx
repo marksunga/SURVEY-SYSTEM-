@@ -67,7 +67,7 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
     { href: '/admin/qr-codes', label: 'QR Code Hub', icon: QrCode },
     { href: '/admin/reports', label: 'Reports & Analytics', icon: BarChart3 },
     { href: '/admin/notifications', label: 'Broadcasts & Reminders', icon: Bell },
-    { href: '/admin/backups', label: 'Database Backups', icon: Database },
+    { href: '/admin/profile', label: 'My Profile', icon: User },
     { href: '/admin/settings', label: 'System Settings', icon: Settings },
   ];
 
@@ -126,32 +126,38 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
             )}
           </Link>
 
-          {/* Authenticated User Badge & Logout */}
+          {/* Authenticated User Badge (Clickable to My Profile) & Logout */}
           <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-            <div className="hidden sm:flex flex-col items-end text-right">
-              <span className="text-xs font-bold text-slate-800 truncate max-w-[140px]">
-                {user.full_name}
-              </span>
-              <span
-                className={`text-[10px] font-bold px-1.5 py-0.2 rounded uppercase ${
+            <Link
+              href={isAdmin ? '/admin/profile' : '/profile'}
+              className="flex items-center gap-2 group hover:opacity-90 transition-opacity"
+              title="View My Profile"
+            >
+              <div className="hidden sm:flex flex-col items-end text-right">
+                <span className="text-xs font-bold text-slate-800 truncate max-w-[140px] group-hover:text-blue-600 transition-colors">
+                  {user.full_name}
+                </span>
+                <span
+                  className={`text-[10px] font-bold px-1.5 py-0.2 rounded uppercase ${
+                    isAdmin
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-blue-100 text-blue-800'
+                  }`}
+                >
+                  {user.role_id}
+                </span>
+              </div>
+
+              <div
+                className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold uppercase flex-shrink-0 group-hover:scale-105 transition-transform ${
                   isAdmin
                     ? 'bg-slate-900 text-white'
-                    : 'bg-blue-100 text-blue-800'
+                    : 'bg-blue-600 text-white'
                 }`}
               >
-                {user.role_id}
-              </span>
-            </div>
-
-            <div
-              className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold uppercase flex-shrink-0 ${
-                isAdmin
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-blue-600 text-white'
-              }`}
-            >
-              {user.full_name.slice(0, 2)}
-            </div>
+                {user.full_name.slice(0, 2)}
+              </div>
+            </Link>
 
             <form action={logoutAction}>
               <button
@@ -184,9 +190,18 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
             </div>
           </DialogHeader>
 
-          {/* User profile banner in drawer */}
-          <div className="p-3 border-b border-slate-100 bg-slate-50/70 flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
+          {/* User profile banner in drawer (Clickable) */}
+          <Link
+            href={isAdmin ? '/admin/profile' : '/profile'}
+            onClick={() => setMobileNavOpen(false)}
+            className="p-3 border-b border-slate-100 bg-slate-50/70 hover:bg-slate-100/90 flex items-center gap-3 transition-colors cursor-pointer"
+            title="View My Profile"
+          >
+            <div
+              className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 ${
+                isAdmin ? 'bg-slate-900 text-white' : 'bg-blue-100 text-blue-700'
+              }`}
+            >
               {user.full_name.slice(0, 2)}
             </div>
             <div className="min-w-0 flex-1">
@@ -199,7 +214,7 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                 {user.role_id}
               </span>
             </div>
-          </div>
+          </Link>
 
           {/* Navigation Links Scrollable Area */}
           <div className="flex-1 overflow-y-auto p-3 space-y-4">

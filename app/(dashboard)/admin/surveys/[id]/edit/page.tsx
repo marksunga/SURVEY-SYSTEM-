@@ -17,6 +17,16 @@ interface EditSurveyPageProps {
   params: { id: string };
 }
 
+function toLocalDateTimeString(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const year = d.getFullYear();
+  const month = pad(d.getMonth() + 1);
+  const day = pad(d.getDate());
+  const hours = pad(d.getHours());
+  const minutes = pad(d.getMinutes());
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 export default function EditSurveyPage({ params }: EditSurveyPageProps) {
   const router = useRouter();
   const [survey, setSurvey] = useState<any>(null);
@@ -44,7 +54,7 @@ export default function EditSurveyPage({ params }: EditSurveyPageProps) {
           setStatus(data.survey.status);
           setTargetRoles(data.survey.target_roles || ['STUDENT']);
           setIsAnonymousAllowed(data.survey.is_anonymous_allowed);
-          setEndDate(data.survey.end_date ? data.survey.end_date.split('T')[0] : '');
+          setEndDate(data.survey.end_date ? toLocalDateTimeString(new Date(data.survey.end_date)) : '');
           setQuestions(
             (data.questions || []).map((q: any) => ({
               id: q.id,
@@ -185,9 +195,10 @@ export default function EditSurveyPage({ params }: EditSurveyPageProps) {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs">Expiration Date</Label>
+                <Label className="text-xs font-semibold text-slate-700">Due Date & Time (Deadline) *</Label>
                 <Input
-                  type="date"
+                  type="datetime-local"
+                  required
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   className="text-xs"
