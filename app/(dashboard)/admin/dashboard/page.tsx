@@ -12,7 +12,7 @@ import {
   ArrowRight,
   PlusCircle,
   BarChart3,
-  Sparkles,
+  ShieldCheck,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
@@ -35,32 +35,32 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header Banner */}
-      <div className="rounded-2xl bg-slate-900 p-6 sm:p-8 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-xs font-medium border border-blue-400/30">
-            <Sparkles className="h-3 w-3" />
+      {/* Header Banner - School Institutional Identity */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 sm:p-7 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#EAF2F8] text-[#2C5E7D] text-xs font-semibold border border-[#D1E3EC]">
+            <ShieldCheck className="h-3.5 w-3.5 text-[#4682A9]" />
             <span>Administrator Control Center</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A]">
             Administrator Dashboard
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-500 max-w-xl leading-relaxed">
             Manage students, create and schedule academic surveys, and moderate encrypted feedback
             under strict role isolation.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white text-xs shadow-sm min-h-[38px]">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <Button asChild size="sm" className="bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs font-semibold shadow-xs min-h-[38px]">
             <Link href="/admin/surveys/create">
               <PlusCircle className="h-4 w-4 mr-1.5" />
               Create Survey
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm" className="border-slate-700 bg-slate-800 text-white hover:bg-slate-700 text-xs min-h-[38px]">
+          <Button asChild variant="outline" size="sm" className="border-slate-300 bg-white text-[#0F172A] hover:bg-[#F3F5F7] text-xs font-semibold min-h-[38px]">
             <Link href="/admin/reports">
-              <BarChart3 className="h-4 w-4 mr-1.5 text-blue-400" />
+              <BarChart3 className="h-4 w-4 mr-1.5 text-[#4682A9]" />
               Analytics & Reports
             </Link>
           </Button>
@@ -101,17 +101,17 @@ export default async function AdminDashboardPage() {
 
       {/* Active Academic Surveys - Full Width Primary Section */}
       <div className="w-full space-y-6">
-        <Card className="border-slate-200 shadow-xs">
+        <Card className="border-slate-200 bg-white shadow-xs rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-slate-100">
             <div>
-              <CardTitle className="text-base sm:text-lg font-bold text-slate-900">
+              <CardTitle className="text-base sm:text-lg font-bold text-[#0F172A]">
                 Active Academic Surveys
               </CardTitle>
               <p className="text-xs text-slate-500 mt-0.5">
                 Surveys currently open for student submissions and evaluations
               </p>
             </div>
-            <Button asChild variant="ghost" size="sm" className="text-xs text-blue-600 hover:text-blue-700">
+            <Button asChild variant="ghost" size="sm" className="text-xs text-[#4682A9] hover:text-[#386B8C]">
               <Link href="/admin/surveys">
                 View All Surveys ({surveys.length})
                 <ArrowRight className="h-3.5 w-3.5 ml-1" />
@@ -129,17 +129,17 @@ export default async function AdminDashboardPage() {
                 .map((survey) => (
                   <div
                     key={survey.id}
-                    className="p-4 sm:p-5 rounded-xl border border-slate-200 bg-white hover:border-blue-400 hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    className="p-4 sm:p-5 rounded-xl border border-slate-200 bg-white hover:border-[#85B5D2] hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
                   >
                     <div className="space-y-1.5 min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-bold text-slate-900">
+                        <span className="text-sm font-bold text-[#0F172A]">
                           {survey.title}
                         </span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
                           ACTIVE
                         </span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#F3F5F7] text-slate-700 border border-slate-200">
                           {survey.category}
                         </span>
                       </div>
@@ -151,7 +151,7 @@ export default async function AdminDashboardPage() {
                       <div className="text-xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
                         <span className="font-medium text-slate-700">{survey.questions_count} Questions</span>
                         <span>•</span>
-                        <span className="font-semibold text-blue-600">
+                        <span className="font-semibold text-[#4682A9]">
                           {survey.responses_count} Responses
                         </span>
                         <span>•</span>
@@ -166,12 +166,12 @@ export default async function AdminDashboardPage() {
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-center">
-                      <Button asChild variant="outline" size="sm" className="h-9 px-3.5 text-xs border-slate-300 hover:bg-slate-50">
+                      <Button asChild variant="outline" size="sm" className="h-9 px-3.5 text-xs border-slate-300 hover:bg-[#F3F5F7]">
                         <Link href={`/admin/surveys/${survey.id}/results`}>
                           Results
                         </Link>
                       </Button>
-                      <Button asChild size="sm" className="h-9 px-3.5 text-xs bg-slate-900 hover:bg-slate-800 text-white">
+                      <Button asChild size="sm" className="h-9 px-3.5 text-xs bg-[#0F172A] hover:bg-[#1E293B] text-white">
                         <Link href={`/admin/surveys/${survey.id}/edit`}>
                           Edit
                         </Link>

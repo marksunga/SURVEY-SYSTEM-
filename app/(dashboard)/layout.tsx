@@ -19,7 +19,7 @@ export default async function DashboardLayout({
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-[#F3F5F7]">
       <AppSidebar user={user} unreadNotificationsCount={unreadCount} />
       <div className="flex-1 flex flex-col min-w-0">
         <AppHeader user={user} unreadCount={unreadCount} />

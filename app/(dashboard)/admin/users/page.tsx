@@ -166,22 +166,22 @@ export default function AdminUsersPage() {
 
         <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setError(null); }}>
           <DialogTrigger asChild>
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-500 text-white text-xs min-h-[40px] shadow-sm">
+            <Button size="sm" className="bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs min-h-[40px] shadow-xs">
               <UserPlus className="h-4 w-4 mr-1.5" />
               {activeTab === 'ADMINISTRATORS' ? 'Add Administrator' : 'Add Student'}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <DialogTitle className="text-base font-bold text-[#0F172A] flex items-center gap-2">
                 {activeTab === 'ADMINISTRATORS' ? (
                   <>
-                    <Shield className="h-5 w-5 text-blue-600" />
+                    <Shield className="h-5 w-5 text-[#4682A9]" />
                     <span>Create Administrator Account</span>
                   </>
                 ) : (
                   <>
-                    <GraduationCap className="h-5 w-5 text-emerald-600" />
+                    <GraduationCap className="h-5 w-5 text-[#4682A9]" />
                     <span>Create Student Account</span>
                   </>
                 )}
@@ -328,16 +328,16 @@ export default function AdminUsersPage() {
             }}
             className={`flex items-center gap-2.5 px-5 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all min-h-[46px] select-none ${
               activeTab === 'ADMINISTRATORS'
-                ? 'border-blue-600 text-blue-700 bg-blue-50/40 rounded-t-lg'
-                : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-t-lg'
+                ? 'border-[#4682A9] text-[#2C5E7D] bg-[#EAF2F8]/60 rounded-t-lg'
+                : 'border-transparent text-slate-500 hover:text-[#0F172A] hover:bg-[#F3F5F7] rounded-t-lg'
             }`}
           >
-            <Shield className={`h-4 w-4 ${activeTab === 'ADMINISTRATORS' ? 'text-blue-600' : 'text-slate-400'}`} />
+            <Shield className={`h-4 w-4 ${activeTab === 'ADMINISTRATORS' ? 'text-[#4682A9]' : 'text-slate-400'}`} />
             <span>Administrators</span>
             <span
               className={`px-2 py-0.5 rounded-full text-[11px] font-semibold transition-colors ${
                 activeTab === 'ADMINISTRATORS'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-[#4682A9] text-white'
                   : 'bg-slate-200 text-slate-700'
               }`}
             >
@@ -356,16 +356,16 @@ export default function AdminUsersPage() {
             }}
             className={`flex items-center gap-2.5 px-5 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all min-h-[46px] select-none ${
               activeTab === 'STUDENTS'
-                ? 'border-blue-600 text-blue-700 bg-blue-50/40 rounded-t-lg'
-                : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-t-lg'
+                ? 'border-[#4682A9] text-[#2C5E7D] bg-[#EAF2F8]/60 rounded-t-lg'
+                : 'border-transparent text-slate-500 hover:text-[#0F172A] hover:bg-[#F3F5F7] rounded-t-lg'
             }`}
           >
-            <GraduationCap className={`h-4 w-4 ${activeTab === 'STUDENTS' ? 'text-blue-600' : 'text-slate-400'}`} />
+            <GraduationCap className={`h-4 w-4 ${activeTab === 'STUDENTS' ? 'text-[#4682A9]' : 'text-slate-400'}`} />
             <span>Students</span>
             <span
               className={`px-2 py-0.5 rounded-full text-[11px] font-semibold transition-colors ${
                 activeTab === 'STUDENTS'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-[#4682A9] text-white'
                   : 'bg-slate-200 text-slate-700'
               }`}
             >

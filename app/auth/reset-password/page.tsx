@@ -132,10 +132,10 @@ function ResetPasswordForm() {
   }
 
   return (
-    <Card className="border-slate-200 bg-white shadow-sm overflow-hidden">
+    <Card className="border-slate-200 bg-white shadow-sm rounded-xl overflow-hidden">
       <CardHeader className="pb-4">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-[11px] font-semibold w-fit mb-1">
-          <ShieldCheck className="h-3.5 w-3.5 text-blue-600" />
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EAF2F8] border border-[#D1E3EC] text-[#2C5E7D] text-[11px] font-semibold w-fit mb-1">
+          <ShieldCheck className="h-3.5 w-3.5 text-[#4682A9]" />
           <span>Student Security & Recovery</span>
         </div>
         <CardTitle className="text-lg text-slate-900">
@@ -353,7 +353,7 @@ function ResetPasswordForm() {
             <Button
               type="submit"
               disabled={submitting || strengthScore < 100 || !criteria.matches}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold h-11 min-h-[44px] shadow-xs cursor-pointer disabled:opacity-50"
+              className="w-full bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs font-semibold h-11 min-h-[44px] shadow-xs cursor-pointer disabled:opacity-50"
             >
               {submitting ? 'Updating Credentials...' : 'Submit New Password'}
             </Button>
@@ -361,7 +361,7 @@ function ResetPasswordForm() {
             <div className="text-center pt-2">
               <Link
                 href="/student/login"
-                className="inline-flex items-center text-xs font-medium text-slate-500 hover:text-slate-800 min-h-[44px] px-2"
+                className="inline-flex items-center text-xs font-medium text-slate-500 hover:text-[#4682A9] min-h-[44px] px-2"
               >
                 <ArrowLeft className="h-3.5 w-3.5 mr-1" />
                 Back to Student Login
@@ -376,15 +376,15 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F3F5F7] text-[#0F172A] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <Link href="/" className="inline-flex items-center gap-2 mb-4">
-          <div className="h-11 w-11 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md">
+          <div className="h-11 w-11 rounded-xl bg-[#4682A9] text-white flex items-center justify-center shadow-xs">
             <GraduationCap className="h-6 w-6" />
           </div>
-          <span className="text-xl font-bold text-slate-900 tracking-tight">IT Dept Portal</span>
+          <span className="text-xl font-bold text-[#0F172A] tracking-tight">IT Dept Portal</span>
         </Link>
-        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+        <h1 className="text-2xl font-extrabold text-[#0F172A] tracking-tight">
           Reset Your Password
         </h1>
         <p className="mt-1 text-xs text-slate-500">

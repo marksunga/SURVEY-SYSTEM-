@@ -144,12 +144,12 @@ export default function FeedbackPage() {
         {/* Tab 1: Submit Feedback Form */}
         <TabsContent value="submit" className="space-y-6">
           {/* Security Callout */}
-          <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-blue-600 text-white mt-0.5">
+          <div className="p-4 rounded-xl bg-[#EAF2F8] border border-[#D1E3EC] flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-[#4682A9] text-white mt-0.5 shadow-xs">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div className="space-y-0.5 text-xs text-slate-700">
-              <span className="font-bold text-blue-900">Cryptographically Protected Feedback</span>
+              <span className="font-bold text-[#0F172A]">Cryptographically Protected Feedback</span>
               <p className="text-[11px] text-slate-600 leading-relaxed">
                 All submitted messages are automatically encrypted with AES-256-GCM before storage. 
                 When &quot;Anonymous Submission&quot; is selected, no user identifier is recorded in the feedback record.
@@ -284,7 +284,7 @@ export default function FeedbackPage() {
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold h-10 shadow-sm"
+                    className="w-full bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs font-semibold h-10 shadow-xs"
                   >
                     {submitting ? (
                       <span className="flex items-center gap-2">

@@ -87,7 +87,7 @@ export default function AdminSurveysPage() {
             <option value="DRAFT">Draft</option>
           </select>
 
-          <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white text-xs">
+          <Button asChild size="sm" className="bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs font-semibold shadow-xs">
             <Link href="/admin/surveys/create">
               <PlusCircle className="h-4 w-4 mr-1.5" />
               Create New Survey

@@ -78,30 +78,30 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
+    <div className="space-y-6">
+      {/* Header - School Institutional Identity */}
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-blue-100">
-          <Settings className="w-6 h-6 text-blue-600" />
+        <div className="p-2.5 rounded-lg bg-[#EAF2F8] border border-[#D1E3EC]">
+          <Settings className="w-6 h-6 text-[#4682A9]" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">System Settings</h1>
-          <p className="text-sm text-slate-500">Configure global system parameters and policies</p>
+          <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight">System Settings</h1>
+          <p className="text-xs sm:text-sm text-slate-500">Configure global system parameters and security policies</p>
         </div>
       </div>
 
       <Tabs defaultValue="general" className="space-y-4">
         <TabsList className="bg-white border border-slate-200">
-          <TabsTrigger value="general" className="gap-2">
+          <TabsTrigger value="general" className="gap-2 data-[state=active]:bg-[#EAF2F8] data-[state=active]:text-[#2C5E7D] data-[state=active]:font-semibold">
             <Globe className="w-4 h-4" /> General
           </TabsTrigger>
-          <TabsTrigger value="security" className="gap-2">
+          <TabsTrigger value="security" className="gap-2 data-[state=active]:bg-[#EAF2F8] data-[state=active]:text-[#2C5E7D] data-[state=active]:font-semibold">
             <Shield className="w-4 h-4" /> Security
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-2">
+          <TabsTrigger value="notifications" className="gap-2 data-[state=active]:bg-[#EAF2F8] data-[state=active]:text-[#2C5E7D] data-[state=active]:font-semibold">
             <Bell className="w-4 h-4" /> Notifications
           </TabsTrigger>
-          <TabsTrigger value="database" className="gap-2">
+          <TabsTrigger value="database" className="gap-2 data-[state=active]:bg-[#EAF2F8] data-[state=active]:text-[#2C5E7D] data-[state=active]:font-semibold">
             <Database className="w-4 h-4" /> Database
           </TabsTrigger>
         </TabsList>
@@ -182,11 +182,11 @@ export default function SettingsPage() {
               </div>
 
               <div className="flex justify-end">
-                <Button onClick={handleSaveGeneral} disabled={savingGeneral} className="gap-2">
+                <Button onClick={handleSaveGeneral} disabled={savingGeneral} className="gap-2 bg-[#4682A9] hover:bg-[#386B8C] text-white shadow-xs">
                   {savingGeneral ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : savedGeneral ? (
-                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-200" />
                   ) : (
                     <Save className="w-4 h-4" />
                   )}
@@ -321,7 +321,7 @@ export default function SettingsPage() {
                         }))
                       }
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                        notifSettings[item.key as keyof typeof notifSettings] ? 'bg-blue-600' : 'bg-slate-200'
+                        notifSettings[item.key as keyof typeof notifSettings] ? 'bg-[#4682A9]' : 'bg-slate-200'
                       }`}
                     >
                       <span
@@ -368,11 +368,11 @@ export default function SettingsPage() {
               </div>
 
               <div className="flex justify-end">
-                <Button onClick={handleSaveNotifications} disabled={savingNotif} className="gap-2">
+                <Button onClick={handleSaveNotifications} disabled={savingNotif} className="gap-2 bg-[#4682A9] hover:bg-[#386B8C] text-white shadow-xs">
                   {savingNotif ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : savedNotif ? (
-                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-200" />
                   ) : (
                     <Save className="w-4 h-4" />
                   )}

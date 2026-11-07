@@ -40,7 +40,7 @@ export default async function AdminQRCodesPage() {
 
         <Button asChild size="sm" variant="outline" className="text-xs">
           <Link href="/scan">
-            <QrCode className="h-4 w-4 mr-1.5 text-blue-600" />
+            <QrCode className="h-4 w-4 mr-1.5 text-[#4682A9]" />
             Launch Scanner Test
           </Link>
         </Button>
@@ -55,7 +55,7 @@ export default async function AdminQRCodesPage() {
               </span>
               <Link
                 href={`/surveys/${survey.id}`}
-                className="text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1"
+                className="text-xs font-semibold text-[#4682A9] hover:underline flex items-center gap-1"
               >
                 Survey <ArrowRight className="h-3 w-3" />
               </Link>

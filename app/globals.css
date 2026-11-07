@@ -4,35 +4,35 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;      /* #F8FAFC */
-    --foreground: 222 47% 11%;      /* #0F172A */
+    --background: 210 14% 96.5%;     /* #F3F5F7 Clean Light Gray */
+    --foreground: 222 47% 11%;      /* #0F172A Dark Navy */
 
-    --card: 0 0% 100%;             /* #FFFFFF */
-    --card-foreground: 222 47% 11%;
+    --card: 0 0% 100%;             /* #FFFFFF Pure White Cards */
+    --card-foreground: 222 47% 11%; /* Dark Navy Text */
 
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 217 91% 60%;         /* #2563EB Royal Blue */
-    --primary-foreground: 210 40% 98%;
+    --primary: 204 42% 47%;         /* #4682A9 Pacific Blue */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 214 32% 91%;       /* #E2E8F0 Soft Slate */
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 207 43% 95%;       /* #EAF2F8 Soft Pacific Blue Tint */
+    --secondary-foreground: 204 42% 30%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 14% 94%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 199 89% 48%;          /* #0284C7 Deep Sky */
+    --accent: 204 42% 47%;          /* #4682A9 Pacific Blue */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 217 91% 60%;
+    --border: 214 28% 90%;          /* Subtle Slate Border #E2E8F0 */
+    --input: 214 28% 90%;
+    --ring: 204 42% 47%;            /* #4682A9 Pacific Blue Ring */
 
-    --radius: 0.5rem;
+    --radius: 0.625rem;             /* 10px Soft Rounded Corners */
   }
 
   .dark {

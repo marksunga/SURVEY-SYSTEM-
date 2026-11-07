@@ -69,15 +69,15 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
   const navItems = isAdmin ? adminNavItems : studentNavItems;
 
   return (
-    <aside className="hidden md:flex w-64 border-r border-slate-200 bg-white flex-col h-screen sticky top-0 z-30 select-none">
-      {/* Brand Header */}
-      <div className="h-16 border-b border-slate-200 flex items-center px-4 gap-3 bg-slate-900 text-white">
-        <div className="h-9 w-9 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-sm flex-shrink-0">
+    <aside className="hidden md:flex w-64 border-r border-slate-200 bg-white flex-col h-screen sticky top-0 z-30 select-none shadow-xs">
+      {/* Brand Header - Academic School Identity */}
+      <div className="h-16 border-b border-slate-200 flex items-center px-4 gap-3 bg-white text-[#0F172A]">
+        <div className="h-9 w-9 rounded-lg bg-[#4682A9] flex items-center justify-center text-white shadow-xs flex-shrink-0">
           <GraduationCap className="h-5 w-5" />
         </div>
         <div className="leading-tight overflow-hidden">
-          <div className="text-sm font-bold truncate">IT Dept Portal</div>
-          <div className="text-[11px] text-slate-300 truncate">
+          <div className="text-sm font-bold text-[#0F172A] tracking-tight truncate">IT Dept Portal</div>
+          <div className="text-[11px] font-medium text-slate-500 truncate">
             {isAdmin ? 'Administrator Portal' : 'Student Portal'}
           </div>
         </div>
@@ -86,23 +86,27 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
       {/* Profile snippet - Clickable navigation to respective My Profile */}
       <Link
         href={isAdmin ? '/admin/profile' : '/profile'}
-        className="p-3 border-b border-slate-100 bg-slate-50/60 hover:bg-slate-100/90 transition-colors flex items-center gap-3 cursor-pointer group"
+        className="p-3 border-b border-slate-200/70 bg-[#F3F5F7]/80 hover:bg-[#EAF2F8]/70 transition-colors flex items-center gap-3 cursor-pointer group"
         title="View My Profile"
       >
         <div
           className={`h-9 w-9 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 group-hover:scale-105 transition-transform ${
-            isAdmin ? 'bg-slate-900 text-white' : 'bg-blue-100 text-blue-700'
+            isAdmin
+              ? 'bg-[#0F172A] text-white'
+              : 'bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]'
           }`}
         >
           {user.full_name.slice(0, 2)}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold text-slate-800 truncate group-hover:text-blue-600 transition-colors">
+          <p className="text-xs font-semibold text-[#0F172A] truncate group-hover:text-[#4682A9] transition-colors">
             {user.full_name}
           </p>
           <span
             className={`inline-block mt-0.5 px-1.5 py-0.2 text-[10px] font-bold rounded uppercase tracking-wide ${
-              isAdmin ? 'bg-slate-900 text-white' : 'bg-blue-100 text-blue-800'
+              isAdmin
+                ? 'bg-[#0F172A] text-white'
+                : 'bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]'
             }`}
           >
             {user.role_id}
@@ -130,12 +134,12 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
                   href={item.href}
                   className={`flex items-center justify-between px-2.5 py-2 rounded-md text-xs font-medium transition-colors ${
                     active
-                      ? 'bg-blue-50 text-blue-700 font-semibold shadow-xs'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
+                      : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`h-4 w-4 ${active ? 'text-blue-600' : 'text-slate-400'}`} />
+                    <Icon className={`h-4 w-4 ${active ? 'text-[#4682A9]' : 'text-slate-400'}`} />
                     <span>{item.label}</span>
                   </div>
                   {item.badge && (
@@ -151,7 +155,7 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
       </div>
 
       {/* Footer / Logout */}
-      <div className="p-3 border-t border-slate-200 bg-slate-50">
+      <div className="p-3 border-t border-slate-200 bg-[#F3F5F7]/50">
         <form action={logoutAction}>
           <button
             type="submit"

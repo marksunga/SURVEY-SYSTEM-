@@ -45,15 +45,15 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F3F5F7] text-[#0F172A] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <Link href="/" className="inline-flex items-center gap-2 mb-4">
-          <div className="h-11 w-11 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md">
+          <div className="h-11 w-11 rounded-xl bg-[#4682A9] text-white flex items-center justify-center shadow-xs">
             <GraduationCap className="h-6 w-6" />
           </div>
-          <span className="text-xl font-bold text-slate-900 tracking-tight">IT Dept Portal</span>
+          <span className="text-xl font-bold text-[#0F172A] tracking-tight">IT Dept Portal</span>
         </Link>
-        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+        <h1 className="text-2xl font-extrabold text-[#0F172A] tracking-tight">
           Student Account Recovery
         </h1>
         <p className="mt-1 text-xs text-slate-500">
@@ -62,13 +62,13 @@ export default function ForgotPasswordPage() {
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
-        <Card className="border-slate-200 bg-white shadow-sm overflow-hidden">
+        <Card className="border-slate-200 bg-white shadow-sm rounded-xl overflow-hidden">
           <CardHeader className="pb-3 pt-6">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold w-fit mb-1 border bg-blue-50 text-blue-700 border-blue-200">
-              <GraduationCap className="h-3.5 w-3.5 text-blue-600" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold w-fit mb-1 border bg-[#EAF2F8] text-[#2C5E7D] border-[#D1E3EC]">
+              <GraduationCap className="h-3.5 w-3.5 text-[#4682A9]" />
               <span>Student Self-Service Recovery</span>
             </div>
-            <CardTitle className="text-base text-slate-900">
+            <CardTitle className="text-base text-[#0F172A]">
               Reset Student Password
             </CardTitle>
             <CardDescription className="text-xs text-slate-500">
@@ -83,13 +83,13 @@ export default function ForgotPasswordPage() {
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
                 <div className="space-y-1.5">
-                  <h3 className="text-base font-bold text-slate-900">Recovery Email Dispatched</h3>
+                  <h3 className="text-base font-bold text-[#0F172A]">Recovery Email Dispatched</h3>
                   <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">{message}</p>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-left space-y-2 mt-4 text-xs">
-                  <div className="flex items-center gap-1.5 font-bold text-slate-900">
-                    <Lock className="h-4 w-4 text-blue-600" />
+                <div className="p-3.5 rounded-xl bg-[#F3F5F7] border border-slate-200 text-left space-y-2 mt-4 text-xs">
+                  <div className="flex items-center gap-1.5 font-bold text-[#0F172A]">
+                    <Lock className="h-4 w-4 text-[#4682A9]" />
                     <span>Email Verification Enforced</span>
                   </div>
                   <p className="text-[11px] text-slate-600 leading-relaxed">
@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 <div className="pt-4 flex flex-col gap-2">
-                  <Button asChild className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs h-11 min-h-[44px] font-semibold cursor-pointer shadow-xs">
+                  <Button asChild className="w-full bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs h-11 min-h-[44px] font-semibold cursor-pointer shadow-xs">
                     <Link href="/student/login">Back to Student Login</Link>
                   </Button>
                   <Button
@@ -109,7 +109,7 @@ export default function ForgotPasswordPage() {
                       setSubmitted(false);
                       setError(null);
                     }}
-                    className="text-xs text-slate-500 min-h-[44px] cursor-pointer"
+                    className="text-xs text-slate-500 hover:text-[#0F172A] min-h-[44px] cursor-pointer"
                   >
                     Resend or enter another email
                   </Button>
@@ -145,10 +145,10 @@ export default function ForgotPasswordPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="student@itdept.edu"
-                      className="pl-9 text-xs h-11 border-slate-300 focus-visible:ring-blue-500"
+                      className="pl-9 text-xs h-11 border-slate-300 focus-visible:ring-[#4682A9]"
                     />
                   </div>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500">
                     Self-service recovery is exclusively available for enrolled student accounts.
                   </p>
                 </div>
@@ -156,7 +156,7 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold h-11 min-h-[44px] shadow-xs cursor-pointer"
+                  className="w-full bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs font-semibold h-11 min-h-[44px] shadow-xs cursor-pointer"
                 >
                   {loading ? 'Validating & Dispatching...' : 'Send Password Recovery Email'}
                 </Button>
@@ -164,7 +164,7 @@ export default function ForgotPasswordPage() {
                 <div className="pt-3 border-t border-slate-100 text-center">
                   <Link
                     href="/student/login"
-                    className="inline-flex items-center text-xs text-slate-500 hover:text-slate-800 font-medium min-h-[44px] px-2"
+                    className="inline-flex items-center text-xs text-slate-600 hover:text-[#4682A9] font-medium min-h-[44px] px-2"
                   >
                     <ArrowLeft className="h-3.5 w-3.5 mr-1" />
                     Back to Student Login

@@ -123,7 +123,7 @@ export default function AdminReportsPage() {
               type="button"
               size="sm"
               onClick={() => generateSurveyPDF(reportData.survey, reportData)}
-              className="bg-blue-600 hover:bg-blue-500 text-white text-xs"
+              className="bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs shadow-xs font-semibold"
             >
               <FileText className="h-3.5 w-3.5 mr-1.5" />
               Download PDF Report
@@ -133,12 +133,12 @@ export default function AdminReportsPage() {
       </div>
 
       {/* Filtering Toolbar */}
-      <Card className="border-slate-200">
+      <Card className="border-slate-200 bg-white shadow-xs rounded-xl">
         <CardContent className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Survey Selector */}
           <div className="sm:col-span-1 space-y-1">
             <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
-              <Filter className="h-3 w-3 text-blue-600" />
+              <Filter className="h-3 w-3 text-[#4682A9]" />
               <span>Select Survey:</span>
             </label>
             <select

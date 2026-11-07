@@ -181,8 +181,8 @@ export default function AdminNotificationsPage() {
         <TabsContent value="compose">
           <Card className="border-slate-200 shadow-sm">
             <CardHeader className="p-6">
-              <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Radio className="h-4 w-4 text-blue-600" />
+              <CardTitle className="text-base font-bold text-[#0F172A] flex items-center gap-2">
+                <Radio className="h-4 w-4 text-[#4682A9]" />
                 <span>Compose Institutional Broadcast</span>
               </CardTitle>
             </CardHeader>
@@ -254,7 +254,7 @@ export default function AdminNotificationsPage() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold h-10"
+                  className="w-full bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs font-semibold h-10 shadow-xs"
                 >
                   {loading ? (
                     'Dispatching...'

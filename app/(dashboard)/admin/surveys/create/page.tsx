@@ -271,7 +271,7 @@ export default function CreateSurveyPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-6 h-10 shadow-sm"
+            className="bg-[#4682A9] hover:bg-[#386B8C] text-white font-semibold text-xs px-6 h-10 shadow-xs"
           >
             {loading ? 'Creating Survey...' : 'Publish Survey & Generate QR'}
           </Button>

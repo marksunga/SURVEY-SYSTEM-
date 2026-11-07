@@ -27,31 +27,31 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F3F5F7] text-[#0F172A] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <Link href="/" className="inline-flex items-center gap-2 mb-4">
-          <div className="h-11 w-11 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <div className="h-11 w-11 rounded-xl bg-[#4682A9] text-white flex items-center justify-center shadow-xs">
             <ShieldCheck className="h-6 w-6" />
           </div>
-          <span className="text-xl font-bold text-white tracking-tight">IT Dept Portal</span>
+          <span className="text-xl font-bold text-[#0F172A] tracking-tight">IT Dept Portal</span>
         </Link>
-        <h1 className="text-2xl font-extrabold text-white tracking-tight">
+        <h1 className="text-2xl font-extrabold text-[#0F172A] tracking-tight">
           Administrator Authentication
         </h1>
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-slate-500">
           Authorized IT Department personnel and system administrators only.
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <Card className="border-slate-800 bg-slate-900/90 shadow-xl backdrop-blur">
+        <Card className="border-slate-200 bg-white shadow-sm rounded-xl">
           <CardHeader className="pb-4">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-950/80 border border-blue-800/60 text-blue-300 text-[11px] font-semibold w-fit mb-1">
-              <ShieldAlert className="h-3.5 w-3.5 text-blue-400" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EAF2F8] border border-[#D1E3EC] text-[#2C5E7D] text-[11px] font-semibold w-fit mb-1">
+              <ShieldAlert className="h-3.5 w-3.5 text-[#4682A9]" />
               <span>Strict Role-Restricted Portal</span>
             </div>
-            <CardTitle className="text-lg text-white">Sign In to Admin Dashboard</CardTitle>
-            <CardDescription className="text-xs text-slate-400">
+            <CardTitle className="text-lg text-[#0F172A]">Sign In to Admin Dashboard</CardTitle>
+            <CardDescription className="text-xs text-slate-500">
               Only provisioned administrator credentials will be granted access.
             </CardDescription>
           </CardHeader>
@@ -59,16 +59,16 @@ export default function AdminLoginPage() {
             {error && (
               <div
                 role="alert"
-                className="p-3.5 rounded-lg bg-rose-950/80 border border-rose-800 text-rose-200 text-xs flex items-start gap-2.5 animate-in fade-in"
+                className="p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5 animate-in fade-in"
               >
-                <AlertCircle className="h-4 w-4 flex-shrink-0 text-rose-400 mt-0.5" />
+                <AlertCircle className="h-4 w-4 flex-shrink-0 text-rose-600 mt-0.5" />
                 <span className="leading-relaxed">{error}</span>
               </div>
             )}
 
             <form action={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="admin-email" className="text-xs text-slate-200 font-medium">
+                <Label htmlFor="admin-email" className="text-xs text-slate-700 font-semibold">
                   Administrator Email
                 </Label>
                 <div className="relative">
@@ -81,14 +81,14 @@ export default function AdminLoginPage() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-9 text-xs bg-slate-950 border-slate-700 text-white placeholder:text-slate-500 focus-visible:ring-blue-500 h-10"
+                    className="pl-9 text-xs bg-white border-slate-300 text-[#0F172A] placeholder:text-slate-400 focus-visible:ring-[#4682A9] h-10"
                     placeholder="admin@itdept.edu"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="admin-password" className="text-xs text-slate-200 font-medium">
+                <Label htmlFor="admin-password" className="text-xs text-slate-700 font-semibold">
                   Administrator Password
                 </Label>
                 <div className="relative">
@@ -101,14 +101,14 @@ export default function AdminLoginPage() {
                     autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-9 pr-10 text-xs bg-slate-950 border-slate-700 text-white placeholder:text-slate-500 focus-visible:ring-blue-500 h-10"
+                    className="pl-9 pr-10 text-xs bg-white border-slate-300 text-[#0F172A] placeholder:text-slate-400 focus-visible:ring-[#4682A9] h-10"
                     placeholder="••••••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className="absolute right-2 top-2 p-1.5 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center"
+                    className="absolute right-2 top-2 p-1.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -118,20 +118,20 @@ export default function AdminLoginPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold h-11 min-h-[44px] cursor-pointer shadow-md transition-all"
+                className="w-full bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs font-semibold h-11 min-h-[44px] cursor-pointer shadow-xs transition-all"
               >
                 {loading ? 'Authenticating...' : 'Sign In as Administrator'}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </form>
 
-            <div className="pt-4 border-t border-slate-800 text-center space-y-2">
-              <p className="text-xs text-slate-400">
+            <div className="pt-4 border-t border-slate-100 text-center space-y-2">
+              <p className="text-xs text-slate-500">
                 Are you a student looking to submit surveys or feedback?
               </p>
               <Link
                 href="/student/login"
-                className="inline-flex items-center justify-center text-xs font-semibold text-blue-400 hover:text-blue-300 hover:underline min-h-[44px] px-2"
+                className="inline-flex items-center justify-center text-xs font-semibold text-[#4682A9] hover:text-[#386B8C] hover:underline min-h-[44px] px-2"
               >
                 Access Student Portal →
               </Link>

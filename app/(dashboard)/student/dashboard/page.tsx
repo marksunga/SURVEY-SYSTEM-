@@ -12,7 +12,7 @@ import {
   MessageSquarePlus,
   QrCode,
   ArrowRight,
-  Sparkles,
+  GraduationCap,
   ShieldCheck,
 } from 'lucide-react';
 import { formatDate, formatDateTime } from '@/lib/utils';
@@ -41,31 +41,31 @@ export default async function StudentDashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Welcome Banner */}
-      <div className="rounded-2xl bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 p-6 sm:p-8 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold backdrop-blur-xs">
-            <Sparkles className="h-3.5 w-3.5 text-blue-200" />
+      {/* Welcome Banner - School Institutional Identity */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 sm:p-7 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#EAF2F8] text-[#2C5E7D] text-xs font-semibold border border-[#D1E3EC]">
+            <GraduationCap className="h-3.5 w-3.5 text-[#4682A9]" />
             <span>Student Academic Portal</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A]">
             Welcome back, {user.full_name}
           </h1>
-          <p className="text-xs sm:text-sm text-blue-100 max-w-xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-500 max-w-xl leading-relaxed">
             Your voice directly influences IT curriculum pacing, laboratory hardware upgrades, and student support services.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 shrink-0">
-          <Button asChild size="sm" className="bg-white text-blue-700 hover:bg-blue-50 text-xs font-semibold shadow-sm min-h-[40px] px-4 cursor-pointer">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <Button asChild size="sm" className="bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs font-semibold shadow-xs min-h-[38px] px-4 cursor-pointer">
             <Link href="/scan" className="flex items-center gap-1.5">
-              <QrCode className="h-4 w-4 text-blue-600" />
+              <QrCode className="h-4 w-4" />
               <span>Scan Survey QR</span>
             </Link>
           </Button>
-          <Button asChild size="sm" className="bg-blue-900/40 border border-white/30 text-white hover:bg-blue-900/60 hover:border-white/50 text-xs font-semibold backdrop-blur-sm min-h-[40px] px-4 shadow-sm transition-all cursor-pointer">
+          <Button asChild variant="outline" size="sm" className="border-slate-300 bg-white text-[#0F172A] hover:bg-[#F3F5F7] text-xs font-semibold min-h-[38px] px-4 shadow-xs transition-all cursor-pointer">
             <Link href="/feedback" className="flex items-center gap-1.5">
-              <MessageSquarePlus className="h-4 w-4 text-blue-200" />
+              <MessageSquarePlus className="h-4 w-4 text-[#4682A9]" />
               <span>Submit Feedback</span>
             </Link>
           </Button>
@@ -106,17 +106,17 @@ export default async function StudentDashboardPage() {
 
       {/* Currently Active Surveys - Full Width Primary Section */}
       <div className="w-full space-y-6">
-        <Card className="border-slate-200 shadow-xs">
+        <Card className="border-slate-200 bg-white shadow-xs rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-slate-100">
             <div>
-              <CardTitle className="text-base sm:text-lg font-bold text-slate-900">
+              <CardTitle className="text-base sm:text-lg font-bold text-[#0F172A]">
                 Currently Active Surveys
               </CardTitle>
               <p className="text-xs text-slate-500 mt-0.5">
                 Live evaluations currently accepting student responses.
               </p>
             </div>
-            <Button asChild variant="ghost" size="sm" className="text-xs text-blue-600 hover:text-blue-700">
+            <Button asChild variant="ghost" size="sm" className="text-xs text-[#4682A9] hover:text-[#386B8C]">
               <Link href="/surveys">
                 View All ({activeSurveys.length})
                 <ArrowRight className="h-3.5 w-3.5 ml-1" />
@@ -125,9 +125,9 @@ export default async function StudentDashboardPage() {
           </CardHeader>
           <CardContent className="pt-4 space-y-3">
             {pendingSurveys.length === 0 ? (
-              <div className="text-center py-12 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+              <div className="text-center py-12 bg-[#F3F5F7]/50 rounded-xl border border-dashed border-slate-200">
                 <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto mb-2.5" />
-                <p className="text-sm font-bold text-slate-800">You are completely up to date!</p>
+                <p className="text-sm font-bold text-[#0F172A]">You are completely up to date!</p>
                 <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
                   You have answered all currently active department surveys. Check back soon for new evaluations.
                 </p>
@@ -136,11 +136,11 @@ export default async function StudentDashboardPage() {
               pendingSurveys.map((survey) => (
                 <div
                   key={survey.id}
-                  className="p-4 sm:p-5 rounded-xl border border-slate-200 bg-white hover:border-blue-400 hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  className="p-4 sm:p-5 rounded-xl border border-slate-200 bg-white hover:border-[#85B5D2] hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
                   <div className="space-y-1.5 flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 uppercase border border-blue-100">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#EAF2F8] text-[#2C5E7D] uppercase border border-[#D1E3EC]">
                         {survey.category.replace('_', ' ')}
                       </span>
                       {survey.is_anonymous_allowed && (
@@ -150,7 +150,7 @@ export default async function StudentDashboardPage() {
                         </span>
                       )}
                     </div>
-                    <h2 className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
+                    <h2 className="text-sm sm:text-base font-bold text-[#0F172A] leading-snug">
                       {survey.title}
                     </h2>
                     <p className="text-xs text-slate-600 line-clamp-2">
@@ -166,7 +166,7 @@ export default async function StudentDashboardPage() {
                   </div>
 
                   <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-center w-full sm:w-auto">
-                    <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white text-xs flex-shrink-0 min-h-[38px] w-full sm:w-auto px-4 shadow-xs">
+                    <Button asChild size="sm" className="bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs flex-shrink-0 min-h-[38px] w-full sm:w-auto px-4 shadow-xs">
                       <Link href={`/surveys/${survey.id}`}>
                         Take Survey
                         <ArrowRight className="h-3.5 w-3.5 ml-1.5" />

@@ -52,7 +52,7 @@ export default async function AvailableSurveysPage({
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm" className="text-xs">
             <Link href="/scan">
-              <QrCode className="h-4 w-4 mr-1.5 text-blue-600" />
+              <QrCode className="h-4 w-4 mr-1.5 text-[#4682A9]" />
               Scan QR Code
             </Link>
           </Button>
@@ -156,7 +156,7 @@ export default async function AvailableSurveysPage({
                           Submitted
                         </Button>
                       ) : (
-                        <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white text-xs">
+                        <Button asChild size="sm" className="bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs shadow-xs font-semibold">
                           <Link href={`/surveys/${survey.id}`}>
                             Take Survey
                             <ArrowRight className="h-3.5 w-3.5 ml-1" />

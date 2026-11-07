@@ -62,23 +62,23 @@ export function ProfileClient({ user }: { user: Profile }) {
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Title */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">User Profile & Account</h1>
+        <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight">User Profile & Account</h1>
         <p className="text-xs text-slate-500">
           Manage your personal details, institutional identifiers, and security credentials.
         </p>
       </div>
 
       {/* Account Overview Header */}
-      <Card className="border-slate-200">
+      <Card className="border-slate-200 bg-white shadow-xs rounded-xl">
         <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl font-bold shadow-md">
+            <div className={`h-16 w-16 rounded-full ${user.role_id === 'ADMINISTRATOR' ? 'bg-[#0F172A]' : 'bg-[#4682A9]'} text-white flex items-center justify-center text-xl font-bold shadow-xs`}>
               {user.full_name.slice(0, 2).toUpperCase()}
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-slate-900">{user.full_name}</h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 uppercase">
+                <h2 className="text-lg font-bold text-[#0F172A]">{user.full_name}</h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC] uppercase">
                   {user.role_id.replace('_', ' ')}
                 </span>
               </div>
@@ -93,10 +93,10 @@ export function ProfileClient({ user }: { user: Profile }) {
       </Card>
 
       {/* Profile Details Form */}
-      <Card className="border-slate-200">
+      <Card className="border-slate-200 bg-white shadow-xs rounded-xl">
         <CardHeader className="p-6">
-          <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <User className="h-4 w-4 text-blue-600" />
+          <CardTitle className="text-base font-bold text-[#0F172A] flex items-center gap-2">
+            <User className="h-4 w-4 text-[#4682A9]" />
             <span>Profile Details</span>
           </CardTitle>
           <CardDescription className="text-xs text-slate-500">
@@ -128,7 +128,7 @@ export function ProfileClient({ user }: { user: Profile }) {
                   name="fullName"
                   defaultValue={user.full_name}
                   required
-                  className="text-xs"
+                  className="text-xs focus-visible:ring-[#4682A9]"
                 />
               </div>
 
@@ -138,7 +138,7 @@ export function ProfileClient({ user }: { user: Profile }) {
                   id="email"
                   value={user.email}
                   disabled
-                  className="text-xs bg-slate-50 text-slate-500 cursor-not-allowed"
+                  className="text-xs bg-[#F3F5F7] text-slate-500 cursor-not-allowed"
                 />
               </div>
 
@@ -148,7 +148,7 @@ export function ProfileClient({ user }: { user: Profile }) {
                   id="department"
                   name="department"
                   defaultValue={user.department}
-                  className="text-xs"
+                  className="text-xs focus-visible:ring-[#4682A9]"
                 />
               </div>
 
@@ -158,7 +158,7 @@ export function ProfileClient({ user }: { user: Profile }) {
                   id="idNumber"
                   name="idNumber"
                   defaultValue={user.id_number || ''}
-                  className="text-xs"
+                  className="text-xs focus-visible:ring-[#4682A9]"
                 />
               </div>
             </div>
@@ -167,7 +167,7 @@ export function ProfileClient({ user }: { user: Profile }) {
               type="submit"
               size="sm"
               disabled={profileSaving}
-              className="bg-blue-600 hover:bg-blue-500 text-white text-xs"
+              className="bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs font-semibold shadow-xs"
             >
               {profileSaving ? (
                 'Saving...'
@@ -183,10 +183,10 @@ export function ProfileClient({ user }: { user: Profile }) {
       </Card>
 
       {/* Security Credentials Card */}
-      <Card className="border-slate-200">
+      <Card className="border-slate-200 bg-white shadow-xs rounded-xl">
         <CardHeader className="p-6">
-          <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <KeyRound className="h-4 w-4 text-slate-700" />
+          <CardTitle className="text-base font-bold text-[#0F172A] flex items-center gap-2">
+            <KeyRound className="h-4 w-4 text-[#4682A9]" />
             <span>Password & Security</span>
           </CardTitle>
           <CardDescription className="text-xs text-slate-500">
@@ -219,7 +219,7 @@ export function ProfileClient({ user }: { user: Profile }) {
                   type="password"
                   required
                   placeholder="At least 6 characters"
-                  className="text-xs"
+                  className="text-xs focus-visible:ring-[#4682A9]"
                 />
               </div>
 
@@ -231,7 +231,7 @@ export function ProfileClient({ user }: { user: Profile }) {
                   type="password"
                   required
                   placeholder="Re-enter new password"
-                  className="text-xs"
+                  className="text-xs focus-visible:ring-[#4682A9]"
                 />
               </div>
             </div>
@@ -241,7 +241,7 @@ export function ProfileClient({ user }: { user: Profile }) {
               size="sm"
               variant="outline"
               disabled={passwordSaving}
-              className="text-xs"
+              className="text-xs border-slate-300 text-[#0F172A] hover:bg-[#F3F5F7] font-semibold"
             >
               {passwordSaving ? 'Updating Password...' : 'Update Password'}
             </Button>
