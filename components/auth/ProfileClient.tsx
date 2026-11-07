@@ -251,3 +251,4 @@ export function ProfileClient({ user }: { user: Profile }) {
     </div>
   );
 }
+

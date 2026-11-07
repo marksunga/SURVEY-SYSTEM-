@@ -280,20 +280,20 @@ export default function SurveyTakingPage({ params }: SurveyTakingPageProps) {
       </Card>
 
       {/* Progress Bar */}
-      <div className="space-y-1.5 px-1">
+      <div className="space-y-1.5 px-1" role="region" aria-label="Survey completion progress">
         <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
           <span>Completion Progress</span>
           <span>
             {answeredCount} of {questions.length} answered ({progressPercent}%)
           </span>
         </div>
-        <Progress value={progressPercent} className="h-2" />
+        <Progress value={progressPercent} aria-label="Survey completion percentage" className="h-2" />
       </div>
 
       {/* Questions Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {error && (
-          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+          <div role="alert" aria-live="polite" className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
             <span>{error}</span>
           </div>

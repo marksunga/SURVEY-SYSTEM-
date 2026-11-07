@@ -159,15 +159,14 @@ export default function AdminFeedbackPage() {
 
                     <td className="p-3.5">
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                          f.status === 'RESOLVED'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : f.status === 'UNDER_REVIEW'
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${f.status === 'RESOLVED'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : f.status === 'UNDER_REVIEW'
                             ? 'bg-blue-100 text-blue-800'
                             : f.status === 'PENDING'
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-rose-100 text-rose-800'
-                        }`}
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-rose-100 text-rose-800'
+                          }`}
                       >
                         {f.status.replace('_', ' ')}
                       </span>

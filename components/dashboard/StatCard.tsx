@@ -51,7 +51,7 @@ export function StatCard({
             </div>
           )}
         </div>
-        <div className={`p-2.5 rounded-lg ${c.bg} ${c.text} ${c.border} border`}>
+        <div className={`p-2.5 rounded-lg ${c.bg} ${c.text} ${c.border} border`} aria-hidden="true">
           <Icon className="h-5 w-5" />
         </div>
       </CardContent>
