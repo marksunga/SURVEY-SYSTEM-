@@ -142,7 +142,7 @@ export default function StudentLoginPage() {
                   href="/admin/login"
                   className="text-xs font-semibold text-slate-800 hover:text-blue-600 hover:underline inline-flex items-center min-h-[44px] py-2 px-1"
                 >
-                  Go to Admin Login →
+                  Department Administrator Access →
                 </Link>
               </div>
             </div>
@@ -152,3 +152,4 @@ export default function StudentLoginPage() {
     </div>
   );
 }
+

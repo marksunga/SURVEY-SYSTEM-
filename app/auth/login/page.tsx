@@ -45,7 +45,7 @@ export default function AuthLoginPage() {
             </div>
             <Button asChild className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold w-full sm:w-auto flex-shrink-0 min-h-[44px]">
               <Link href="/student/login">
-                Student Login
+                Enter Student Portal
                 <ArrowRight className="h-4 w-4 ml-1.5" />
               </Link>
             </Button>
@@ -73,7 +73,7 @@ export default function AuthLoginPage() {
             </div>
             <Button asChild variant="outline" className="border-slate-700 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold w-full sm:w-auto flex-shrink-0 min-h-[44px]">
               <Link href="/admin/login">
-                Admin Login
+                Enter Admin Portal
                 <ArrowRight className="h-4 w-4 ml-1.5" />
               </Link>
             </Button>

@@ -68,3 +68,4 @@ DROP POLICY IF EXISTS "Admins can read audit logs" ON public.audit_logs;
 CREATE POLICY "Admins can read audit logs"
     ON public.audit_logs FOR SELECT
     USING (public.get_current_role() = 'ADMINISTRATOR');
+

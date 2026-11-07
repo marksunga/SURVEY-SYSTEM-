@@ -115,8 +115,8 @@ export default async function StudentDashboardPage() {
           <Card className="border-slate-200">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
-                <CardTitle className="text-base text-slate-900">Surveys Ready For You</CardTitle>
-                <p className="text-xs text-slate-500 mt-0.5">Active evaluations open for your participation</p>
+                <CardTitle className="text-base text-slate-900">Currently Active Surveys</CardTitle>
+                <p className="text-xs text-slate-500 mt-0.5">Live evaluations currently accepting student responses.</p>
               </div>
               <Button asChild variant="ghost" size="sm" className="text-xs text-blue-600">
                 <Link href="/surveys">
@@ -155,7 +155,7 @@ export default async function StudentDashboardPage() {
                       <h2 className="text-sm font-bold text-slate-900 leading-snug">{survey.title}</h2>
                       <p className="text-xs text-slate-500 line-clamp-2">{survey.description}</p>
                       <div className="text-[11px] text-slate-400 pt-0.5">
-                        {survey.questions_count} questions • Deadline: {formatDate(survey.end_date)}
+                        {survey.questions_count} questions • {survey.responses_count} submitted • Deadline: {formatDate(survey.end_date)}
                       </div>
                     </div>
 
