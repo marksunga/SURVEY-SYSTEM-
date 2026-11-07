@@ -8,17 +8,11 @@ import {
   Users,
   ClipboardList,
   CheckCircle2,
-  Clock,
   MessageSquare,
   ArrowRight,
   PlusCircle,
-  FileText,
   BarChart3,
-  QrCode,
   Sparkles,
-  Settings,
-  Bell,
-  Database,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
@@ -103,118 +97,6 @@ export default async function AdminDashboardPage() {
           icon={MessageSquare}
           color="amber"
         />
-      </div>
-
-      {/* Quick Administrative Management Hub */}
-      <div className="space-y-3">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
-          Administrator Management Modules
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          <Link
-            href="/admin/users"
-            className="p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-500 hover:shadow-sm transition-all group flex flex-col justify-between"
-          >
-            <div className="h-9 w-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-2 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-              <Users className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900">Manage Students</div>
-              <div className="text-[11px] text-slate-500">View & manage student accounts</div>
-            </div>
-          </Link>
-
-          <Link
-            href="/admin/surveys"
-            className="p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-500 hover:shadow-sm transition-all group flex flex-col justify-between"
-          >
-            <div className="h-9 w-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-              <ClipboardList className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900">Manage Surveys</div>
-              <div className="text-[11px] text-slate-500">Create, edit, and schedule surveys</div>
-            </div>
-          </Link>
-
-          <Link
-            href="/admin/feedback"
-            className="p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-500 hover:shadow-sm transition-all group flex flex-col justify-between"
-          >
-            <div className="h-9 w-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-2 group-hover:bg-amber-600 group-hover:text-white transition-colors">
-              <MessageSquare className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900">Moderate Feedback</div>
-              <div className="text-[11px] text-slate-500">Review encrypted feedback</div>
-            </div>
-          </Link>
-
-          <Link
-            href="/admin/qr-codes"
-            className="p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-500 hover:shadow-sm transition-all group flex flex-col justify-between"
-          >
-            <div className="h-9 w-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center mb-2 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-              <QrCode className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900">QR Code Hub</div>
-              <div className="text-[11px] text-slate-500">Generate & download QR cards</div>
-            </div>
-          </Link>
-
-          <Link
-            href="/admin/reports"
-            className="p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-500 hover:shadow-sm transition-all group flex flex-col justify-between"
-          >
-            <div className="h-9 w-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-              <BarChart3 className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900">Reports & Analytics</div>
-              <div className="text-[11px] text-slate-500">Export CSV & PDF results</div>
-            </div>
-          </Link>
-
-          <Link
-            href="/admin/notifications"
-            className="p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-500 hover:shadow-sm transition-all group flex flex-col justify-between"
-          >
-            <div className="h-9 w-9 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center mb-2 group-hover:bg-rose-600 group-hover:text-white transition-colors">
-              <Bell className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900">Broadcasts & Reminders</div>
-              <div className="text-[11px] text-slate-500">Broadcast alerts & deadlines</div>
-            </div>
-          </Link>
-
-          <Link
-            href="/admin/backups"
-            className="p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-500 hover:shadow-sm transition-all group flex flex-col justify-between"
-          >
-            <div className="h-9 w-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center mb-2 group-hover:bg-slate-900 group-hover:text-white transition-colors">
-              <Database className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900">Database Backups</div>
-              <div className="text-[11px] text-slate-500">Export & restore snapshots</div>
-            </div>
-          </Link>
-
-          <Link
-            href="/admin/settings"
-            className="p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-500 hover:shadow-sm transition-all group flex flex-col justify-between"
-          >
-            <div className="h-9 w-9 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center mb-2 group-hover:bg-teal-600 group-hover:text-white transition-colors">
-              <Settings className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900">System Settings</div>
-              <div className="text-[11px] text-slate-500">Security & server parameters</div>
-            </div>
-          </Link>
-        </div>
       </div>
 
       {/* Active Academic Surveys - Full Width Primary Section */}
