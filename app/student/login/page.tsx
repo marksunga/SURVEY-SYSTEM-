@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { GraduationCap, Lock, Mail, AlertCircle, ArrowRight, ShieldCheck, UserPlus } from 'lucide-react';
+import { GraduationCap, Lock, Mail, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function StudentLoginPage() {
   const [email, setEmail] = useState('');
@@ -124,27 +124,14 @@ export default function StudentLoginPage() {
               </Button>
             </form>
 
-            <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500">Don&apos;t have an account?</span>
-                <Link
-                  href="/student/register"
-                  className="font-semibold text-blue-600 hover:underline inline-flex items-center gap-1 min-h-[44px] py-2"
-                >
-                  <UserPlus className="h-3.5 w-3.5" />
-                  Register as Student
-                </Link>
-              </div>
-
-              <div className="pt-2 border-t border-slate-100 text-center">
-                <span className="text-xs text-slate-500">IT Department Administrator? </span>
-                <Link
-                  href="/admin/login"
-                  className="text-xs font-semibold text-slate-800 hover:text-blue-600 hover:underline inline-flex items-center min-h-[44px] py-2 px-1"
-                >
-                  Department Administrator Access →
-                </Link>
-              </div>
+            <div className="pt-4 border-t border-slate-100 text-center">
+              <span className="text-xs text-slate-500">IT Department Administrator? </span>
+              <Link
+                href="/admin/login"
+                className="text-xs font-semibold text-slate-800 hover:text-blue-600 hover:underline inline-flex items-center min-h-[44px] py-2 px-1"
+              >
+                Department Administrator Access →
+              </Link>
             </div>
           </CardContent>
         </Card>
