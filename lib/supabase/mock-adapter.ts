@@ -12,7 +12,19 @@ import type {
   SystemBackup,
   UserRole,
 } from '../types/database';
+import * as crypto from 'crypto';
 import { encryptAES256, decryptAES256, generateSubmissionToken } from '../crypto/aes';
+import { hashPassword, verifyPassword, validatePasswordStrength } from '../crypto/passwords';
+
+export interface PasswordResetToken {
+  id: string;
+  userId: string;
+  email: string;
+  tokenHash: string;
+  expiresAt: number;
+  consumed: boolean;
+  createdAt: string;
+}
 
 // Initial pre-seeded mock database
 interface MockDatabaseState {
@@ -27,6 +39,8 @@ interface MockDatabaseState {
   notifications: SystemNotification[];
   auditLogs: AuditLog[];
   backups: SystemBackup[];
+  credentials: Record<string, string>; // userId -> scrypt one-way password hash
+  passwordResetTokens: PasswordResetToken[];
 }
 
 const INITIAL_PROFILES: Profile[] = [
@@ -392,6 +406,15 @@ declare global {
   var __mockDbState: MockDatabaseState | undefined;
 }
 
+const DEFAULT_SEED_PASSWORD_HASH = hashPassword('Password123!');
+
+const INITIAL_CREDENTIALS: Record<string, string> = {
+  '11111111-1111-1111-1111-111111111111': DEFAULT_SEED_PASSWORD_HASH,
+  '22222222-2222-2222-2222-222222222222': DEFAULT_SEED_PASSWORD_HASH,
+  '33333333-3333-3333-3333-333333333333': DEFAULT_SEED_PASSWORD_HASH,
+  '44444444-4444-4444-4444-444444444444': DEFAULT_SEED_PASSWORD_HASH,
+};
+
 if (!globalThis.__mockDbState) {
   globalThis.__mockDbState = {
     profiles: [...INITIAL_PROFILES],
@@ -405,7 +428,16 @@ if (!globalThis.__mockDbState) {
     notifications: [...INITIAL_NOTIFICATIONS],
     auditLogs: [...INITIAL_AUDIT_LOGS],
     backups: [],
+    credentials: { ...INITIAL_CREDENTIALS },
+    passwordResetTokens: [],
   };
+}
+
+if (!globalThis.__mockDbState.credentials) {
+  globalThis.__mockDbState.credentials = { ...INITIAL_CREDENTIALS };
+}
+if (!globalThis.__mockDbState.passwordResetTokens) {
+  globalThis.__mockDbState.passwordResetTokens = [];
 }
 
 const db = globalThis.__mockDbState;
@@ -422,6 +454,121 @@ export const MockAdapter = {
 
   getProfileByEmail(email: string): Profile | undefined {
     return db.profiles.find((p) => p.email.toLowerCase() === email.toLowerCase());
+  },
+
+  verifyUserCredentials(
+    email: string,
+    password: string
+  ): { success: boolean; user?: Profile; error?: string } {
+    if (!email || !password) {
+      return { success: false, error: 'Both email and password are required.' };
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const profile = this.getProfileByEmail(cleanEmail);
+
+    if (!profile) {
+      return { success: false, error: 'Invalid institutional email or password.' };
+    }
+
+    if (!profile.is_active) {
+      return { success: false, error: 'This account has been deactivated by the IT Administrator.' };
+    }
+
+    let storedHash = db.credentials[profile.id];
+    if (!storedHash) {
+      storedHash = DEFAULT_SEED_PASSWORD_HASH;
+      db.credentials[profile.id] = storedHash;
+    }
+
+    const isValid = verifyPassword(password, storedHash);
+    if (!isValid) {
+      return { success: false, error: 'Invalid institutional email or password.' };
+    }
+
+    return { success: true, user: profile };
+  },
+
+  setUserPassword(userId: string, newPassword: string): boolean {
+    const profile = this.getProfileById(userId);
+    if (!profile) return false;
+    db.credentials[userId] = hashPassword(newPassword);
+    return true;
+  },
+
+  createPasswordResetToken(email: string): { token: string; expiresAt: Date; email: string } | null {
+    const cleanEmail = email.trim().toLowerCase();
+    const profile = this.getProfileByEmail(cleanEmail);
+    if (!profile) return null;
+
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes
+
+    const record: PasswordResetToken = {
+      id: crypto.randomUUID(),
+      userId: profile.id,
+      email: profile.email,
+      tokenHash,
+      expiresAt,
+      consumed: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    db.passwordResetTokens.push(record);
+
+    return {
+      token: rawToken,
+      expiresAt: new Date(expiresAt),
+      email: profile.email,
+    };
+  },
+
+  verifyPasswordResetToken(token: string): { valid: boolean; userId?: string; email?: string; error?: string } {
+    if (!token || typeof token !== 'string') {
+      return { valid: false, error: 'Password recovery token is missing.' };
+    }
+
+    const tokenHash = crypto.createHash('sha256').update(token.trim()).digest('hex');
+    const record = db.passwordResetTokens.find((t) => t.tokenHash === tokenHash);
+
+    if (!record) {
+      return { valid: false, error: 'Invalid or unrecognized recovery token.' };
+    }
+
+    if (record.consumed) {
+      return { valid: false, error: 'This password recovery link has already been used.' };
+    }
+
+    if (Date.now() > record.expiresAt) {
+      return { valid: false, error: 'This password recovery link has expired (links are valid for 15 minutes).' };
+    }
+
+    return { valid: true, userId: record.userId, email: record.email };
+  },
+
+  consumePasswordResetToken(token: string, newPassword: string): { success: boolean; error?: string } {
+    const verification = this.verifyPasswordResetToken(token);
+    if (!verification.valid || !verification.userId) {
+      return { success: false, error: verification.error || 'Invalid token' };
+    }
+
+    const strength = validatePasswordStrength(newPassword);
+    if (!strength.valid) {
+      return { success: false, error: strength.errors[0] };
+    }
+
+    // Update password with one-way scrypt hash
+    db.credentials[verification.userId] = hashPassword(newPassword);
+
+    // Invalidate token
+    const tokenHash = crypto.createHash('sha256').update(token.trim()).digest('hex');
+    const record = db.passwordResetTokens.find((t) => t.tokenHash === tokenHash);
+    if (record) {
+      record.consumed = true;
+    }
+
+    return { success: true };
   },
 
   updateProfile(id: string, updates: Partial<Profile>): Profile | null {
@@ -458,16 +605,18 @@ export const MockAdapter = {
     const idx = db.profiles.findIndex((p) => p.id === userId);
     if (idx === -1) return false;
     db.profiles.splice(idx, 1);
+    delete db.credentials[userId];
     return true;
   },
 
-  createUser(profile: Omit<Profile, 'created_at' | 'updated_at'>): Profile {
+  createUser(profile: Omit<Profile, 'created_at' | 'updated_at'>, initialPassword?: string): Profile {
     const newProfile: Profile = {
       ...profile,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
     db.profiles.push(newProfile);
+    db.credentials[newProfile.id] = hashPassword(initialPassword || 'Password123!');
     return newProfile;
   },
 

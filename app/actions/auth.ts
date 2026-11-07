@@ -4,31 +4,46 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
 import { setSessionUser, clearSessionUser, getCurrentUser } from '@/lib/auth/session';
+import { validatePasswordStrength, verifyPassword, hashPassword } from '@/lib/crypto/passwords';
+import { sendPasswordResetEmail } from '@/lib/email/mailer';
 
+function getAppBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+}
+
+/**
+ * Strict Administrator Authentication
+ * Verifies both email and one-way hashed password.
+ * Only accounts with role 'ADMINISTRATOR' are permitted.
+ */
 export async function adminLoginAction(formData: FormData) {
-  const email = (formData.get('email') as string)?.trim();
+  const email = (formData.get('email') as string)?.trim().toLowerCase();
   const password = formData.get('password') as string;
 
   if (!email || !password) {
-    return { error: 'Both email and password are required.' };
+    return { error: 'Both administrator email and password are required.' };
   }
 
-  const profile = MockAdapter.getProfileByEmail(email);
-  if (!profile) {
-    return { error: 'Administrator account not found. Please verify your institutional email.' };
+  // 1. Verify credentials via one-way password hashing (scrypt)
+  const authResult = MockAdapter.verifyUserCredentials(email, password);
+  if (!authResult.success || !authResult.user) {
+    return { error: authResult.error || 'Invalid administrator email or password.' };
   }
 
-  if (!profile.is_active) {
-    return { error: 'This administrator account is deactivated. Contact Department Administration.' };
-  }
+  const profile = authResult.user;
 
-  // Strict role enforcement: Only Administrator accounts can log in here
+  // 2. Strict Role Verification: Only ADMINISTRATOR role permitted
   if (profile.role_id !== 'ADMINISTRATOR') {
     return {
       error: 'Access denied. Only Administrator accounts can log in here. Students must log in at /student/login.',
     };
   }
 
+  if (!profile.is_active) {
+    return { error: 'This administrator account is deactivated. Contact Department Administration.' };
+  }
+
+  // 3. Establish authenticated session
   await setSessionUser(profile.id);
 
   MockAdapter.logAudit(profile.email, 'ADMIN_LOGIN', 'USER', profile.id, {
@@ -40,30 +55,39 @@ export async function adminLoginAction(formData: FormData) {
   redirect('/admin/dashboard');
 }
 
+/**
+ * Strict Student Authentication
+ * Verifies both email and one-way hashed password.
+ * Only accounts with role 'STUDENT' are permitted.
+ */
 export async function studentLoginAction(formData: FormData) {
-  const email = (formData.get('email') as string)?.trim();
+  const email = (formData.get('email') as string)?.trim().toLowerCase();
   const password = formData.get('password') as string;
 
   if (!email || !password) {
-    return { error: 'Both email and password are required.' };
+    return { error: 'Both student email and password are required.' };
   }
 
-  const profile = MockAdapter.getProfileByEmail(email);
-  if (!profile) {
-    return { error: 'Student account not found. Please register or verify your email.' };
+  // 1. Verify credentials via one-way password hashing (scrypt)
+  const authResult = MockAdapter.verifyUserCredentials(email, password);
+  if (!authResult.success || !authResult.user) {
+    return { error: authResult.error || 'Invalid student email or password.' };
   }
 
-  if (!profile.is_active) {
-    return { error: 'This student account has been deactivated by the IT Administrator.' };
-  }
+  const profile = authResult.user;
 
-  // Strict role enforcement: Only Student accounts can log in here
+  // 2. Strict Role Verification: Only STUDENT role permitted
   if (profile.role_id !== 'STUDENT') {
     return {
       error: 'Access denied. Administrator accounts must log in through the Administrator portal at /admin/login.',
     };
   }
 
+  if (!profile.is_active) {
+    return { error: 'This student account has been deactivated by the IT Administrator.' };
+  }
+
+  // 3. Establish authenticated session
   await setSessionUser(profile.id);
 
   MockAdapter.logAudit(profile.email, 'STUDENT_LOGIN', 'USER', profile.id, {
@@ -75,6 +99,10 @@ export async function studentLoginAction(formData: FormData) {
   redirect('/student/dashboard');
 }
 
+/**
+ * Student Self-Registration
+ * Automatically assigns role 'STUDENT' and securely hashes passwords.
+ */
 export async function studentRegisterAction(formData: FormData) {
   const email = (formData.get('email') as string)?.trim().toLowerCase();
   const fullName = (formData.get('fullName') as string)?.trim();
@@ -103,9 +131,10 @@ export async function studentRegisterAction(formData: FormData) {
     return { error: 'Please enter a valid institutional email address (e.g. yourname@itdept.edu).' };
   }
 
-  // 3. Password requirements validation
-  if (password.length < 6) {
-    return { error: 'Password must be at least 6 characters long.' };
+  // 3. Password requirements validation (at least 8 chars, mixed case, numbers, special)
+  const strengthCheck = validatePasswordStrength(password);
+  if (!strengthCheck.valid) {
+    return { error: strengthCheck.errors[0] };
   }
   if (confirmPassword !== undefined && password !== confirmPassword) {
     return { error: 'Passwords do not match. Please ensure both password fields match.' };
@@ -125,16 +154,20 @@ export async function studentRegisterAction(formData: FormData) {
   }
 
   const id = crypto.randomUUID();
-  // Role is strictly hardcoded to STUDENT; students cannot assign admin privileges
-  const newProfile = MockAdapter.createUser({
-    id,
-    email,
-    full_name: fullName,
-    role_id: 'STUDENT',
-    department,
-    id_number: idNumber,
-    is_active: true,
-  });
+
+  // Role is strictly hardcoded to STUDENT; password is one-way hashed with scrypt
+  const newProfile = MockAdapter.createUser(
+    {
+      id,
+      email,
+      full_name: fullName,
+      role_id: 'STUDENT',
+      department,
+      id_number: idNumber,
+      is_active: true,
+    },
+    password
+  );
 
   await setSessionUser(newProfile.id);
 
@@ -147,18 +180,23 @@ export async function studentRegisterAction(formData: FormData) {
   redirect('/student/dashboard');
 }
 
+/**
+ * General Login Action (Redirects based on verified role)
+ */
 export async function loginAction(formData: FormData) {
-  const email = (formData.get('email') as string)?.trim();
+  const email = (formData.get('email') as string)?.trim().toLowerCase();
   const password = formData.get('password') as string;
 
   if (!email || !password) {
-    return { error: 'Email and password are required.' };
+    return { error: 'Both email and password are required.' };
   }
 
-  const profile = MockAdapter.getProfileByEmail(email);
-  if (!profile) {
-    return { error: 'Account not found. Please verify your credentials or register.' };
+  const authResult = MockAdapter.verifyUserCredentials(email, password);
+  if (!authResult.success || !authResult.user) {
+    return { error: authResult.error || 'Invalid email or password.' };
   }
+
+  const profile = authResult.user;
 
   if (!profile.is_active) {
     return { error: 'This account has been deactivated by the IT Administrator.' };
@@ -216,30 +254,140 @@ export async function updatePasswordAction(formData: FormData) {
   const user = await getCurrentUser();
   if (!user) return { error: 'Not authenticated.' };
 
+  const currentPassword = formData.get('currentPassword') as string;
   const newPassword = formData.get('newPassword') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
 
-  if (!newPassword || newPassword.length < 6) {
-    return { error: 'New password must be at least 6 characters long.' };
+  if (currentPassword) {
+    const authCheck = MockAdapter.verifyUserCredentials(user.email, currentPassword);
+    if (!authCheck.success) {
+      return { error: 'Current password entered is incorrect.' };
+    }
+  }
+
+  const strength = validatePasswordStrength(newPassword);
+  if (!strength.valid) {
+    return { error: strength.errors[0] };
   }
 
   if (confirmPassword && newPassword !== confirmPassword) {
     return { error: 'New passwords do not match.' };
   }
 
+  MockAdapter.setUserPassword(user.id, newPassword);
+
   MockAdapter.logAudit(user.email, 'PASSWORD_UPDATED', 'USER', user.id);
   revalidatePath('/profile');
   return { success: true, message: 'Password updated successfully!' };
 }
 
+/**
+ * Forgot Password Action
+ * Generates a cryptographically secure, time-limited recovery link and dispatches
+ * via configured email service (Supabase Auth / SMTP).
+ */
 export async function forgotPasswordAction(formData: FormData) {
-  const email = formData.get('email') as string;
-  if (!email) return { error: 'Email is required.' };
+  const email = (formData.get('email') as string)?.trim().toLowerCase();
 
-  const profile = MockAdapter.getProfileByEmail(email);
-  if (profile) {
-    MockAdapter.logAudit(profile.email, 'PASSWORD_RESET_REQUESTED', 'USER', profile.id);
+  if (!email) {
+    return { error: 'Institutional email address is required.' };
   }
 
-  return { success: true, message: 'Password reset link has been dispatched to your email address.' };
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return { error: 'Please enter a valid institutional email address.' };
+  }
+
+  const profile = MockAdapter.getProfileByEmail(email);
+
+  // Security best practice: Always return generic confirmation to prevent user enumeration
+  if (profile && profile.is_active) {
+    const tokenResult = MockAdapter.createPasswordResetToken(profile.email);
+
+    if (tokenResult) {
+      const baseUrl = getAppBaseUrl();
+      const resetLink = `${baseUrl}/auth/reset-password?token=${tokenResult.token}`;
+
+      // Dispatch recovery email through configured email service
+      const mailerResult = await sendPasswordResetEmail({
+        email: profile.email,
+        resetLink,
+        recipientName: profile.full_name,
+        expiresInMinutes: 15,
+      });
+
+      MockAdapter.logAudit(profile.email, 'PASSWORD_RESET_REQUESTED', 'USER', profile.id, {
+        provider: mailerResult.provider,
+        sent: mailerResult.sent,
+      });
+
+      // If in development and no email provider is configured, return the link for verification
+      const isDev = process.env.NODE_ENV !== 'production';
+      if (!mailerResult.sent && isDev) {
+        return {
+          success: true,
+          message:
+            'A secure password recovery link has been generated. (Email service is not yet configured; link provided below for testing).',
+          devResetLink: resetLink,
+        };
+      }
+    }
+  }
+
+  return {
+    success: true,
+    message:
+      'If your institutional email is registered in our system, password recovery instructions have been dispatched. Please check your inbox within 15 minutes.',
+  };
+}
+
+/**
+ * Verify Recovery Token Action (Used by /auth/reset-password page)
+ */
+export async function verifyResetTokenAction(token: string) {
+  if (!token) {
+    return { valid: false, error: 'Password recovery token is missing.' };
+  }
+
+  return MockAdapter.verifyPasswordResetToken(token);
+}
+
+/**
+ * Reset Password with Token Action
+ * Consumes the recovery token (single-use), updates the password hash, and revokes sessions.
+ */
+export async function resetPasswordWithTokenAction(formData: FormData) {
+  const token = (formData.get('token') as string)?.trim();
+  const newPassword = formData.get('newPassword') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
+
+  if (!token) {
+    return { error: 'Missing recovery token. Please request a new recovery link.' };
+  }
+
+  if (!newPassword || !confirmPassword) {
+    return { error: 'Both password and confirmation fields are required.' };
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { error: 'Passwords do not match. Please ensure both passwords match exactly.' };
+  }
+
+  const strength = validatePasswordStrength(newPassword);
+  if (!strength.valid) {
+    return { error: strength.errors[0] };
+  }
+
+  const consumeResult = MockAdapter.consumePasswordResetToken(token, newPassword);
+  if (!consumeResult.success) {
+    return { error: consumeResult.error || 'Failed to reset password. The link may have expired or been used.' };
+  }
+
+  // Revoke existing sessions
+  await clearSessionUser();
+
+  return {
+    success: true,
+    message: 'Your password has been reset successfully. Please sign in with your new credentials.',
+  };
 }
