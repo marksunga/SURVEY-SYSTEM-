@@ -210,8 +210,7 @@ export default function AdminNotificationsPage() {
                     >
                       <option value="ALL">All Users (Campus-Wide)</option>
                       <option value="STUDENT">Students Only</option>
-                      <option value="IT_PROFESSOR">IT Professors Only</option>
-                      <option value="IT_OFFICER">IT Officers Only</option>
+                      <option value="ADMINISTRATOR">Administrators Only</option>
                     </select>
                   </div>
 

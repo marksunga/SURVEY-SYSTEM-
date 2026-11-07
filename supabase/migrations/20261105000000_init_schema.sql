@@ -31,11 +31,9 @@ CREATE TABLE roles (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Insert system default roles
+-- Insert system default roles (STUDENT and ADMINISTRATOR only)
 INSERT INTO roles (id, name, description) VALUES
 ('STUDENT', 'Student', 'Enrolled IT student with survey participation & feedback rights'),
-('IT_PROFESSOR', 'IT Professor', 'Faculty member with assigned survey participation & analytics rights'),
-('IT_OFFICER', 'IT Officer', 'IT staff member managing surveys, questions, QR codes, and reports'),
 ('ADMINISTRATOR', 'Administrator', 'Full system control, user RBAC, audit logs, and database management')
 ON CONFLICT (id) DO NOTHING;
 
@@ -68,7 +66,7 @@ CREATE TABLE surveys (
     description TEXT,
     category TEXT NOT NULL DEFAULT 'GENERAL',
     status TEXT NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'SCHEDULED', 'ACTIVE', 'EXPIRED', 'CLOSED')),
-    target_roles TEXT[] DEFAULT ARRAY['STUDENT', 'IT_PROFESSOR']::TEXT[],
+    target_roles TEXT[] DEFAULT ARRAY['STUDENT']::TEXT[],
     is_anonymous_allowed BOOLEAN DEFAULT TRUE,
     start_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     end_date TIMESTAMPTZ NOT NULL,
@@ -350,12 +348,12 @@ ON profiles FOR ALL TO authenticated USING (public.get_current_role() = 'ADMINIS
 CREATE POLICY "Active surveys are readable by authorized target roles"
 ON surveys FOR SELECT TO authenticated USING (
     (status = 'ACTIVE' AND public.get_current_role() = ANY(target_roles))
-    OR public.get_current_role() IN ('ADMINISTRATOR', 'IT_OFFICER')
+    OR public.get_current_role() = 'ADMINISTRATOR'
 );
 
-CREATE POLICY "Admins and IT Officers can manage surveys"
+CREATE POLICY "Admins can manage surveys"
 ON surveys FOR ALL TO authenticated USING (
-    public.get_current_role() IN ('ADMINISTRATOR', 'IT_OFFICER')
+    public.get_current_role() = 'ADMINISTRATOR'
 );
 
 -- Survey Questions Policies
@@ -364,9 +362,9 @@ ON survey_questions FOR SELECT TO authenticated USING (
     EXISTS (SELECT 1 FROM surveys s WHERE s.id = survey_questions.survey_id)
 );
 
-CREATE POLICY "Admins and IT Officers can manage questions"
+CREATE POLICY "Admins can manage questions"
 ON survey_questions FOR ALL TO authenticated USING (
-    public.get_current_role() IN ('ADMINISTRATOR', 'IT_OFFICER')
+    public.get_current_role() = 'ADMINISTRATOR'
 );
 
 -- Participation Receipts Policies
@@ -381,9 +379,9 @@ ON survey_participation_receipts FOR INSERT TO authenticated WITH CHECK (
 );
 
 -- Survey Responses Policies
-CREATE POLICY "Admins and IT Officers can read all responses"
+CREATE POLICY "Admins can read all responses"
 ON survey_responses FOR SELECT TO authenticated USING (
-    public.get_current_role() IN ('ADMINISTRATOR', 'IT_OFFICER', 'IT_PROFESSOR')
+    public.get_current_role() = 'ADMINISTRATOR'
     OR (auth.uid() = user_id AND is_anonymous = FALSE)
 );
 
@@ -393,7 +391,7 @@ ON survey_responses FOR INSERT TO authenticated WITH CHECK (true);
 -- Response Answers Policies
 CREATE POLICY "Authorized roles can read response answers"
 ON response_answers FOR SELECT TO authenticated USING (
-    public.get_current_role() IN ('ADMINISTRATOR', 'IT_OFFICER', 'IT_PROFESSOR')
+    public.get_current_role() = 'ADMINISTRATOR'
 );
 
 CREATE POLICY "Users can insert response answers"
@@ -403,7 +401,7 @@ ON response_answers FOR INSERT TO authenticated WITH CHECK (true);
 CREATE POLICY "Users can read their own non-anonymous feedback"
 ON feedback FOR SELECT TO authenticated USING (
     (auth.uid() = user_id AND is_anonymous = FALSE)
-    OR public.get_current_role() IN ('ADMINISTRATOR', 'IT_OFFICER')
+    OR public.get_current_role() = 'ADMINISTRATOR'
 );
 
 CREATE POLICY "Authenticated users can insert feedback"
@@ -411,7 +409,7 @@ ON feedback FOR INSERT TO authenticated WITH CHECK (true);
 
 CREATE POLICY "Admins and Officers can update feedback status"
 ON feedback FOR UPDATE TO authenticated USING (
-    public.get_current_role() IN ('ADMINISTRATOR', 'IT_OFFICER')
+    public.get_current_role() = 'ADMINISTRATOR'
 );
 
 -- QR Codes Policies
@@ -420,7 +418,7 @@ ON qr_codes FOR SELECT TO authenticated USING (true);
 
 CREATE POLICY "Admins and Officers can manage QR codes"
 ON qr_codes FOR ALL TO authenticated USING (
-    public.get_current_role() IN ('ADMINISTRATOR', 'IT_OFFICER')
+    public.get_current_role() = 'ADMINISTRATOR'
 );
 
 -- Notifications Policies

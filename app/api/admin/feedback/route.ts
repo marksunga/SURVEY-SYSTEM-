@@ -4,7 +4,7 @@ import { requireRole } from '@/lib/auth/session';
 
 export async function GET() {
   try {
-    const user = await requireRole(['ADMINISTRATOR', 'IT_OFFICER']);
+    const user = await requireRole(['ADMINISTRATOR']);
     const feedbacks = MockAdapter.getFeedbacks(user.id, user.role_id);
     return NextResponse.json({ feedbacks });
   } catch (err: any) {

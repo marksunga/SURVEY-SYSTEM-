@@ -4,7 +4,7 @@ import { requireRole } from '@/lib/auth/session';
 
 export async function GET() {
   try {
-    await requireRole(['ADMINISTRATOR', 'IT_OFFICER']);
+    await requireRole(['ADMINISTRATOR']);
     const surveys = MockAdapter.getSurveys();
     return NextResponse.json({ surveys });
   } catch (err: any) {

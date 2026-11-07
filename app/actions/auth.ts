@@ -4,77 +4,153 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
 import { setSessionUser, clearSessionUser, getCurrentUser } from '@/lib/auth/session';
-import { UserRole } from '@/lib/types/database';
 
-export async function loginAction(formData: FormData) {
-  const email = formData.get('email') as string;
+export async function adminLoginAction(formData: FormData) {
+  const email = (formData.get('email') as string)?.trim();
   const password = formData.get('password') as string;
 
-  if (!email) {
-    return { error: 'Email is required.' };
+  if (!email || !password) {
+    return { error: 'Both email and password are required.' };
   }
 
   const profile = MockAdapter.getProfileByEmail(email);
   if (!profile) {
-    return { error: 'User not found. Check demo accounts or register.' };
+    return { error: 'Administrator account not found. Please verify your institutional email.' };
+  }
+
+  if (!profile.is_active) {
+    return { error: 'This administrator account is deactivated. Contact Department Administration.' };
+  }
+
+  // Strict role enforcement: Only Administrator accounts can log in here
+  if (profile.role_id !== 'ADMINISTRATOR') {
+    return {
+      error: 'Access denied. Only Administrator accounts can log in here. Students must log in at /student/login.',
+    };
+  }
+
+  await setSessionUser(profile.id);
+
+  MockAdapter.logAudit(profile.email, 'ADMIN_LOGIN', 'USER', profile.id, {
+    method: 'PASSWORD',
+    portal: 'ADMIN_PORTAL',
+  });
+
+  revalidatePath('/');
+  redirect('/admin/dashboard');
+}
+
+export async function studentLoginAction(formData: FormData) {
+  const email = (formData.get('email') as string)?.trim();
+  const password = formData.get('password') as string;
+
+  if (!email || !password) {
+    return { error: 'Both email and password are required.' };
+  }
+
+  const profile = MockAdapter.getProfileByEmail(email);
+  if (!profile) {
+    return { error: 'Student account not found. Please register or verify your email.' };
+  }
+
+  if (!profile.is_active) {
+    return { error: 'This student account has been deactivated by the IT Administrator.' };
+  }
+
+  // Strict role enforcement: Only Student accounts can log in here
+  if (profile.role_id !== 'STUDENT') {
+    return {
+      error: 'Access denied. Administrator accounts must log in through the Administrator portal at /admin/login.',
+    };
+  }
+
+  await setSessionUser(profile.id);
+
+  MockAdapter.logAudit(profile.email, 'STUDENT_LOGIN', 'USER', profile.id, {
+    method: 'PASSWORD',
+    portal: 'STUDENT_PORTAL',
+  });
+
+  revalidatePath('/');
+  redirect('/student/dashboard');
+}
+
+export async function studentRegisterAction(formData: FormData) {
+  const email = (formData.get('email') as string)?.trim();
+  const fullName = (formData.get('fullName') as string)?.trim();
+  const password = formData.get('password') as string;
+  const department = (formData.get('department') as string) || 'Information Technology';
+  const idNumber = (formData.get('idNumber') as string)?.trim();
+
+  if (!email || !fullName) {
+    return { error: 'Student Name and Institutional Email are required.' };
+  }
+
+  if (password && password.length < 6) {
+    return { error: 'Password must be at least 6 characters.' };
+  }
+
+  const existing = MockAdapter.getProfileByEmail(email);
+  if (existing) {
+    return { error: 'An account with this institutional email already exists. Please sign in.' };
+  }
+
+  const id = crypto.randomUUID();
+  // Role is strictly hardcoded to STUDENT; students cannot assign admin privileges
+  const newProfile = MockAdapter.createUser({
+    id,
+    email,
+    full_name: fullName,
+    role_id: 'STUDENT',
+    department,
+    id_number: idNumber || `STU-${Math.floor(Math.random() * 90000 + 10000)}`,
+    is_active: true,
+  });
+
+  await setSessionUser(newProfile.id);
+
+  MockAdapter.logAudit(newProfile.email, 'STUDENT_REGISTERED', 'USER', newProfile.id, {
+    role: 'STUDENT',
+  });
+
+  revalidatePath('/');
+  redirect('/student/dashboard');
+}
+
+export async function loginAction(formData: FormData) {
+  const email = (formData.get('email') as string)?.trim();
+  const password = formData.get('password') as string;
+
+  if (!email || !password) {
+    return { error: 'Email and password are required.' };
+  }
+
+  const profile = MockAdapter.getProfileByEmail(email);
+  if (!profile) {
+    return { error: 'Account not found. Please verify your credentials or register.' };
   }
 
   if (!profile.is_active) {
     return { error: 'This account has been deactivated by the IT Administrator.' };
   }
 
-  // Set session user
   await setSessionUser(profile.id);
 
-  // Log audit
   MockAdapter.logAudit(profile.email, 'USER_LOGIN', 'USER', profile.id, {
     method: 'PASSWORD',
   });
 
   revalidatePath('/');
-  
+
   if (profile.role_id === 'ADMINISTRATOR') {
-    redirect('/admin');
+    redirect('/admin/dashboard');
   } else {
-    redirect('/dashboard');
+    redirect('/student/dashboard');
   }
 }
 
 export async function registerAction(formData: FormData) {
-  const email = formData.get('email') as string;
-  const fullName = formData.get('fullName') as string;
-  const roleId = (formData.get('roleId') as UserRole) || 'STUDENT';
-  const department = (formData.get('department') as string) || 'Information Technology';
-  const idNumber = formData.get('idNumber') as string;
-
-  if (!email || !fullName) {
-    return { error: 'Name and Email are required.' };
-  }
-
-  const existing = MockAdapter.getProfileByEmail(email);
-  if (existing) {
-    return { error: 'An account with this email already exists.' };
-  }
-
-  const id = crypto.randomUUID();
-  const newProfile = MockAdapter.createUser({
-    id,
-    email,
-    full_name: fullName,
-    role_id: roleId,
-    department,
-    id_number: idNumber || `ID-${Math.floor(Math.random() * 90000 + 10000)}`,
-    is_active: true,
-  });
-
-  await setSessionUser(newProfile.id);
-
-  MockAdapter.logAudit(newProfile.email, 'USER_REGISTERED', 'USER', newProfile.id, {
-    role: roleId,
-  });
-
-  revalidatePath('/');
-  redirect('/dashboard');
+  return studentRegisterAction(formData);
 }
 
 export async function logoutAction() {
@@ -84,19 +160,7 @@ export async function logoutAction() {
   }
   await clearSessionUser();
   revalidatePath('/');
-  redirect('/auth/login');
-}
-
-export async function switchDemoUserAction(role: UserRole) {
-  const profiles = MockAdapter.getProfiles();
-  const target = profiles.find((p) => p.role_id === role && p.is_active);
-  if (target) {
-    await setSessionUser(target.id);
-    MockAdapter.logAudit(target.email, 'DEMO_USER_SWITCH', 'USER', target.id, {
-      switched_to_role: role,
-    });
-    revalidatePath('/');
-  }
+  redirect('/');
 }
 
 export async function updateProfileAction(formData: FormData) {
@@ -122,7 +186,6 @@ export async function updatePasswordAction(formData: FormData) {
   const user = await getCurrentUser();
   if (!user) return { error: 'Not authenticated.' };
 
-  const currentPassword = formData.get('currentPassword') as string;
   const newPassword = formData.get('newPassword') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
 
@@ -150,4 +213,3 @@ export async function forgotPasswordAction(formData: FormData) {
 
   return { success: true, message: 'Password reset link has been dispatched to your email address.' };
 }
-

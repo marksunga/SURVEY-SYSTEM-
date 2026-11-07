@@ -61,7 +61,7 @@ export async function deleteNotificationAction(id: string) {
 }
 
 export async function sendSurveyRemindersAction(surveyId: string) {
-  const admin = await requireRole(['ADMINISTRATOR', 'IT_OFFICER']);
+  const admin = await requireRole(['ADMINISTRATOR']);
   const survey = MockAdapter.getSurveyById(surveyId);
   if (!survey) return { error: 'Survey not found.' };
 

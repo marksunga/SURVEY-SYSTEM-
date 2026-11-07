@@ -43,22 +43,22 @@ const INITIAL_PROFILES: Profile[] = [
   },
   {
     id: '22222222-2222-2222-2222-222222222222',
-    role_id: 'IT_OFFICER',
-    full_name: 'Marcus Brody (IT Officer)',
+    role_id: 'STUDENT',
+    full_name: 'Marcus Brody (Student)',
     email: 'officer@itdept.edu',
     department: 'Network Operations',
-    id_number: 'OFF-104',
+    id_number: 'STU-OFF-104',
     is_active: true,
     created_at: new Date('2026-01-15').toISOString(),
     updated_at: new Date().toISOString(),
   },
   {
     id: '33333333-3333-3333-3333-333333333333',
-    role_id: 'IT_PROFESSOR',
-    full_name: 'Prof. Raymond Cruz (Faculty)',
+    role_id: 'STUDENT',
+    full_name: 'Raymond Cruz (Student)',
     email: 'professor@itdept.edu',
     department: 'Computer Science Dept',
-    id_number: 'FAC-802',
+    id_number: 'STU-FAC-802',
     is_active: true,
     created_at: new Date('2026-01-20').toISOString(),
     updated_at: new Date().toISOString(),
@@ -100,12 +100,12 @@ const INITIAL_SURVEYS: Survey[] = [
     description: 'Survey on the reliability of workstation hardware, Linux dual-boot setups, and developer tooling in Labs 401-404.',
     category: 'FACILITY',
     status: 'ACTIVE',
-    target_roles: ['STUDENT', 'IT_PROFESSOR'],
+    target_roles: ['STUDENT'],
     is_anonymous_allowed: true,
     start_date: new Date(Date.now() - 1 * 86400000).toISOString(),
     end_date: new Date(Date.now() + 10 * 86400000).toISOString(),
-    created_by: '22222222-2222-2222-2222-222222222222',
-    creator_name: 'Marcus Brody (IT Officer)',
+    created_by: '11111111-1111-1111-1111-111111111111',
+    creator_name: 'Dr. Evelyn Vance (Admin)',
     created_at: new Date(Date.now() - 1 * 86400000).toISOString(),
     updated_at: new Date().toISOString(),
     questions_count: 3,
@@ -117,7 +117,7 @@ const INITIAL_SURVEYS: Survey[] = [
     description: 'Feedback on coverage gaps, connection stability during exam hours, and multi-factor authentication responsiveness.',
     category: 'IT_INFRASTRUCTURE',
     status: 'SCHEDULED',
-    target_roles: ['STUDENT', 'IT_PROFESSOR', 'IT_OFFICER'],
+    target_roles: ['STUDENT'],
     is_anonymous_allowed: true,
     start_date: new Date(Date.now() + 2 * 86400000).toISOString(),
     end_date: new Date(Date.now() + 20 * 86400000).toISOString(),
@@ -134,7 +134,7 @@ const INITIAL_SURVEYS: Survey[] = [
     description: 'Comprehensive annual review of IT service desk tickets, lab maintenance SLAs, and student self-service tools.',
     category: 'DEPARTMENT_SERVICES',
     status: 'DRAFT',
-    target_roles: ['STUDENT', 'IT_PROFESSOR'],
+    target_roles: ['STUDENT'],
     is_anonymous_allowed: false,
     start_date: new Date(Date.now() + 30 * 86400000).toISOString(),
     end_date: new Date(Date.now() + 60 * 86400000).toISOString(),
@@ -291,9 +291,9 @@ const INITIAL_NOTIFICATIONS: SystemNotification[] = [
   {
     id: 'n2222222-2222-2222-2222-222222222222',
     user_id: null,
-    target_role: 'IT_PROFESSOR',
+    target_role: 'STUDENT',
     title: 'Laboratory Readiness Feedback Requested',
-    message: 'Department officers have opened the IT Lab Hardware & Software survey.',
+    message: 'IT Department has opened the IT Lab Hardware & Software survey.',
     link: '/surveys/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
     type: 'SURVEY_INVITE',
     is_read: false,
@@ -487,7 +487,7 @@ export const MockAdapter = {
   getSurveys(userRole?: UserRole): Survey[] {
     this.updateSurveyStatuses();
     let list = [...db.surveys];
-    if (userRole && userRole !== 'ADMINISTRATOR' && userRole !== 'IT_OFFICER') {
+    if (userRole && userRole !== 'ADMINISTRATOR') {
       list = list.filter(
         (s) => s.status === 'ACTIVE' && s.target_roles.includes(userRole)
       );
@@ -710,7 +710,7 @@ export const MockAdapter = {
   // --- Feedback ---
   getFeedbacks(userId?: string, userRole?: UserRole): Feedback[] {
     let list = [...db.feedback];
-    if (userRole && !['ADMINISTRATOR', 'IT_OFFICER'].includes(userRole)) {
+    if (userRole && userRole !== 'ADMINISTRATOR') {
       list = list.filter((f) => f.user_id === userId && !f.is_anonymous);
     }
     // Decrypt content for return and strictly sanitize anonymous identity

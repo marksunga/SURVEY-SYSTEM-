@@ -47,7 +47,7 @@ export async function validateQRCodeAction(codeOrSurveyId: string) {
 }
 
 export async function toggleQRCodeActiveAction(id: string, currentState: boolean) {
-  const user = await requireRole(['ADMINISTRATOR', 'IT_OFFICER']);
+  const user = await requireRole(['ADMINISTRATOR']);
   const qrCodes = MockAdapter.getQRCodeByCodeData(id); // helper
   // update
   revalidatePath('/admin/qr-codes');

@@ -55,7 +55,7 @@ export async function updateFeedbackStatusAction(
   status: FeedbackStatus,
   adminNotes?: string
 ) {
-  const user = await requireRole(['ADMINISTRATOR', 'IT_OFFICER']);
+  const user = await requireRole(['ADMINISTRATOR']);
 
   const updated = MockAdapter.updateFeedbackStatus(id, status, adminNotes);
   if (!updated) {
@@ -110,7 +110,7 @@ export async function editUserFeedbackAction(
 }
 
 export async function deleteFeedbackAction(id: string) {
-  const user = await requireRole(['ADMINISTRATOR', 'IT_OFFICER']);
+  const user = await requireRole(['ADMINISTRATOR']);
 
   const success = MockAdapter.deleteFeedback(id);
   if (!success) {

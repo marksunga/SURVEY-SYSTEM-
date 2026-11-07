@@ -136,8 +136,6 @@ export default function AdminUsersPage() {
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-xs"
                   >
                     <option value="STUDENT">Student</option>
-                    <option value="IT_PROFESSOR">IT Professor</option>
-                    <option value="IT_OFFICER">IT Officer</option>
                     <option value="ADMINISTRATOR">Administrator</option>
                   </select>
                 </div>
@@ -182,8 +180,6 @@ export default function AdminUsersPage() {
         >
           <option value="ALL">All Roles</option>
           <option value="STUDENT">Student</option>
-          <option value="IT_PROFESSOR">IT Professor</option>
-          <option value="IT_OFFICER">IT Officer</option>
           <option value="ADMINISTRATOR">Administrator</option>
         </select>
       </div>
@@ -233,8 +229,6 @@ export default function AdminUsersPage() {
                         className="h-8 rounded border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
                       >
                         <option value="STUDENT">STUDENT</option>
-                        <option value="IT_PROFESSOR">IT PROFESSOR</option>
-                        <option value="IT_OFFICER">IT OFFICER</option>
                         <option value="ADMINISTRATOR">ADMINISTRATOR</option>
                       </select>
                     </td>

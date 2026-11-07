@@ -8,8 +8,8 @@
 -- These UUIDs represent demo users for local/staging verification.
 INSERT INTO profiles (id, role_id, full_name, email, department, id_number, is_active) VALUES
 ('11111111-1111-1111-1111-111111111111', 'ADMINISTRATOR', 'Dr. Evelyn Vance (Admin)', 'admin@itdept.edu', 'IT Administration', 'ADMIN-001', TRUE),
-('22222222-2222-2222-2222-222222222222', 'IT_OFFICER', 'Marcus Brody (IT Officer)', 'officer@itdept.edu', 'Network Operations', 'OFF-104', TRUE),
-('33333333-3333-3333-3333-333333333333', 'IT_PROFESSOR', 'Prof. Raymond Cruz (Faculty)', 'professor@itdept.edu', 'Computer Science Dept', 'FAC-802', TRUE),
+('22222222-2222-2222-2222-222222222222', 'STUDENT', 'Marcus Brody (Student)', 'officer@itdept.edu', 'Network Operations', 'STU-OFF-104', TRUE),
+('33333333-3333-3333-3333-333333333333', 'STUDENT', 'Raymond Cruz (Student)', 'professor@itdept.edu', 'Computer Science Dept', 'STU-FAC-802', TRUE),
 ('44444444-4444-4444-4444-444444444444', 'STUDENT', 'Samantha Hayes (Student)', 'student@itdept.edu', 'Information Technology', 'STU-2026-089', TRUE)
 ON CONFLICT (id) DO UPDATE SET
   role_id = EXCLUDED.role_id,
@@ -34,18 +34,18 @@ INSERT INTO surveys (id, title, description, category, status, target_roles, is_
  'Survey on the reliability of workstation hardware, Linux dual-boot setups, and developer tooling in Labs 401-404.', 
  'FACILITY', 
  'ACTIVE', 
- ARRAY['STUDENT', 'IT_PROFESSOR']::TEXT[], 
+ ARRAY['STUDENT']::TEXT[], 
  TRUE, 
  NOW() - INTERVAL '1 day', 
  NOW() + INTERVAL '10 days', 
- '22222222-2222-2222-2222-222222222222'),
+ '11111111-1111-1111-1111-111111111111'),
 
 ('cccccccc-cccc-cccc-cccc-cccccccccccc', 
  'Campus Wi-Fi 6 & VPN Infrastructure Assessment', 
  'Feedback on coverage gaps, connection stability during exam hours, and multi-factor authentication responsiveness.', 
  'IT_INFRASTRUCTURE', 
  'SCHEDULED', 
- ARRAY['STUDENT', 'IT_PROFESSOR', 'IT_OFFICER']::TEXT[], 
+ ARRAY['STUDENT']::TEXT[], 
  TRUE, 
  NOW() + INTERVAL '2 days', 
  NOW() + INTERVAL '20 days', 
@@ -56,7 +56,7 @@ INSERT INTO surveys (id, title, description, category, status, target_roles, is_
  'Comprehensive annual review of IT service desk tickets, lab maintenance SLAs, and student self-service tools.', 
  'DEPARTMENT_SERVICES', 
  'DRAFT', 
- ARRAY['STUDENT', 'IT_PROFESSOR']::TEXT[], 
+ ARRAY['STUDENT']::TEXT[], 
  FALSE, 
  NOW() + INTERVAL '30 days', 
  NOW() + INTERVAL '60 days', 
@@ -143,7 +143,7 @@ ON CONFLICT (survey_id) DO NOTHING;
 -- 5. Seed Notifications
 INSERT INTO notifications (user_id, target_role, title, message, link, type, is_read) VALUES
 (NULL, 'STUDENT', 'New Mid-Term Survey Published', 'Please complete the Mid-Term IT Course Evaluation before the deadline.', '/surveys/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'SURVEY_INVITE', FALSE),
-(NULL, 'IT_PROFESSOR', 'Laboratory Readiness Feedback Requested', 'Department officers have opened the IT Lab Hardware & Software survey.', '/surveys/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'SURVEY_INVITE', FALSE),
+(NULL, 'STUDENT', 'Laboratory Readiness Feedback Requested', 'Department has opened the IT Lab Hardware & Software survey.', '/surveys/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'SURVEY_INVITE', FALSE),
 ('44444444-4444-4444-4444-444444444444', NULL, 'Survey Reminder', 'Only 5 days left to submit your responses for Course Evaluation.', '/surveys/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'DEADLINE_REMINDER', FALSE),
 ('11111111-1111-1111-1111-111111111111', NULL, 'System Health Normal', 'Automated nightly audit backup completed successfully.', '/admin/backups', 'SYSTEM_ALERT', TRUE);
 

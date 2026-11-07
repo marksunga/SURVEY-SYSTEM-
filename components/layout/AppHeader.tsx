@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Profile } from '@/lib/types/database';
-import { DemoUserSwitcher } from '@/components/auth/DemoUserSwitcher';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Bell,
@@ -23,9 +22,16 @@ import {
   ShieldAlert,
   Database,
   LogOut,
-  X,
+  Settings,
 } from 'lucide-react';
 import { logoutAction } from '@/app/actions/auth';
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: any;
+  badge?: number | null;
+}
 
 interface AppHeaderProps {
   user: Profile;
@@ -36,11 +42,10 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const pathname = usePathname();
 
-  const isStaff = user.role_id === 'ADMINISTRATOR' || user.role_id === 'IT_OFFICER';
   const isAdmin = user.role_id === 'ADMINISTRATOR';
 
-  const userNavItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  const studentNavItems: NavItem[] = [
+    { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/surveys', label: 'Available Surveys', icon: ClipboardList },
     { href: '/surveys/history', label: 'My Submissions', icon: CheckCircle2 },
     { href: '/feedback', label: 'Submit Feedback', icon: MessageSquarePlus },
@@ -54,22 +59,21 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
     { href: '/profile', label: 'My Profile', icon: User },
   ];
 
-  const adminNavItems = [
-    { href: '/admin', label: 'Admin Overview', icon: LayoutDashboard },
+  const adminNavItems: NavItem[] = [
+    { href: '/admin/dashboard', label: 'Admin Dashboard', icon: LayoutDashboard },
+    { href: '/admin/users', label: 'Manage Students', icon: Users },
     { href: '/admin/surveys', label: 'Manage Surveys', icon: ClipboardList },
     { href: '/admin/surveys/create', label: 'Create Survey', icon: PlusCircle },
-    { href: '/admin/feedback', label: 'Feedback Records', icon: MessageSquarePlus },
+    { href: '/admin/feedback', label: 'Moderate Feedback', icon: MessageSquarePlus },
     { href: '/admin/qr-codes', label: 'QR Code Hub', icon: QrCode },
     { href: '/admin/reports', label: 'Reports & Analytics', icon: BarChart3 },
-    ...(isAdmin
-      ? [
-          { href: '/admin/users', label: 'User RBAC', icon: Users },
-          { href: '/admin/notifications', label: 'Broadcasts', icon: Bell },
-          { href: '/admin/audit-logs', label: 'Security Audit', icon: ShieldAlert },
-          { href: '/admin/backups', label: 'Database Backups', icon: Database },
-        ]
-      : []),
+    { href: '/admin/notifications', label: 'Broadcasts & Reminders', icon: Bell },
+    { href: '/admin/audit-logs', label: 'Security Audit', icon: ShieldAlert },
+    { href: '/admin/backups', label: 'Database Backups', icon: Database },
+    { href: '/admin/settings', label: 'System Settings', icon: Settings },
   ];
+
+  const currentNavItems = isAdmin ? adminNavItems : studentNavItems;
 
   return (
     <>
@@ -88,28 +92,32 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
           <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-slate-500">
             <span className="font-semibold text-slate-900">IT Department</span>
             <span className="hidden sm:inline">/</span>
-            <span className="hidden sm:inline">College of Information & Computing Sciences</span>
+            <span className="hidden sm:inline">
+              {isAdmin ? 'Administrator Portal' : 'Student Portal'}
+            </span>
           </div>
           <div className="hidden lg:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-medium border border-emerald-200">
             <ShieldCheck className="h-3 w-3" />
-            <span>AES-256 Encrypted & RLS Protected</span>
+            <span>Strict RBAC Active</span>
           </div>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Quick QR scanner launcher */}
-          <Link
-            href="/scan"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-slate-200 bg-slate-50 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer min-h-[36px]"
-            title="Scan survey QR Code"
-          >
-            <QrCode className="h-3.5 w-3.5 text-blue-600" />
-            <span className="hidden sm:inline">Scan QR</span>
-          </Link>
+          {/* Quick QR scanner launcher for students */}
+          {!isAdmin && (
+            <Link
+              href="/scan"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-slate-200 bg-slate-50 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer min-h-[36px]"
+              title="Scan survey QR Code"
+            >
+              <QrCode className="h-3.5 w-3.5 text-blue-600" />
+              <span className="hidden sm:inline">Scan QR</span>
+            </Link>
+          )}
 
           {/* Notifications Icon with accessible label */}
           <Link
-            href="/notifications"
+            href={isAdmin ? '/admin/notifications' : '/notifications'}
             className="relative p-2 rounded-md text-slate-500 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label={`Notifications, ${unreadCount} unread`}
             title={`Notifications (${unreadCount} unread)`}
@@ -120,11 +128,44 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
             )}
           </Link>
 
-          {/* Demo User Switcher */}
-          <DemoUserSwitcher
-            currentRole={user.role_id}
-            currentEmail={user.email}
-          />
+          {/* Authenticated User Badge & Logout */}
+          <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+            <div className="hidden sm:flex flex-col items-end text-right">
+              <span className="text-xs font-bold text-slate-800 truncate max-w-[140px]">
+                {user.full_name}
+              </span>
+              <span
+                className={`text-[10px] font-bold px-1.5 py-0.2 rounded uppercase ${
+                  isAdmin
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-blue-100 text-blue-800'
+                }`}
+              >
+                {user.role_id}
+              </span>
+            </div>
+
+            <div
+              className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold uppercase flex-shrink-0 ${
+                isAdmin
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-blue-600 text-white'
+              }`}
+            >
+              {user.full_name.slice(0, 2)}
+            </div>
+
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                aria-label="Sign Out"
+                title="Sign Out of Session"
+                className="p-2 rounded-md text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </form>
+          </div>
         </div>
       </header>
 
@@ -138,7 +179,9 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
               </div>
               <div>
                 <DialogTitle className="text-sm font-bold text-white">IT Dept Portal</DialogTitle>
-                <p className="text-[10px] text-slate-300">Feedback & Surveys</p>
+                <p className="text-[10px] text-slate-300">
+                  {isAdmin ? 'Administrator Portal' : 'Student Portal'}
+                </p>
               </div>
             </div>
           </DialogHeader>
@@ -150,8 +193,12 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold text-slate-800 truncate">{user.full_name}</p>
-              <span className="inline-block px-1.5 py-0.2 text-[10px] font-medium rounded bg-blue-100 text-blue-800 uppercase">
-                {user.role_id.replace('_', ' ')}
+              <span
+                className={`inline-block px-1.5 py-0.2 text-[10px] font-bold rounded uppercase ${
+                  isAdmin ? 'bg-slate-900 text-white' : 'bg-blue-100 text-blue-800'
+                }`}
+              >
+                {user.role_id}
               </span>
             </div>
           </div>
@@ -160,11 +207,11 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
           <div className="flex-1 overflow-y-auto p-3 space-y-4">
             <div>
               <div className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                {isStaff ? 'Participant View' : 'Navigation'}
+                {isAdmin ? 'Administrator Navigation' : 'Student Navigation'}
               </div>
               <nav className="space-y-1">
-                {userNavItems.map((item) => {
-                  const active = pathname === item.href;
+                {currentNavItems.map((item) => {
+                  const active = pathname === item.href || (item.href !== '/admin/dashboard' && item.href !== '/student/dashboard' && pathname.startsWith(item.href));
                   const Icon = item.icon;
                   return (
                     <Link
@@ -191,35 +238,6 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                 })}
               </nav>
             </div>
-
-            {isStaff && (
-              <div>
-                <div className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Department Administration
-                </div>
-                <nav className="space-y-1">
-                  {adminNavItems.map((item) => {
-                    const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
-                    const Icon = item.icon;
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setMobileNavOpen(false)}
-                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
-                          active
-                            ? 'bg-blue-50 text-blue-700 font-semibold'
-                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                        }`}
-                      >
-                        <Icon className={`h-4 w-4 ${active ? 'text-blue-600' : 'text-slate-400'}`} />
-                        <span>{item.label}</span>
-                      </Link>
-                    );
-                  })}
-                </nav>
-              </div>
-            )}
           </div>
 
           {/* Drawer Sign Out Footer */}
@@ -227,7 +245,7 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
             <form action={logoutAction}>
               <button
                 type="submit"
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer min-h-[44px]"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Sign Out</span>

@@ -6,7 +6,7 @@ A complete, production-grade, responsive web-based application built for educati
 
 ## 1. System Overview & Technology Stack
 
-The **IT Department Feedback and Survey System** is designed for four primary user groups: **Students**, **IT Professors**, **IT Officers**, and **Department Administrators**.
+The **IT Department Feedback and Survey System** supports two distinct, strictly isolated user roles: **Students** and **Department Administrators**.
 
 ### Tech Stack
 - **Framework & Runtime**: Next.js 14 (App Router, Server Actions, Dynamic API Routes)
@@ -21,16 +21,14 @@ The **IT Department Feedback and Survey System** is designed for four primary us
 
 ---
 
-## 2. System User Roles & Demo Credentials
+## 2. User Roles & Dedicated Authentication Portals
 
-The platform features one-click role switching on the Login page (`/auth/login`) or manual authentication using the pre-seeded credentials below:
+The platform enforces strict role isolation with dedicated login portals. The quick role switcher has been completely removed; users authenticate with their registered credentials:
 
-| Role | Email | Password | Primary Permissions & Capabilities |
+| Role | Dedicated Login Portal | Credentials | Primary Permissions & Capabilities |
 | :--- | :--- | :--- | :--- |
-| **STUDENT** | `student@itdept.edu` | `Password123!` | Browse active surveys, submit responses, submit encrypted regular/anonymous feedback, scan QR codes, view submission history with cryptographic tokens. |
-| **IT PROFESSOR** | `professor@itdept.edu` | `Password123!` | Participate in department evaluations, view authorized curriculum survey results, submit faculty feedback. |
-| **IT OFFICER** | `officer@itdept.edu` | `Password123!` | Author and manage assigned surveys, generate & download survey QR codes, monitor participation rates, view feedback. |
-| **ADMINISTRATOR** | `admin@itdept.edu` | `Password123!` | Full institutional oversight, RBAC permission toggles, audit logs stream, system backups, cross-survey PDF/CSV analytics. |
+| **STUDENT** | `/student/login` | `student@itdept.edu`<br/>`Password123!` | Access Student Dashboard (`/student/dashboard`), browse active surveys, submit responses, submit encrypted anonymous feedback, scan QR codes, view submission history with cryptographic tokens. Self-registration available at `/student/register`. |
+| **ADMINISTRATOR** | `/admin/login` | `admin@itdept.edu`<br/>`Password123!` | Access Administrator Dashboard (`/admin/dashboard`), manage students and user accounts, author and schedule surveys, moderate encrypted feedback, inspect audit logs, manage database backups, and export PDF/CSV analytical reports. Strictly provisioned accounts. |
 
 ---
 

@@ -7,7 +7,7 @@ import { QRCodeDisplay } from '@/components/qr/QRCodeDisplay';
 import { QrCode, ExternalLink, Eye, ArrowRight, Sparkles } from 'lucide-react';
 
 export default async function AdminQRCodesPage() {
-  await requireRole(['ADMINISTRATOR', 'IT_OFFICER']);
+  await requireRole(['ADMINISTRATOR']);
 
   const surveys = MockAdapter.getSurveys();
   const qrList = surveys.map((s) => {

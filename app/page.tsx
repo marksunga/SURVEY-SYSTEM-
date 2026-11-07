@@ -10,9 +10,6 @@ import {
   FileSpreadsheet,
   Lock,
   ArrowRight,
-  CheckCircle,
-  Users,
-  ClipboardList,
   Sparkles,
 } from 'lucide-react';
 
@@ -37,19 +34,22 @@ export default async function HomePage() {
 
           <div className="flex items-center gap-3">
             {user ? (
-              <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white">
-                <Link href={user.role_id === 'ADMINISTRATOR' ? '/admin' : '/dashboard'}>
-                  Go to Portal ({user.full_name.split(' ')[0]})
+              <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white min-h-[44px]">
+                <Link href={user.role_id === 'ADMINISTRATOR' ? '/admin/dashboard' : '/student/dashboard'}>
+                  Go to {user.role_id === 'ADMINISTRATOR' ? 'Admin Portal' : 'Student Portal'}
                   <ArrowRight className="h-4 w-4 ml-1.5" />
                 </Link>
               </Button>
             ) : (
               <>
-                <Button asChild variant="ghost" size="sm" className="text-xs font-semibold">
-                  <Link href="/auth/login">Sign In</Link>
+                <Button asChild variant="ghost" size="sm" className="text-xs font-semibold min-h-[44px]">
+                  <Link href="/student/login">Student Login</Link>
                 </Button>
-                <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white text-xs">
-                  <Link href="/auth/register">Create Account</Link>
+                <Button asChild variant="outline" size="sm" className="text-xs font-semibold border-slate-300 min-h-[44px]">
+                  <Link href="/admin/login">Admin Login</Link>
+                </Button>
+                <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white text-xs min-h-[44px]">
+                  <Link href="/student/register">Register</Link>
                 </Button>
               </>
             )}
@@ -70,56 +70,29 @@ export default async function HomePage() {
           </h1>
 
           <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            A comprehensive, secure portal for students, faculty, and administrators to evaluate curriculum,
-            report lab issues, and shape departmental decisions with cryptographically protected privacy.
+            A comprehensive, secure portal for students and administrators to evaluate curriculum,
+            report laboratory issues, and shape departmental decisions with cryptographically protected privacy.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
-            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-white shadow-md text-sm">
-              <Link href="/auth/login">
-                Access Department Portal
+            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-white shadow-md text-sm min-h-[44px]">
+              <Link href="/student/login">
+                Access Student Portal
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-slate-300 text-slate-700 text-sm">
+            <Button asChild variant="outline" size="lg" className="border-slate-300 text-slate-700 text-sm min-h-[44px]">
+              <Link href="/admin/login">
+                <ShieldCheck className="h-4 w-4 mr-2 text-slate-700" />
+                Administrator Portal
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="lg" className="text-slate-600 text-sm min-h-[44px]">
               <Link href="/scan">
                 <QrCode className="h-4 w-4 mr-2 text-blue-600" />
                 Scan Survey QR
               </Link>
             </Button>
-          </div>
-
-          {/* Quick Demo Login Pills */}
-          <div className="pt-8 max-w-xl mx-auto">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-              1-Click Interactive Demo Access
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <Link
-                href="/auth/login?demo=student"
-                className="p-2.5 rounded-lg border border-slate-200 bg-white hover:border-blue-500 hover:bg-blue-50/50 text-xs font-semibold text-slate-700 transition-all text-center"
-              >
-                🎓 Student
-              </Link>
-              <Link
-                href="/auth/login?demo=professor"
-                className="p-2.5 rounded-lg border border-slate-200 bg-white hover:border-blue-500 hover:bg-blue-50/50 text-xs font-semibold text-slate-700 transition-all text-center"
-              >
-                👨‍🏫 IT Professor
-              </Link>
-              <Link
-                href="/auth/login?demo=officer"
-                className="p-2.5 rounded-lg border border-slate-200 bg-white hover:border-blue-500 hover:bg-blue-50/50 text-xs font-semibold text-slate-700 transition-all text-center"
-              >
-                🛠️ IT Officer
-              </Link>
-              <Link
-                href="/auth/login?demo=admin"
-                className="p-2.5 rounded-lg border border-slate-200 bg-white hover:border-blue-500 hover:bg-blue-50/50 text-xs font-semibold text-slate-700 transition-all text-center"
-              >
-                🛡️ Administrator
-              </Link>
-            </div>
           </div>
         </div>
       </section>
@@ -153,7 +126,7 @@ export default async function HomePage() {
               </div>
               <h3 className="text-base font-bold text-slate-900">AES-256 Encrypted Feedback</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Sensitive feedback regarding facilities or faculty is encrypted using AES-256-GCM authenticated cipher before reaching storage.
+                Sensitive feedback regarding facilities or coursework is encrypted using AES-256-GCM authenticated cipher before reaching storage.
               </p>
             </CardContent>
           </Card>
@@ -178,7 +151,7 @@ export default async function HomePage() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-xl font-bold text-slate-900">Currently Active Surveys</h3>
-              <p className="text-xs text-slate-500">Live evaluations currently accepting departmental responses.</p>
+              <p className="text-xs text-slate-500">Live evaluations currently accepting student responses.</p>
             </div>
             <Button asChild variant="outline" size="sm" className="text-xs">
               <Link href="/surveys">View All ({activeSurveys.length})</Link>
@@ -219,13 +192,13 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>© 2026 IT Department Feedback and Survey System. All rights reserved.</p>
           <div className="flex items-center gap-4 text-xs font-medium text-slate-600">
-            <Link href="/auth/login" className="hover:text-blue-600">Sign In</Link>
+            <Link href="/student/login" className="hover:text-blue-600">Student Login</Link>
+            <Link href="/admin/login" className="hover:text-blue-600">Admin Login</Link>
             <Link href="/scan" className="hover:text-blue-600">QR Scanner</Link>
-            <Link href="/auth/register" className="hover:text-blue-600">Registration</Link>
+            <Link href="/student/register" className="hover:text-blue-600">Student Registration</Link>
           </div>
         </div>
       </footer>
     </div>
   );
 }
-

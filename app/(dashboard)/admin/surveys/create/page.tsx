@@ -19,7 +19,7 @@ export default function CreateSurveyPage() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<SurveyCategory>('ACADEMIC');
   const [status, setStatus] = useState<SurveyStatus>('ACTIVE');
-  const [targetRoles, setTargetRoles] = useState<UserRole[]>(['STUDENT', 'IT_PROFESSOR']);
+  const [targetRoles, setTargetRoles] = useState<UserRole[]>(['STUDENT']);
   const [isAnonymousAllowed, setIsAnonymousAllowed] = useState(true);
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState(
@@ -204,7 +204,7 @@ export default function CreateSurveyPage() {
               <div className="space-y-2">
                 <Label className="text-xs font-semibold text-slate-700">Target Participant Roles:</Label>
                 <div className="flex items-center gap-3">
-                  {(['STUDENT', 'IT_PROFESSOR', 'IT_OFFICER'] as UserRole[]).map((r) => (
+                  {(['STUDENT', 'ADMINISTRATOR'] as UserRole[]).map((r) => (
                     <label key={r} className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
                       <input
                         type="checkbox"

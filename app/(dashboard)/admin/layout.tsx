@@ -9,13 +9,13 @@ export default async function AdminLayout({
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect('/auth/login');
+    redirect('/admin/login');
   }
 
-  if (user.role_id !== 'ADMINISTRATOR' && user.role_id !== 'IT_OFFICER') {
-    redirect('/dashboard');
+  // Strict role isolation: Only ADMINISTRATOR can access /admin/*
+  if (user.role_id !== 'ADMINISTRATOR') {
+    redirect('/student/dashboard');
   }
 
   return <>{children}</>;
 }
-

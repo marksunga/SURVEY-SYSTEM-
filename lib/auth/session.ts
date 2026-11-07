@@ -3,11 +3,12 @@ import { Profile, UserRole } from '@/lib/types/database';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
 
 const SESSION_COOKIE_NAME = 'it_dept_session_user';
-const DEFAULT_USER_ID = '44444444-4444-4444-4444-444444444444'; // Samantha Hayes (Student)
-
 export async function getCurrentUser(): Promise<Profile | null> {
   const cookieStore = cookies();
-  const userId = cookieStore.get(SESSION_COOKIE_NAME)?.value || DEFAULT_USER_ID;
+  const userId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  if (!userId) {
+    return null;
+  }
 
   const profile = MockAdapter.getProfileById(userId);
   if (!profile || !profile.is_active) {

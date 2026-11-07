@@ -19,7 +19,7 @@ export async function createSurveyAction(data: {
   questions: DraftQuestion[];
 }): Promise<{ success: boolean; surveyId?: string; error?: string }> {
   try {
-    const user = await requireRole(['ADMINISTRATOR', 'IT_OFFICER']);
+    const user = await requireRole(['ADMINISTRATOR']);
 
     // 1. Create survey
     const newSurvey = MockAdapter.createSurvey({
@@ -92,7 +92,7 @@ export async function updateSurveyAction(
   questions?: DraftQuestion[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const user = await requireRole(['ADMINISTRATOR', 'IT_OFFICER']);
+    const user = await requireRole(['ADMINISTRATOR']);
 
     MockAdapter.updateSurvey(id, updates);
 
@@ -126,7 +126,7 @@ export async function updateSurveyAction(
 }
 
 export async function updateSurveyStatusAction(id: string, status: SurveyStatus) {
-  const user = await requireRole(['ADMINISTRATOR', 'IT_OFFICER']);
+  const user = await requireRole(['ADMINISTRATOR']);
 
   const updated = MockAdapter.updateSurvey(id, { status });
 
@@ -138,7 +138,7 @@ export async function updateSurveyStatusAction(id: string, status: SurveyStatus)
 }
 
 export async function deleteSurveyAction(id: string) {
-  const user = await requireRole(['ADMINISTRATOR', 'IT_OFFICER']);
+  const user = await requireRole(['ADMINISTRATOR']);
 
   MockAdapter.deleteSurvey(id);
 

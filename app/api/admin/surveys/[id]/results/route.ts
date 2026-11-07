@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    await requireRole(['ADMINISTRATOR', 'IT_OFFICER', 'IT_PROFESSOR']);
+    await requireRole(['ADMINISTRATOR']);
     const results = MockAdapter.getSurveyResults(params.id);
     return NextResponse.json(results);
   } catch (err: any) {
