@@ -446,8 +446,11 @@ export const MockAdapter = {
   updateUserRole(id: string, role: UserRole): Profile | null {
     const idx = db.profiles.findIndex((p) => p.id === id);
     if (idx === -1) return null;
-    db.profiles[idx].role_id = role;
-    db.profiles[idx].updated_at = new Date().toISOString();
+    // Strict role immutability: Role changes are prohibited
+    if (db.profiles[idx].role_id !== role) {
+      console.warn(`[Security] Blocked unauthorized role modification attempt for user ${id}`);
+      return null;
+    }
     return db.profiles[idx];
   },
 

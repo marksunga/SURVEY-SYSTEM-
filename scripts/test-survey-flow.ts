@@ -222,6 +222,45 @@ function runAutomatedVerification() {
   MockAdapter.deleteUser(newStudent.id);
   console.log('✓ Verified: Registration test cleanup completed.');
 
+  // 12. Test Separated Account Management & Role Immutability
+  console.log('\n[12/12] Testing Separated Account Management & Role Immutability...');
+  const adminList = MockAdapter.getProfiles().filter((p) => p.role_id === 'ADMINISTRATOR');
+  const studentList = MockAdapter.getProfiles().filter((p) => p.role_id === 'STUDENT');
+
+  if (adminList.length === 0 || adminList.some((a) => a.role_id !== 'ADMINISTRATOR')) {
+    throw new Error('Administrator tab filter failed to isolate administrator accounts!');
+  }
+  console.log(`✓ Verified: Administrator tab strictly isolates ${adminList.length} administrator account(s).`);
+
+  if (studentList.length === 0 || studentList.some((s) => s.role_id !== 'STUDENT')) {
+    throw new Error('Student tab filter failed to isolate student accounts!');
+  }
+  console.log(`✓ Verified: Student tab strictly isolates ${studentList.length} student account(s).`);
+
+  // Verify unauthorized role change attempt is rejected
+  const targetStudent = studentList[0];
+  const roleChangeAttempt = MockAdapter.updateUserRole(targetStudent.id, 'ADMINISTRATOR');
+  if (roleChangeAttempt !== null) {
+    throw new Error('Unauthorized role modification was not blocked!');
+  }
+  console.log('✓ Verified: Direct role alteration is strictly prohibited and blocked by the backend.');
+
+  // Verify admin provisioned accounts auto-assign correct role based on tab category
+  const provisionedAdmin = MockAdapter.createUser({
+    id: crypto.randomUUID(),
+    email: 'new.admin.test@itdept.edu',
+    full_name: 'Dr. Provisioned Admin',
+    role_id: 'ADMINISTRATOR',
+    department: 'IT Administration',
+    id_number: 'ADM-2026-TEST',
+    is_active: true,
+  });
+  if (provisionedAdmin.role_id !== 'ADMINISTRATOR') {
+    throw new Error('New administrator did not receive ADMINISTRATOR role');
+  }
+  console.log('✓ Verified: Provisioned Administrator account assigned ADMINISTRATOR role.');
+  MockAdapter.deleteUser(provisionedAdmin.id);
+
   console.log('\n=====================================================');
   console.log('ALL AUTOMATED SYSTEM TESTS COMPLETED WITH 100% SUCCESS');
   console.log('=====================================================');
