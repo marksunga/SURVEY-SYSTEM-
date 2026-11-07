@@ -45,6 +45,7 @@ export interface Survey {
 
 export type QuestionType =
   | 'MULTIPLE_CHOICE'
+  | 'SINGLE_CHOICE'
   | 'CHECKBOX'
   | 'SHORT_ANSWER'
   | 'PARAGRAPH'

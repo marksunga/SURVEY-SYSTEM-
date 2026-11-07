@@ -7,8 +7,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Users, UserPlus, Search, Shield, Check, X, AlertCircle } from 'lucide-react';
-import { updateUserRoleAction, toggleUserActiveAction, createAdminUserAction } from '@/app/actions/users';
+import { Users, UserPlus, Search, Shield, Check, X, AlertCircle, Trash2 } from 'lucide-react';
+import { updateUserRoleAction, toggleUserActiveAction, createAdminUserAction, deleteUserAction } from '@/app/actions/users';
 import { Profile, UserRole } from '@/lib/types/database';
 
 export default function AdminUsersPage() {
@@ -17,6 +17,8 @@ export default function AdminUsersPage() {
   const [selectedRole, setSelectedRole] = useState<string>('ALL');
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<Profile | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,6 +65,19 @@ export default function AdminUsersPage() {
       setDialogOpen(false);
       form.reset();
     }
+  }
+
+  async function handleConfirmDeleteUser() {
+    if (!userToDelete) return;
+    setDeleting(true);
+    const res = await deleteUserAction(userToDelete.id);
+    if (res?.success) {
+      setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
+      setUserToDelete(null);
+    } else if (res?.error) {
+      alert(res.error);
+    }
+    setDeleting(false);
   }
 
   const filteredUsers = users.filter((u) => {
@@ -235,19 +250,31 @@ export default function AdminUsersPage() {
                       </span>
                     </td>
                     <td className="p-3.5 pr-4 text-right">
-                      <Button
-                        type="button"
-                        variant={u.is_active ? 'outline' : 'default'}
-                        size="sm"
-                        onClick={() => handleToggleActive(u.id)}
-                        className={`h-7 text-xs px-2.5 ${
-                          u.is_active
-                            ? 'text-rose-600 border-rose-200 hover:bg-rose-50'
-                            : 'bg-emerald-600 text-white hover:bg-emerald-500'
-                        }`}
-                      >
-                        {u.is_active ? 'Deactivate' : 'Activate'}
-                      </Button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          type="button"
+                          variant={u.is_active ? 'outline' : 'default'}
+                          size="sm"
+                          onClick={() => handleToggleActive(u.id)}
+                          className={`h-7 text-xs px-2.5 ${
+                            u.is_active
+                              ? 'text-rose-600 border-rose-200 hover:bg-rose-50'
+                              : 'bg-emerald-600 text-white hover:bg-emerald-500'
+                          }`}
+                        >
+                          {u.is_active ? 'Deactivate' : 'Activate'}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setUserToDelete(u)}
+                          className="h-7 w-7 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                          title="Delete User"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -256,6 +283,45 @@ export default function AdminUsersPage() {
           </table>
         </div>
       </div>
+
+      {/* Confirmation Dialog for Deleting User */}
+      <Dialog open={Boolean(userToDelete)} onOpenChange={(open) => !open && setUserToDelete(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-slate-900">Confirm User Deletion</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2 text-xs text-slate-600">
+            <p>
+              Are you sure you want to permanently delete user{' '}
+              <strong className="text-slate-900">{userToDelete?.full_name}</strong> ({userToDelete?.email})?
+            </p>
+            <p className="text-rose-600 font-medium">
+              This action cannot be undone. All associated account access will be immediately terminated.
+            </p>
+          </div>
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={deleting}
+              onClick={() => setUserToDelete(null)}
+              className="text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={deleting}
+              onClick={handleConfirmDeleteUser}
+              className="bg-rose-600 hover:bg-rose-500 text-white text-xs"
+            >
+              {deleting ? 'Deleting...' : 'Delete User Permanently'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

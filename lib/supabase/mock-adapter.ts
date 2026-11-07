@@ -451,6 +451,13 @@ export const MockAdapter = {
     return db.profiles[idx];
   },
 
+  deleteUser(userId: string): boolean {
+    const idx = db.profiles.findIndex((p) => p.id === userId);
+    if (idx === -1) return false;
+    db.profiles.splice(idx, 1);
+    return true;
+  },
+
   createUser(profile: Omit<Profile, 'created_at' | 'updated_at'>): Profile {
     const newProfile: Profile = {
       ...profile,
@@ -461,8 +468,24 @@ export const MockAdapter = {
     return newProfile;
   },
 
+  updateSurveyStatuses(): void {
+    const now = Date.now();
+    for (const s of db.surveys) {
+      if (s.status === 'ACTIVE' && new Date(s.end_date).getTime() < now) {
+        s.status = 'EXPIRED';
+      } else if (
+        s.status === 'SCHEDULED' &&
+        new Date(s.start_date).getTime() <= now &&
+        new Date(s.end_date).getTime() > now
+      ) {
+        s.status = 'ACTIVE';
+      }
+    }
+  },
+
   // --- Surveys ---
   getSurveys(userRole?: UserRole): Survey[] {
+    this.updateSurveyStatuses();
     let list = [...db.surveys];
     if (userRole && userRole !== 'ADMINISTRATOR' && userRole !== 'IT_OFFICER') {
       list = list.filter(
@@ -478,6 +501,7 @@ export const MockAdapter = {
   },
 
   getSurveyById(id: string): Survey | undefined {
+    this.updateSurveyStatuses();
     const survey = db.surveys.find((s) => s.id === id);
     if (!survey) return undefined;
     return {
@@ -686,13 +710,16 @@ export const MockAdapter = {
   // --- Feedback ---
   getFeedbacks(userId?: string, userRole?: UserRole): Feedback[] {
     let list = [...db.feedback];
-    if (userRole === 'STUDENT' && userId) {
+    if (userRole && !['ADMINISTRATOR', 'IT_OFFICER'].includes(userRole)) {
       list = list.filter((f) => f.user_id === userId && !f.is_anonymous);
     }
-    // Decrypt content for return
+    // Decrypt content for return and strictly sanitize anonymous identity
     return list
       .map((f) => ({
         ...f,
+        user_id: f.is_anonymous ? null : f.user_id,
+        user_email: f.is_anonymous ? null : f.user_email,
+        user_name: f.is_anonymous ? null : (f.user_name || 'Verified User'),
         decrypted_content: decryptAES256(f.content_encrypted, f.content_iv, f.content_tag),
       }))
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -728,6 +755,40 @@ export const MockAdapter = {
 
     db.feedback.unshift(newFeedback);
     return newFeedback;
+  },
+
+  updateUserFeedback(
+    feedbackId: string,
+    userId: string,
+    updates: { title?: string; category?: Feedback['category']; content?: string }
+  ): Feedback | null {
+    const idx = db.feedback.findIndex((f) => f.id === feedbackId);
+    if (idx === -1) return null;
+    const fb = db.feedback[idx];
+    if (fb.user_id !== userId || fb.status !== 'PENDING') {
+      return null;
+    }
+    if (updates.title) fb.title = updates.title;
+    if (updates.category) fb.category = updates.category;
+    if (updates.content) {
+      const enc = encryptAES256(updates.content);
+      fb.content_encrypted = enc.encrypted;
+      fb.content_iv = enc.iv;
+      fb.content_tag = enc.tag;
+      fb.decrypted_content = updates.content;
+    }
+    fb.updated_at = new Date().toISOString();
+    return {
+      ...fb,
+      decrypted_content: decryptAES256(fb.content_encrypted, fb.content_iv, fb.content_tag),
+    };
+  },
+
+  deleteFeedback(id: string): boolean {
+    const idx = db.feedback.findIndex((f) => f.id === id);
+    if (idx === -1) return false;
+    db.feedback.splice(idx, 1);
+    return true;
   },
 
   updateFeedbackStatus(id: string, status: Feedback['status'], adminNotes?: string): Feedback | null {
@@ -814,6 +875,13 @@ export const MockAdapter = {
     };
     db.notifications.unshift(newNotif);
     return newNotif;
+  },
+
+  deleteNotification(id: string): boolean {
+    const idx = db.notifications.findIndex((n) => n.id === id);
+    if (idx === -1) return false;
+    db.notifications.splice(idx, 1);
+    return true;
   },
 
   // --- Audit Logs ---

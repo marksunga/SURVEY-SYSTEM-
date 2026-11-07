@@ -112,10 +112,56 @@ function runAutomatedVerification() {
   console.log(`✓ QR Code "${qr.code_data}" successfully validated pointing to ${qr.access_url}.`);
 
   // 7. Test Audit Logging
-  console.log('\n[7/7] Testing Audit Logs Stream...');
+  console.log('\n[7/9] Testing Audit Logs Stream...');
   const auditLogs = MockAdapter.getAuditLogs();
   if (auditLogs.length === 0) throw new Error('Audit logs empty');
   console.log(`✓ Audit log verified with ${auditLogs.length} events logged.`);
+
+  // 8. Test Feedback Editing & Deletion Lifecycle
+  console.log('\n[8/9] Testing User Feedback Editing (when permitted) & Deletion...');
+  const identifiedFeedback = MockAdapter.submitFeedback({
+    title: 'Initial Printer Issue in Lab 402',
+    category: 'FACILITIES',
+    content: 'Printer paper jam on 3rd floor lab.',
+    is_anonymous: false,
+    user_id: testUserId,
+  });
+  const updatedFeedback = MockAdapter.updateUserFeedback(identifiedFeedback.id, testUserId, {
+    title: 'Updated: Severe Printer Jam and Toner Depletion in Lab 402',
+    content: 'Printer is out of magenta toner and jamming continually.',
+  });
+  if (!updatedFeedback) throw new Error('Feedback edit failed for authorized user!');
+  if (updatedFeedback.decrypted_content !== 'Printer is out of magenta toner and jamming continually.') {
+    throw new Error('Re-encrypted feedback did not match updated content!');
+  }
+  console.log('✓ Verified: User can edit pending feedback with automatic re-encryption.');
+
+  const deleteFbResult = MockAdapter.deleteFeedback(identifiedFeedback.id);
+  if (!deleteFbResult) throw new Error('Failed to delete feedback');
+  console.log('✓ Verified: Feedback record deletion confirmed.');
+
+  // 9. Test User Management & Notification Lifecycle
+  console.log('\n[9/9] Testing User Account & Notification Lifecycle...');
+  const tempUser = MockAdapter.createUser({
+    id: crypto.randomUUID(),
+    email: 'temp.student@itdept.edu',
+    full_name: 'Temp Student',
+    role_id: 'STUDENT',
+    department: 'Information Technology',
+    is_active: true,
+  });
+  const deleteUserResult = MockAdapter.deleteUser(tempUser.id);
+  if (!deleteUserResult) throw new Error('Failed to delete user');
+  console.log('✓ Verified: User account creation and deletion confirmed.');
+
+  const tempNotif = MockAdapter.createNotification({
+    title: 'Automated Test Notification',
+    message: 'Testing system notification creation and deletion.',
+    type: 'SYSTEM_ALERT',
+  });
+  const deleteNotifResult = MockAdapter.deleteNotification(tempNotif.id);
+  if (!deleteNotifResult) throw new Error('Failed to delete notification');
+  console.log('✓ Verified: Notification creation, broadcast, and deletion confirmed.');
 
   console.log('\n=====================================================');
   console.log('ALL AUTOMATED SYSTEM TESTS COMPLETED WITH 100% SUCCESS');

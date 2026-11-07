@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   ClipboardList,
   PlusCircle,
@@ -15,6 +16,7 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
+  Filter,
 } from 'lucide-react';
 import { updateSurveyStatusAction, deleteSurveyAction } from '@/app/actions/surveys';
 import { Survey, SurveyStatus } from '@/lib/types/database';
@@ -22,6 +24,9 @@ import { formatDate } from '@/lib/utils';
 
 export default function AdminSurveysPage() {
   const [surveys, setSurveys] = useState<Survey[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [surveyToDelete, setSurveyToDelete] = useState<Survey | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,15 +46,21 @@ export default function AdminSurveysPage() {
     }
   }
 
-  async function handleDelete(id: string, title: string) {
-    if (!confirm(`Are you sure you want to delete the survey "${title}"? All responses and questions will be permanently removed.`)) {
-      return;
-    }
-    const res = await deleteSurveyAction(id);
+  async function handleConfirmDelete() {
+    if (!surveyToDelete) return;
+    setDeleting(true);
+    const res = await deleteSurveyAction(surveyToDelete.id);
     if (res?.success) {
-      setSurveys((prev) => prev.filter((s) => s.id !== id));
+      setSurveys((prev) => prev.filter((s) => s.id !== surveyToDelete.id));
+      setSurveyToDelete(null);
     }
+    setDeleting(false);
   }
+
+  const filteredSurveys = surveys.filter((s) => {
+    if (statusFilter === 'ALL') return true;
+    return s.status === statusFilter;
+  });
 
   return (
     <div className="space-y-6">
@@ -62,12 +73,27 @@ export default function AdminSurveysPage() {
           </p>
         </div>
 
-        <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white text-xs">
-          <Link href="/admin/surveys/create">
-            <PlusCircle className="h-4 w-4 mr-1.5" />
-            Create New Survey
-          </Link>
-        </Button>
+        <div className="flex items-center gap-3">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="flex h-9 rounded-md border border-input bg-white px-3 py-1.5 text-xs text-slate-700 font-medium"
+          >
+            <option value="ALL">All Statuses ({surveys.length})</option>
+            <option value="ACTIVE">Active</option>
+            <option value="SCHEDULED">Scheduled</option>
+            <option value="EXPIRED">Expired</option>
+            <option value="CLOSED">Closed</option>
+            <option value="DRAFT">Draft</option>
+          </select>
+
+          <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white text-xs">
+            <Link href="/admin/surveys/create">
+              <PlusCircle className="h-4 w-4 mr-1.5" />
+              Create New Survey
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Surveys Table */}
@@ -91,14 +117,14 @@ export default function AdminSurveysPage() {
                     Loading surveys...
                   </td>
                 </tr>
-              ) : surveys.length === 0 ? (
+              ) : filteredSurveys.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-slate-400 text-xs">
-                    No surveys created yet.
+                    No surveys found matching the selected status filter.
                   </td>
                 </tr>
               ) : (
-                surveys.map((s) => (
+                filteredSurveys.map((s) => (
                   <tr key={s.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="p-3.5 pl-4 max-w-sm">
                       <div className="font-semibold text-slate-900 leading-snug">{s.title}</div>
@@ -161,7 +187,7 @@ export default function AdminSurveysPage() {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(s.id, s.title)}
+                          onClick={() => setSurveyToDelete(s)}
                           className="h-7 text-xs px-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
                           title="Delete Survey"
                         >
@@ -176,6 +202,45 @@ export default function AdminSurveysPage() {
           </table>
         </div>
       </div>
+
+      {/* Accessible Confirmation Dialog for Deleting Survey */}
+      <Dialog open={Boolean(surveyToDelete)} onOpenChange={(open) => !open && setSurveyToDelete(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-slate-900">Confirm Survey Deletion</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2 text-xs text-slate-600">
+            <p>
+              Are you sure you want to delete the survey{' '}
+              <strong className="text-slate-900">&quot;{surveyToDelete?.title}&quot;</strong>?
+            </p>
+            <p className="text-rose-600 font-medium">
+              This will permanently delete all associated questions, answers, QR code records, and analytics. This operation cannot be undone.
+            </p>
+          </div>
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={deleting}
+              onClick={() => setSurveyToDelete(null)}
+              className="text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={deleting}
+              onClick={handleConfirmDelete}
+              className="bg-rose-600 hover:bg-rose-500 text-white text-xs"
+            >
+              {deleting ? 'Deleting...' : 'Delete Survey Permanently'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

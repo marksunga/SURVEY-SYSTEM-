@@ -44,6 +44,18 @@ export default function SurveyTakingPage({ params }: SurveyTakingPageProps) {
           setSurvey(data.survey);
           setQuestions(data.questions || []);
           setHasCompleted(data.hasCompleted || false);
+
+          // Restore auto-saved draft if available
+          if (!data.hasCompleted) {
+            try {
+              const savedDraft = localStorage.getItem(`survey_draft_${params.id}`);
+              if (savedDraft) {
+                setAnswers(JSON.parse(savedDraft));
+              }
+            } catch {
+              // Ignore local storage parse error
+            }
+          }
         } else {
           setError(data.error || 'Survey not found.');
         }
@@ -53,10 +65,18 @@ export default function SurveyTakingPage({ params }: SurveyTakingPageProps) {
   }, [params.id]);
 
   function handleAnswerChange(questionId: string, value: any) {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: value,
-    }));
+    setAnswers((prev) => {
+      const updated = {
+        ...prev,
+        [questionId]: value,
+      };
+      try {
+        localStorage.setItem(`survey_draft_${params.id}`, JSON.stringify(updated));
+      } catch {
+        // Storage full or unavailable
+      }
+      return updated;
+    });
   }
 
   // Calculate completion percentage
@@ -76,6 +96,11 @@ export default function SurveyTakingPage({ params }: SurveyTakingPageProps) {
         setError(res.error);
       } else if (res.token) {
         setReceiptToken(res.token);
+        try {
+          localStorage.removeItem(`survey_draft_${params.id}`);
+        } catch {
+          // ignore
+        }
       }
     } catch (err: any) {
       setError(err?.message || 'Submission failed.');

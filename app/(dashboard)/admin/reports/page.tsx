@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -18,10 +18,14 @@ import {
   Users,
   Calendar,
   Sparkles,
+  Percent,
 } from 'lucide-react';
+import { SurveyStatus } from '@/lib/types/database';
 
 export default function AdminReportsPage() {
   const [surveys, setSurveys] = useState<any[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [dateFilter, setDateFilter] = useState<string>('ALL');
   const [selectedSurveyId, setSelectedSurveyId] = useState<string>('');
   const [reportData, setReportData] = useState<any>(null);
   const [loadingSurveys, setLoadingSurveys] = useState(true);
@@ -40,8 +44,41 @@ export default function AdminReportsPage() {
       .finally(() => setLoadingSurveys(false));
   }, []);
 
+  // Filter available surveys based on status and date range
+  const filteredSurveyOptions = useMemo(() => {
+    return surveys.filter((s) => {
+      if (statusFilter !== 'ALL' && s.status !== statusFilter) {
+        return false;
+      }
+      if (dateFilter !== 'ALL') {
+        const surveyTime = new Date(s.created_at).getTime();
+        const now = Date.now();
+        const days = dateFilter === '7D' ? 7 : dateFilter === '30D' ? 30 : 90;
+        if (now - surveyTime > days * 86400000) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [surveys, statusFilter, dateFilter]);
+
+  // When filtered options change, update selected survey if current selection is invalid
   useEffect(() => {
-    if (!selectedSurveyId) return;
+    if (filteredSurveyOptions.length > 0) {
+      const stillValid = filteredSurveyOptions.some((s) => s.id === selectedSurveyId);
+      if (!stillValid) {
+        setSelectedSurveyId(filteredSurveyOptions[0].id);
+      }
+    } else {
+      setSelectedSurveyId('');
+    }
+  }, [filteredSurveyOptions, selectedSurveyId]);
+
+  useEffect(() => {
+    if (!selectedSurveyId) {
+      setReportData(null);
+      return;
+    }
     setLoadingReport(true);
     fetch(`/api/admin/surveys/${selectedSurveyId}/results`)
       .then((res) => res.json())
@@ -49,6 +86,15 @@ export default function AdminReportsPage() {
       .catch((err) => console.error(err))
       .finally(() => setLoadingReport(false));
   }, [selectedSurveyId]);
+
+  // Calculate participation rate
+  const participationRate = useMemo(() => {
+    if (!reportData?.totalResponses) return 0;
+    // Estimated target audience pool based on roles
+    const targetRoles = reportData.survey?.target_roles || [];
+    const poolSize = targetRoles.length * 20; // benchmark student/faculty cohort pool
+    return Math.min(100, Math.round((reportData.totalResponses / poolSize) * 100));
+  }, [reportData]);
 
   return (
     <div className="space-y-6">
@@ -86,26 +132,67 @@ export default function AdminReportsPage() {
         )}
       </div>
 
-      {/* Filter Selector */}
+      {/* Filtering Toolbar */}
       <Card className="border-slate-200">
-        <CardContent className="p-4 flex flex-col sm:flex-row items-center gap-4">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 whitespace-nowrap">
-            <Filter className="h-4 w-4 text-blue-600" />
-            <span>Select Survey Report:</span>
+        <CardContent className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Survey Selector */}
+          <div className="sm:col-span-1 space-y-1">
+            <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+              <Filter className="h-3 w-3 text-blue-600" />
+              <span>Select Survey:</span>
+            </label>
+            <select
+              value={selectedSurveyId}
+              onChange={(e) => setSelectedSurveyId(e.target.value)}
+              disabled={loadingSurveys || filteredSurveyOptions.length === 0}
+              className="flex h-9 w-full rounded-md border border-input bg-white px-2.5 py-1 text-xs text-slate-800 font-semibold"
+            >
+              {filteredSurveyOptions.length === 0 ? (
+                <option value="">No surveys match filters</option>
+              ) : (
+                filteredSurveyOptions.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.title} ({s.status})
+                  </option>
+                ))
+              )}
+            </select>
           </div>
 
-          <select
-            value={selectedSurveyId}
-            onChange={(e) => setSelectedSurveyId(e.target.value)}
-            disabled={loadingSurveys}
-            className="flex h-10 w-full sm:flex-1 rounded-md border border-input bg-white px-3 py-2 text-xs text-slate-800 font-semibold"
-          >
-            {surveys.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.title} ({s.category} • {s.responses_count} submissions)
-              </option>
-            ))}
-          </select>
+          {/* Status Filter */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold text-slate-700">Filter by Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="flex h-9 w-full rounded-md border border-input bg-white px-2.5 py-1 text-xs text-slate-700"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="ACTIVE">Active</option>
+              <option value="SCHEDULED">Scheduled</option>
+              <option value="EXPIRED">Expired</option>
+              <option value="CLOSED">Closed</option>
+              <option value="DRAFT">Draft</option>
+            </select>
+          </div>
+
+          {/* Date Filter */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+              <Calendar className="h-3 w-3 text-blue-600" />
+              <span>Date Period:</span>
+            </label>
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="flex h-9 w-full rounded-md border border-input bg-white px-2.5 py-1 text-xs text-slate-700"
+            >
+              <option value="ALL">All Time</option>
+              <option value="7D">Last 7 Days</option>
+              <option value="30D">Last 30 Days</option>
+              <option value="90D">Last 90 Days</option>
+            </select>
+          </div>
         </CardContent>
       </Card>
 
@@ -113,17 +200,26 @@ export default function AdminReportsPage() {
       {loadingReport ? (
         <div className="py-16 text-center text-xs text-slate-400">Loading automated report...</div>
       ) : !reportData?.survey ? (
-        <div className="py-16 text-center text-xs text-slate-400">No report data found.</div>
+        <div className="py-16 text-center text-xs text-slate-400">
+          No survey selected or matching the filter criteria.
+        </div>
       ) : (
         <div className="space-y-6">
-          {/* Summary Banner */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Summary Banner with Participation Rates */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               title="Total Submissions"
               value={reportData.totalResponses}
               subtitle="Completed evaluations"
               icon={CheckCircle2}
               color="blue"
+            />
+            <StatCard
+              title="Participation Rate"
+              value={`${participationRate}%`}
+              subtitle={`Est. cohort participation`}
+              icon={Percent}
+              color="amber"
             />
             <StatCard
               title="Anonymous Submissions"
@@ -151,4 +247,3 @@ export default function AdminReportsPage() {
     </div>
   );
 }
-

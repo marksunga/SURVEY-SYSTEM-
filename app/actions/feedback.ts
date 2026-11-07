@@ -83,3 +83,51 @@ export async function updateFeedbackStatusAction(
   return { success: true };
 }
 
+export async function editUserFeedbackAction(
+  id: string,
+  data: { title?: string; category?: FeedbackCategory; content?: string }
+) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { error: 'Please log in to edit feedback.' };
+  }
+
+  const updated = MockAdapter.updateUserFeedback(id, user.id, data);
+  if (!updated) {
+    return {
+      error: 'Cannot edit feedback. Either it was not found, you are not the author, or it is already being reviewed.',
+    };
+  }
+
+  MockAdapter.logAudit(user.email, 'FEEDBACK_EDITED', 'FEEDBACK', id, {
+    category: updated.category,
+    title: updated.title,
+  });
+
+  revalidatePath('/feedback');
+  revalidatePath('/admin/feedback');
+  return { success: true, feedback: updated };
+}
+
+export async function deleteFeedbackAction(id: string) {
+  const user = await requireRole(['ADMINISTRATOR', 'IT_OFFICER']);
+
+  const success = MockAdapter.deleteFeedback(id);
+  if (!success) {
+    return { error: 'Feedback record not found.' };
+  }
+
+  MockAdapter.logAudit(user.email, 'FEEDBACK_DELETED', 'FEEDBACK', id);
+
+  revalidatePath('/admin/feedback');
+  revalidatePath('/feedback');
+  return { success: true };
+}
+
+export async function getUserFeedbacksAction() {
+  const user = await getCurrentUser();
+  if (!user) return { feedbacks: [] };
+  const feedbacks = MockAdapter.getFeedbacks(user.id, user.role_id);
+  return { feedbacks };
+}
+

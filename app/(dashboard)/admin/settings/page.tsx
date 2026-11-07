@@ -51,8 +51,8 @@ export default function SettingsPage() {
 
   const [securitySettings] = useState({
     encryptionAlgorithm: 'AES-256-GCM',
-    encryptionKeyPreview: '••••••••••••••••••••••••••••••••',
-    encryptionKeyReal: 'it-feedback-survey-aes-256-gcm-key-2026',
+    keyManagementStatus: '32-Byte Master Key Loaded in Server Environment',
+    keySource: 'FEEDBACK_ENCRYPTION_KEY',
     rlsEnabled: true,
     auditLogsEnabled: true,
     anonymousProtection: true,
@@ -217,24 +217,20 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Encryption Key (env: ENCRYPTION_KEY)</Label>
+                  <Label>Key Storage & Isolation</Label>
                   <div className="flex items-center gap-2">
                     <Input
-                      value={showEncKey ? securitySettings.encryptionKeyReal : securitySettings.encryptionKeyPreview}
+                      value={securitySettings.keyManagementStatus}
                       readOnly
-                      className="bg-slate-50 font-mono text-xs"
+                      className="bg-slate-50 font-mono text-xs text-slate-700"
                     />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowEncKey(v => !v)}
-                      className="shrink-0"
-                      title={showEncKey ? 'Hide key' : 'Reveal key'}
-                    >
-                      {showEncKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </Button>
+                    <Badge variant="outline" className="text-blue-700 border-blue-300 bg-blue-50 whitespace-nowrap">
+                      Server-Side Only
+                    </Badge>
                   </div>
-                  <p className="text-xs text-slate-500">Set via <code className="bg-slate-100 px-1 rounded">ENCRYPTION_KEY</code> in <code className="bg-slate-100 px-1 rounded">.env.local</code>. Never commit this to version control.</p>
+                  <p className="text-xs text-slate-500">
+                    Configured via <code className="bg-slate-100 px-1 rounded">FEEDBACK_ENCRYPTION_KEY</code> on the server. Secret keys are strictly decoupled from client browsers.
+                  </p>
                 </div>
               </div>
             </CardContent>

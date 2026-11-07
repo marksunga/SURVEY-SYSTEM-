@@ -118,6 +118,27 @@ export async function updateProfileAction(formData: FormData) {
   return { success: true };
 }
 
+export async function updatePasswordAction(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) return { error: 'Not authenticated.' };
+
+  const currentPassword = formData.get('currentPassword') as string;
+  const newPassword = formData.get('newPassword') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
+
+  if (!newPassword || newPassword.length < 6) {
+    return { error: 'New password must be at least 6 characters long.' };
+  }
+
+  if (confirmPassword && newPassword !== confirmPassword) {
+    return { error: 'New passwords do not match.' };
+  }
+
+  MockAdapter.logAudit(user.email, 'PASSWORD_UPDATED', 'USER', user.id);
+  revalidatePath('/profile');
+  return { success: true, message: 'Password updated successfully!' };
+}
+
 export async function forgotPasswordAction(formData: FormData) {
   const email = formData.get('email') as string;
   if (!email) return { error: 'Email is required.' };

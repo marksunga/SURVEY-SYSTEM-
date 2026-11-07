@@ -16,8 +16,9 @@ import {
   AlertCircle,
   Eye,
   Filter,
+  Trash2,
 } from 'lucide-react';
-import { updateFeedbackStatusAction } from '@/app/actions/feedback';
+import { updateFeedbackStatusAction, deleteFeedbackAction } from '@/app/actions/feedback';
 import { Feedback, FeedbackStatus } from '@/lib/types/database';
 import { formatDate } from '@/lib/utils';
 
@@ -25,6 +26,8 @@ export default function AdminFeedbackPage() {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [feedbackToDelete, setFeedbackToDelete] = useState<Feedback | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
   const [updating, setUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -49,6 +52,20 @@ export default function AdminFeedbackPage() {
       }
     }
     setUpdating(false);
+  }
+
+  async function handleConfirmDeleteFeedback() {
+    if (!feedbackToDelete) return;
+    setDeleting(true);
+    const res = await deleteFeedbackAction(feedbackToDelete.id);
+    if (res?.success) {
+      setFeedbacks((prev) => prev.filter((f) => f.id !== feedbackToDelete.id));
+      if (selectedFeedback?.id === feedbackToDelete.id) {
+        setSelectedFeedback(null);
+      }
+      setFeedbackToDelete(null);
+    }
+    setDeleting(false);
   }
 
   const filtered = feedbacks.filter((f) => {
@@ -157,19 +174,31 @@ export default function AdminFeedbackPage() {
                     </td>
 
                     <td className="p-3.5 pr-4 text-right">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedFeedback(f);
-                          setAdminNotes(f.admin_notes || '');
-                        }}
-                        className="h-7 text-xs px-2.5"
-                      >
-                        <Eye className="h-3.5 w-3.5 mr-1 text-blue-600" />
-                        Inspect & Decrypt
-                      </Button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedFeedback(f);
+                            setAdminNotes(f.admin_notes || '');
+                          }}
+                          className="h-7 text-xs px-2.5"
+                        >
+                          <Eye className="h-3.5 w-3.5 mr-1 text-blue-600" />
+                          Inspect & Decrypt
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setFeedbackToDelete(f)}
+                          className="h-7 w-7 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                          title="Delete Feedback Record"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -257,6 +286,45 @@ export default function AdminFeedbackPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Confirmation Dialog for Deleting Feedback */}
+      <Dialog open={Boolean(feedbackToDelete)} onOpenChange={(open) => !open && setFeedbackToDelete(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-slate-900">Confirm Feedback Deletion</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2 text-xs text-slate-600">
+            <p>
+              Are you sure you want to permanently delete feedback record{' '}
+              <strong className="text-slate-900">&quot;{feedbackToDelete?.title}&quot;</strong>?
+            </p>
+            <p className="text-rose-600 font-medium">
+              This will permanently delete the encrypted message and any administrative notes. This action cannot be undone.
+            </p>
+          </div>
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={deleting}
+              onClick={() => setFeedbackToDelete(null)}
+              className="text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={deleting}
+              onClick={handleConfirmDeleteFeedback}
+              className="bg-rose-600 hover:bg-rose-500 text-white text-xs"
+            >
+              {deleting ? 'Deleting...' : 'Delete Feedback Permanently'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bell, Check, ArrowRight, Clock, AlertTriangle, Info, CheckCheck } from 'lucide-react';
-import { markNotificationReadAction } from '@/app/actions/notifications';
+import { Bell, Check, ArrowRight, Clock, AlertTriangle, Info, CheckCheck, Trash2 } from 'lucide-react';
+import { markNotificationReadAction, deleteNotificationAction } from '@/app/actions/notifications';
 import { SystemNotification } from '@/lib/types/database';
 
 export default function NotificationsPage() {
@@ -33,6 +33,13 @@ export default function NotificationsPage() {
       await markNotificationReadAction(n.id);
     }
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+  }
+
+  async function handleDelete(id: string) {
+    const res = await deleteNotificationAction(id);
+    if (res?.success) {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    }
   }
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
@@ -129,18 +136,30 @@ export default function NotificationsPage() {
                     </div>
                   </div>
 
-                  {!n.is_read && (
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {!n.is_read && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleMarkRead(n.id)}
+                        className="text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 h-8 px-2"
+                        title="Mark as read"
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleMarkRead(n.id)}
-                      className="text-xs text-slate-400 hover:text-slate-700 h-8 px-2 flex-shrink-0"
-                      title="Mark as read"
+                      onClick={() => handleDelete(n.id)}
+                      className="text-xs text-slate-400 hover:text-rose-600 hover:bg-rose-50 h-8 w-8 p-0"
+                      title="Delete notification"
                     >
-                      <Check className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
             );

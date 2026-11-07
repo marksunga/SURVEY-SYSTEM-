@@ -74,8 +74,8 @@ export function QuestionRenderer({
     );
   }
 
-  // 2. Multiple Choice (Radio)
-  if (question.question_type === 'MULTIPLE_CHOICE') {
+  // 2. Multiple / Single Choice (Radio)
+  if (question.question_type === 'MULTIPLE_CHOICE' || question.question_type === 'SINGLE_CHOICE') {
     const choices = Array.isArray(options) ? options : (options as any)?.choices || [];
 
     return (

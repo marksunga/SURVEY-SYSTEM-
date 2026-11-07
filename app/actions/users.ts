@@ -70,3 +70,21 @@ export async function createAdminUserAction(data: {
   return { success: true, user: created };
 }
 
+export async function deleteUserAction(userId: string) {
+  const admin = await requireRole(['ADMINISTRATOR']);
+
+  if (admin.id === userId) {
+    return { error: 'You cannot delete your own administrator account.' };
+  }
+
+  const success = MockAdapter.deleteUser(userId);
+  if (!success) {
+    return { error: 'User not found.' };
+  }
+
+  MockAdapter.logAudit(admin.email, 'USER_DELETED', 'USER', userId);
+
+  revalidatePath('/admin/users');
+  return { success: true };
+}
+

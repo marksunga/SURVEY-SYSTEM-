@@ -15,6 +15,7 @@ import {
   Sparkles,
   QrCode,
   AlertCircle,
+  MessageSquare,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
@@ -33,6 +34,7 @@ export default async function DashboardPage() {
   const pendingCount = availableSurveys.length;
 
   const notifications = MockAdapter.getNotifications(user.id, user.role_id).slice(0, 4);
+  const userFeedbacks = MockAdapter.getFeedbacks(user.id, user.role_id).slice(0, 3);
 
   return (
     <div className="space-y-8">
@@ -193,6 +195,54 @@ export default async function DashboardPage() {
               </div>
             </div>
           )}
+
+          {/* Recent Feedback Submissions */}
+          <div className="pt-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                <MessageSquare className="h-4 w-4 text-blue-600" />
+                <span>Your Recent Feedback Submissions</span>
+              </h3>
+              <Link href="/feedback" className="text-xs font-semibold text-blue-600 hover:underline">
+                View All Feedback →
+              </Link>
+            </div>
+
+            {userFeedbacks.length === 0 ? (
+              <div className="p-4 rounded-xl border border-dashed border-slate-200 bg-white text-center text-xs text-slate-400">
+                No feedback submissions recorded yet. Voice your suggestions through the feedback portal.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {userFeedbacks.map((fb) => (
+                  <div
+                    key={fb.id}
+                    className="p-3.5 rounded-xl border border-slate-200 bg-white flex items-center justify-between text-xs gap-3"
+                  >
+                    <div className="space-y-0.5 min-w-0">
+                      <div className="font-semibold text-slate-800 truncate">{fb.title}</div>
+                      <div className="text-[10px] text-slate-400">
+                        {fb.category.replace('_', ' ')} • Submitted {formatDate(fb.created_at)}
+                      </div>
+                    </div>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase flex-shrink-0 ${
+                        fb.status === 'RESOLVED'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : fb.status === 'UNDER_REVIEW'
+                          ? 'bg-indigo-100 text-indigo-800'
+                          : fb.status === 'PENDING'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-rose-100 text-rose-800'
+                      }`}
+                    >
+                      {fb.status.replace('_', ' ')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right Col: Notifications & Quick Feedback */}

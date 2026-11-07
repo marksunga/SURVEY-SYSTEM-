@@ -34,6 +34,9 @@ export default async function AdminDashboardPage() {
   const expiredSurveys = surveys.filter((s) => s.status === 'EXPIRED').length;
   const totalSubmissions = surveys.reduce((acc, s) => acc + (s.responses_count || 0), 0);
   const pendingFeedback = feedbacks.filter((f) => f.status === 'PENDING').length;
+  const recentFeedbacks = feedbacks.slice(0, 3);
+  const participationRate =
+    totalUsers > 0 ? Math.min(100, Math.round((totalSubmissions / Math.max(1, totalUsers * (activeSurveys || 1))) * 100)) : 0;
 
   return (
     <div className="space-y-8">
@@ -80,24 +83,24 @@ export default async function AdminDashboardPage() {
           trend={{ value: "+12%", isPositive: true }}
         />
         <StatCard
-          title="Active Surveys"
-          value={activeSurveys}
-          subtitle={`${totalSurveys} total department surveys`}
+          title="Surveys (Active / Expired)"
+          value={`${activeSurveys} Active`}
+          subtitle={`${expiredSurveys} expired • ${totalSurveys} total`}
           icon={ClipboardList}
           color="blue"
         />
         <StatCard
-          title="Total Submissions"
+          title="Total Survey Responses"
           value={totalSubmissions}
-          subtitle="Responses collected to date"
+          subtitle={`Participation rate: ~${participationRate}%`}
           icon={CheckCircle2}
           color="emerald"
           trend={{ value: "+28%", isPositive: true }}
         />
         <StatCard
-          title="Pending Feedback"
-          value={pendingFeedback}
-          subtitle={`${feedbacks.length} total messages`}
+          title="Feedback Messages"
+          value={feedbacks.length}
+          subtitle={`${pendingFeedback} pending review`}
           icon={MessageSquare}
           color="amber"
         />
@@ -180,39 +183,90 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Right Col: Security Audit Stream */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <ShieldAlert className="h-4 w-4 text-rose-600" />
-              <span>Recent Audit Logs</span>
-            </h2>
-            <Link href="/admin/audit-logs" className="text-xs text-blue-600 hover:underline">
-              View Log Stream
-            </Link>
+        {/* Right Col: Recent Feedback & Security Audit Stream */}
+        <div className="space-y-6">
+          {/* Recent Feedback Card */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-blue-600" />
+                <span>Recent Feedback</span>
+              </h2>
+              <Link href="/admin/feedback" className="text-xs text-blue-600 hover:underline">
+                Manage All ({feedbacks.length}) →
+              </Link>
+            </div>
+
+            <Card className="border-slate-200">
+              <CardContent className="p-4 space-y-2.5">
+                {recentFeedbacks.length === 0 ? (
+                  <p className="text-xs text-slate-400 text-center py-4">No feedback received yet.</p>
+                ) : (
+                  recentFeedbacks.map((fb) => (
+                    <div
+                      key={fb.id}
+                      className="p-2.5 rounded-lg border border-slate-100 bg-slate-50/60 text-xs space-y-1"
+                    >
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-semibold text-slate-900 truncate max-w-[170px]">
+                          {fb.title}
+                        </span>
+                        <span
+                          className={`px-1.5 py-0.2 rounded text-[9px] font-bold uppercase ${
+                            fb.status === 'RESOLVED'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : fb.status === 'PENDING'
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-blue-100 text-blue-800'
+                          }`}
+                        >
+                          {fb.status}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-500">
+                        {fb.is_anonymous ? 'Anonymous Submitter' : fb.user_email} • {fb.category.replace('_', ' ')}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
           </div>
 
-          <Card className="border-slate-200">
-            <CardContent className="p-4 space-y-3">
-              {auditLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="p-2.5 rounded-lg border border-slate-100 bg-slate-50/60 text-xs space-y-1"
-                >
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-bold text-slate-800 uppercase tracking-wider">
-                      {log.action.replace('_', ' ')}
-                    </span>
-                    <span className="text-slate-400">{formatDateTime(log.created_at)}</span>
+          {/* Security Audit Stream */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <ShieldAlert className="h-4 w-4 text-rose-600" />
+                <span>Recent Audit Logs</span>
+              </h2>
+              <Link href="/admin/audit-logs" className="text-xs text-blue-600 hover:underline">
+                View Log Stream
+              </Link>
+            </div>
+
+            <Card className="border-slate-200">
+              <CardContent className="p-4 space-y-3">
+                {auditLogs.map((log) => (
+                  <div
+                    key={log.id}
+                    className="p-2.5 rounded-lg border border-slate-100 bg-slate-50/60 text-xs space-y-1"
+                  >
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="font-bold text-slate-800 uppercase tracking-wider">
+                        {log.action.replace('_', ' ')}
+                      </span>
+                      <span className="text-slate-400">{formatDateTime(log.created_at)}</span>
+                    </div>
+                    <div className="text-slate-600 truncate">{log.actor_email}</div>
+                    <div className="text-[10px] text-slate-400">
+                      Entity: {log.entity_type} {log.ip_address && `• IP: ${log.ip_address}`}
+                    </div>
                   </div>
-                  <div className="text-slate-600 truncate">{log.actor_email}</div>
-                  <div className="text-[10px] text-slate-400">
-                    Entity: {log.entity_type} {log.ip_address && `• IP: ${log.ip_address}`}
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

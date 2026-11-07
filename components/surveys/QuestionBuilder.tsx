@@ -25,6 +25,7 @@ interface QuestionBuilderProps {
 const QUESTION_TYPES: { type: QuestionType; label: string }[] = [
   { type: 'RATING_SCALE', label: 'Rating Scale (1-5 / 1-10)' },
   { type: 'MULTIPLE_CHOICE', label: 'Multiple Choice (Single Select)' },
+  { type: 'SINGLE_CHOICE', label: 'Single Choice (Radio Options)' },
   { type: 'CHECKBOX', label: 'Checkboxes (Multi-Select)' },
   { type: 'YES_NO', label: 'Yes or No' },
   { type: 'SHORT_ANSWER', label: 'Short Answer' },
@@ -54,7 +55,11 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
 
     // When type changes, adapt default options
     if (updates.question_type) {
-      if (updates.question_type === 'MULTIPLE_CHOICE' || updates.question_type === 'CHECKBOX') {
+      if (
+        updates.question_type === 'MULTIPLE_CHOICE' ||
+        updates.question_type === 'SINGLE_CHOICE' ||
+        updates.question_type === 'CHECKBOX'
+      ) {
         if (!Array.isArray(updated[idx].options)) {
           updated[idx].options = ['Option 1', 'Option 2', 'Option 3'];
         }
