@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Profile } from '@/lib/types/database';
@@ -25,6 +25,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { logoutAction } from '@/app/actions/auth';
+import { isStudentNavItemActive, isAdminNavItemActive } from '@/lib/navigation';
 
 interface NavItem {
   href: string;
@@ -44,15 +45,25 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
   const [notificationsDropdownOpen, setNotificationsDropdownOpen] = useState(true);
   const pathname = usePathname();
 
+  // Optimistic navigation state for immediate, single-click visual feedback
+  const [optimisticPath, setOptimisticPath] = useState<string | null>(null);
+
+  // Synchronize optimistic state whenever pathname updates
+  useEffect(() => {
+    setOptimisticPath(null);
+  }, [pathname]);
+
+  const activePath = optimisticPath || pathname;
+
   const isAdmin = user.role_id === 'ADMINISTRATOR';
 
   const isSurveyRoute =
-    pathname.startsWith('/admin/surveys') ||
-    pathname.startsWith('/admin/feedback') ||
-    pathname.startsWith('/admin/reports') ||
-    pathname.startsWith('/admin/qr-codes');
+    activePath.startsWith('/admin/surveys') ||
+    activePath.startsWith('/admin/feedback') ||
+    activePath.startsWith('/admin/reports') ||
+    activePath.startsWith('/admin/qr-codes');
 
-  const isNotificationsRoute = pathname.startsWith('/admin/notifications');
+  const isNotificationsRoute = activePath.startsWith('/admin/notifications');
 
   const studentNavItems: NavItem[] = [
     { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -234,8 +245,15 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
           {isAdmin ? (
             <Link
               href="/admin/profile"
-              onClick={() => setMobileNavOpen(false)}
-              className="p-3 border-b border-slate-200/80 bg-[#F3F5F7]/80 hover:bg-[#EAF2F8]/70 flex items-center gap-3 transition-colors cursor-pointer"
+              onClick={() => {
+                setOptimisticPath('/admin/profile');
+                setMobileNavOpen(false);
+              }}
+              className={`p-3 border-b border-slate-200/80 flex items-center gap-3 transition-colors cursor-pointer ${
+                isAdminNavItemActive('/admin/profile', activePath)
+                  ? 'bg-[#EAF2F8] border-l-2 border-[#4682A9]'
+                  : 'bg-[#F3F5F7]/80 hover:bg-[#EAF2F8]/70'
+              }`}
               title="View Administrator Profile"
             >
               <div className="h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 bg-[#0F172A] text-white">
@@ -275,9 +293,12 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                     {/* 1. Maintain Dashboard */}
                     <Link
                       href="/admin/dashboard"
-                      onClick={() => setMobileNavOpen(false)}
+                      onClick={() => {
+                        setOptimisticPath('/admin/dashboard');
+                        setMobileNavOpen(false);
+                      }}
                       className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
-                        pathname === '/admin/dashboard'
+                        isAdminNavItemActive('/admin/dashboard', activePath)
                           ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
                           : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
                       }`}
@@ -285,7 +306,7 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                       <div className="flex items-center gap-2.5">
                         <LayoutDashboard
                           className={`h-4 w-4 ${
-                            pathname === '/admin/dashboard' ? 'text-[#4682A9]' : 'text-slate-400'
+                            isAdminNavItemActive('/admin/dashboard', activePath) ? 'text-[#4682A9]' : 'text-slate-400'
                           }`}
                         />
                         <span>Dashboard</span>
@@ -323,23 +344,17 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                       {surveyDropdownOpen && (
                         <div className="mt-1 ml-4 pl-2.5 border-l-2 border-slate-200 space-y-1 py-0.5">
                           {surveyManagementSubItems.map((subItem) => {
-                            const active =
-                              pathname === subItem.href ||
-                              (subItem.href === '/admin/surveys/create' &&
-                                pathname.startsWith('/admin/surveys/create')) ||
-                              (subItem.href === '/admin/feedback' &&
-                                pathname.startsWith('/admin/feedback')) ||
-                              (subItem.href === '/admin/reports' &&
-                                pathname.startsWith('/admin/reports')) ||
-                              (subItem.href === '/admin/qr-codes' &&
-                                pathname.startsWith('/admin/qr-codes'));
+                            const active = isAdminNavItemActive(subItem.href, activePath);
                             const SubIcon = subItem.icon;
 
                             return (
                               <Link
                                 key={subItem.href}
                                 href={subItem.href}
-                                onClick={() => setMobileNavOpen(false)}
+                                onClick={() => {
+                                  setOptimisticPath(subItem.href);
+                                  setMobileNavOpen(false);
+                                }}
                                 className={`group flex items-start gap-2.5 px-2.5 py-2 rounded-md text-xs transition-colors min-h-[38px] ${
                                   active
                                     ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
@@ -399,19 +414,17 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                       {notificationsDropdownOpen && (
                         <div className="mt-1 ml-4 pl-2.5 border-l-2 border-slate-200 space-y-1 py-0.5">
                           {notificationsSubItems.map((subItem) => {
-                            const active =
-                              pathname === subItem.href ||
-                              (subItem.href === '/admin/notifications/send' &&
-                                (pathname === '/admin/notifications/send' || pathname === '/admin/notifications')) ||
-                              (subItem.href === '/admin/notifications/history' &&
-                                pathname === '/admin/notifications/history');
+                            const active = isAdminNavItemActive(subItem.href, activePath);
                             const SubIcon = subItem.icon;
 
                             return (
                               <Link
                                 key={subItem.href}
                                 href={subItem.href}
-                                onClick={() => setMobileNavOpen(false)}
+                                onClick={() => {
+                                  setOptimisticPath(subItem.href);
+                                  setMobileNavOpen(false);
+                                }}
                                 className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-xs transition-colors min-h-[38px] ${
                                   active
                                     ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
@@ -437,9 +450,12 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                     <div className="pt-1">
                       <Link
                         href="/admin/audit-logs"
-                        onClick={() => setMobileNavOpen(false)}
+                        onClick={() => {
+                          setOptimisticPath('/admin/audit-logs');
+                          setMobileNavOpen(false);
+                        }}
                         className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
-                          pathname === '/admin/audit-logs'
+                          isAdminNavItemActive('/admin/audit-logs', activePath)
                             ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
                             : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
                         }`}
@@ -447,7 +463,7 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                         <div className="flex items-center gap-2.5">
                           <ShieldAlert
                             className={`h-4 w-4 ${
-                              pathname === '/admin/audit-logs' ? 'text-[#4682A9]' : 'text-slate-400'
+                              isAdminNavItemActive('/admin/audit-logs', activePath) ? 'text-[#4682A9]' : 'text-slate-400'
                             }`}
                           />
                           <span>Audit Logs</span>
@@ -457,15 +473,16 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                   </>
                 ) : (
                   studentNavItems.map((item) => {
-                    const active =
-                      pathname === item.href ||
-                      (item.href !== '/student/dashboard' && pathname.startsWith(item.href));
+                    const active = isStudentNavItemActive(item.href, activePath);
                     const Icon = item.icon;
                     return (
                       <Link
                         key={item.href}
                         href={item.href}
-                        onClick={() => setMobileNavOpen(false)}
+                        onClick={() => {
+                          setOptimisticPath(item.href);
+                          setMobileNavOpen(false);
+                        }}
                         className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
                           active
                             ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'

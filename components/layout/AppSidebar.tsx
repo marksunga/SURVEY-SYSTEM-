@@ -22,6 +22,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { logoutAction } from '@/app/actions/auth';
+import { isStudentNavItemActive, isAdminNavItemActive } from '@/lib/navigation';
 
 interface NavItem {
   href: string;
@@ -39,15 +40,25 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
   const pathname = usePathname();
   const isAdmin = user.role_id === 'ADMINISTRATOR';
 
+  // Optimistic navigation state for immediate, single-click visual feedback
+  const [optimisticPath, setOptimisticPath] = useState<string | null>(null);
+
+  // Synchronize optimistic state whenever pathname updates
+  useEffect(() => {
+    setOptimisticPath(null);
+  }, [pathname]);
+
+  const activePath = optimisticPath || pathname;
+
   // Determine if active route is under Survey Management dropdown
   const isSurveyRoute =
-    pathname.startsWith('/admin/surveys') ||
-    pathname.startsWith('/admin/feedback') ||
-    pathname.startsWith('/admin/reports') ||
-    pathname.startsWith('/admin/qr-codes');
+    activePath.startsWith('/admin/surveys') ||
+    activePath.startsWith('/admin/feedback') ||
+    activePath.startsWith('/admin/reports') ||
+    activePath.startsWith('/admin/qr-codes');
 
   // Determine if active route is under Notifications dropdown
-  const isNotificationsRoute = pathname.startsWith('/admin/notifications');
+  const isNotificationsRoute = activePath.startsWith('/admin/notifications');
 
   // Maintain dropdowns open by default & auto-open when visiting sub-routes
   const [surveyDropdownOpen, setSurveyDropdownOpen] = useState(true);
@@ -57,13 +68,13 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
     if (isSurveyRoute) {
       setSurveyDropdownOpen(true);
     }
-  }, [pathname, isSurveyRoute]);
+  }, [activePath, isSurveyRoute]);
 
   useEffect(() => {
     if (isNotificationsRoute) {
       setNotificationsDropdownOpen(true);
     }
-  }, [pathname, isNotificationsRoute]);
+  }, [activePath, isNotificationsRoute]);
 
   // Student navigation (Available surveys, history, feedback, QR scan, notifications)
   const studentNavItems: NavItem[] = [
@@ -143,7 +154,12 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
       {isAdmin ? (
         <Link
           href="/admin/profile"
-          className="p-3 border-b border-slate-200/70 bg-[#F3F5F7]/80 hover:bg-[#EAF2F8]/70 transition-colors flex items-center gap-3 cursor-pointer group"
+          onClick={() => setOptimisticPath('/admin/profile')}
+          className={`p-3 border-b border-slate-200/70 transition-colors flex items-center gap-3 cursor-pointer group ${
+            isAdminNavItemActive('/admin/profile', activePath)
+              ? 'bg-[#EAF2F8] border-l-2 border-[#4682A9]'
+              : 'bg-[#F3F5F7]/80 hover:bg-[#EAF2F8]/70'
+          }`}
           title="View Administrator Profile"
         >
           <div className="h-9 w-9 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 group-hover:scale-105 transition-transform bg-[#0F172A] text-white">
@@ -187,8 +203,9 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
                 {/* 1. Maintain Dashboard */}
                 <Link
                   href="/admin/dashboard"
+                  onClick={() => setOptimisticPath('/admin/dashboard')}
                   className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
-                    pathname === '/admin/dashboard'
+                    isAdminNavItemActive('/admin/dashboard', activePath)
                       ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
                       : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
                   }`}
@@ -196,7 +213,7 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
                   <div className="flex items-center gap-2.5">
                     <LayoutDashboard
                       className={`h-4 w-4 ${
-                        pathname === '/admin/dashboard' ? 'text-[#4682A9]' : 'text-slate-400'
+                        isAdminNavItemActive('/admin/dashboard', activePath) ? 'text-[#4682A9]' : 'text-slate-400'
                       }`}
                     />
                     <span>Dashboard</span>
@@ -238,22 +255,14 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
                       className="mt-1 ml-4 pl-2.5 border-l-2 border-slate-200 space-y-1 py-0.5 animate-in fade-in-50 duration-150"
                     >
                       {surveyManagementSubItems.map((subItem) => {
-                        const active =
-                          pathname === subItem.href ||
-                          (subItem.href === '/admin/surveys/create' &&
-                            pathname.startsWith('/admin/surveys/create')) ||
-                          (subItem.href === '/admin/feedback' &&
-                            pathname.startsWith('/admin/feedback')) ||
-                          (subItem.href === '/admin/reports' &&
-                            pathname.startsWith('/admin/reports')) ||
-                          (subItem.href === '/admin/qr-codes' &&
-                            pathname.startsWith('/admin/qr-codes'));
+                        const active = isAdminNavItemActive(subItem.href, activePath);
                         const SubIcon = subItem.icon;
 
                         return (
                           <Link
                             key={subItem.href}
                             href={subItem.href}
+                            onClick={() => setOptimisticPath(subItem.href)}
                             className={`group flex items-start gap-2.5 px-2.5 py-2 rounded-md text-xs transition-colors min-h-[38px] ${
                               active
                                 ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
@@ -317,18 +326,14 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
                       className="mt-1 ml-4 pl-2.5 border-l-2 border-slate-200 space-y-1 py-0.5 animate-in fade-in-50 duration-150"
                     >
                       {notificationsSubItems.map((subItem) => {
-                        const active =
-                          pathname === subItem.href ||
-                          (subItem.href === '/admin/notifications/send' &&
-                            (pathname === '/admin/notifications/send' || pathname === '/admin/notifications')) ||
-                          (subItem.href === '/admin/notifications/history' &&
-                            pathname === '/admin/notifications/history');
+                        const active = isAdminNavItemActive(subItem.href, activePath);
                         const SubIcon = subItem.icon;
 
                         return (
                           <Link
                             key={subItem.href}
                             href={subItem.href}
+                            onClick={() => setOptimisticPath(subItem.href)}
                             className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-xs transition-colors min-h-[38px] ${
                               active
                                 ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
@@ -354,8 +359,9 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
                 <div className="pt-1">
                   <Link
                     href="/admin/audit-logs"
+                    onClick={() => setOptimisticPath('/admin/audit-logs')}
                     className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
-                      pathname === '/admin/audit-logs'
+                      isAdminNavItemActive('/admin/audit-logs', activePath)
                         ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
                         : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
                     }`}
@@ -363,7 +369,7 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
                     <div className="flex items-center gap-2.5">
                       <ShieldAlert
                         className={`h-4 w-4 ${
-                          pathname === '/admin/audit-logs' ? 'text-[#4682A9]' : 'text-slate-400'
+                          isAdminNavItemActive('/admin/audit-logs', activePath) ? 'text-[#4682A9]' : 'text-slate-400'
                         }`}
                       />
                       <span>Audit Logs</span>
@@ -374,14 +380,13 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
             ) : (
               // Student Nav Items
               studentNavItems.map((item) => {
-                const active =
-                  pathname === item.href ||
-                  (item.href !== '/student/dashboard' && pathname.startsWith(item.href));
+                const active = isStudentNavItemActive(item.href, activePath);
                 const Icon = item.icon;
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={() => setOptimisticPath(item.href)}
                     className={`flex items-center justify-between px-2.5 py-2 rounded-md text-xs font-medium transition-colors ${
                       active
                         ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
