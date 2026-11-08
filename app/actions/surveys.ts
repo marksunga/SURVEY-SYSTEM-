@@ -124,6 +124,7 @@ export async function createSurveyAction(data: {
         if (newSurvey.status === 'ACTIVE') {
           for (const role of data.target_roles) {
             await supabase.from('notifications').insert({
+              id: crypto.randomUUID(),
               target_role: role,
               title: 'New Survey Available',
               message: `A new survey "${newSurvey.title}" is now open for your response.`,
@@ -140,6 +141,9 @@ export async function createSurveyAction(data: {
 
     revalidatePath('/surveys');
     revalidatePath('/admin/surveys');
+    revalidatePath('/notifications');
+    revalidatePath('/admin/notifications');
+    revalidatePath('/admin/notifications/history');
     return { success: true, surveyId: newSurvey.id };
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to create survey.' };
@@ -360,6 +364,9 @@ export async function submitSurveyAnswersAction(
 
     revalidatePath('/surveys');
     revalidatePath('/surveys/history');
+    revalidatePath('/notifications');
+    revalidatePath('/admin/notifications');
+    revalidatePath('/admin/notifications/history');
     revalidatePath(`/admin/surveys/${surveyId}/results`);
 
     return { success: true, token: result.token };

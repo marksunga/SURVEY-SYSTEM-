@@ -69,6 +69,8 @@ export async function createBroadcastNotificationAction(data: {
 
     revalidatePath('/notifications');
     revalidatePath('/admin/notifications');
+    revalidatePath('/admin/notifications/history');
+    revalidatePath('/admin/notifications/send');
     return { success: true, notification: notif };
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to dispatch notification' };
@@ -95,6 +97,7 @@ export async function deleteNotificationAction(id: string) {
 
   revalidatePath('/notifications');
   revalidatePath('/admin/notifications');
+  revalidatePath('/admin/notifications/history');
   return { success: true };
 }
 
@@ -125,11 +128,29 @@ export async function markAllNotificationsReadAction() {
 
 export async function sendSurveyRemindersAction(surveyId: string) {
   const admin = await requireRole(['ADMINISTRATOR']);
-  const survey = MockAdapter.getSurveyById(surveyId);
+
+  let survey = MockAdapter.getSurveyById(surveyId);
+  if (!survey && isLiveSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      const { data: dbSurvey } = await supabase.from('surveys').select('*').eq('id', surveyId).single();
+      if (dbSurvey) {
+        MockAdapter.upsertSurveyFromDb(dbSurvey);
+        survey = MockAdapter.getSurveyById(surveyId);
+      }
+    } catch (dbErr) {
+      console.warn('Failed to fetch survey from Supabase during reminder dispatch:', dbErr);
+    }
+  }
+
   if (!survey) return { error: 'Survey not found.' };
 
   const notifsCreated: SystemNotification[] = [];
-  for (const role of survey.target_roles) {
+  const targetRoles = (survey.target_roles && survey.target_roles.length > 0)
+    ? survey.target_roles
+    : (['STUDENT'] as UserRole[]);
+
+  for (const role of targetRoles) {
     const notif = MockAdapter.createNotification({
       target_role: role,
       title: 'Survey Deadline Approaching',
@@ -159,11 +180,13 @@ export async function sendSurveyRemindersAction(surveyId: string) {
   }
 
   MockAdapter.logAudit(admin.email, 'SURVEY_REMINDERS_SENT', 'SURVEY', survey.id, {
-    roles: survey.target_roles,
+    roles: targetRoles,
     survey_title: survey.title,
   });
 
   revalidatePath('/notifications');
   revalidatePath('/admin/notifications');
+  revalidatePath('/admin/notifications/history');
+  revalidatePath('/admin/notifications/send');
   return { success: true, count: notifsCreated.length };
 }
