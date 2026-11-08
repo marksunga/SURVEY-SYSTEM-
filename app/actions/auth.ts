@@ -27,6 +27,14 @@ export async function adminLoginAction(formData: FormData) {
     return { error: 'Both administrator username and password are required.' };
   }
 
+  // Safety check on production Vercel
+  if (process.env.VERCEL === '1' && !isLiveSupabaseConfigured()) {
+    return {
+      error:
+        'Vercel Configuration Required: Supabase environment variables are missing on Vercel. Please add NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY under Vercel Settings -> Environment Variables, then Redeploy.',
+    };
+  }
+
   // Live Supabase Authentication (when configured)
   if (isLiveSupabaseConfigured()) {
     try {
@@ -125,6 +133,14 @@ export async function studentLoginAction(formData: FormData) {
   const cleanId = identifier.toLowerCase();
   if (cleanId.includes('@') && !cleanId.endsWith('@ua.edu.ph') && !cleanId.endsWith('@itdept.edu')) {
     return { error: 'Student login requires an official @ua.edu.ph institutional email (e.g. student@ua.edu.ph).' };
+  }
+
+  // Safety check on production Vercel
+  if (process.env.VERCEL === '1' && !isLiveSupabaseConfigured()) {
+    return {
+      error:
+        'Vercel Configuration Required: Supabase environment variables are missing on Vercel. Please add NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY under Vercel Settings -> Environment Variables, then Redeploy.',
+    };
   }
 
   // Live Supabase Authentication (when configured)
@@ -263,6 +279,14 @@ export async function studentRegisterAction(formData: FormData) {
   }
 
   let id = crypto.randomUUID();
+
+  // Safety check on production Vercel
+  if (process.env.VERCEL === '1' && !isLiveSupabaseConfigured()) {
+    return {
+      error:
+        'Vercel Configuration Required: Supabase environment variables are missing on Vercel. Please add NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY under Vercel Settings -> Environment Variables, then Redeploy.',
+    };
+  }
 
   // 5. Create in Live Supabase database if configured
   if (isLiveSupabaseConfigured()) {
