@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { forgotPasswordAction } from '@/app/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,15 +46,18 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F3F5F7] text-[#0F172A] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F4F7FB] text-[#0F172A] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <Link href="/" className="inline-flex items-center gap-2 mb-4">
-          <div className="h-11 w-11 rounded-xl bg-[#4682A9] text-white flex items-center justify-center shadow-xs">
-            <GraduationCap className="h-6 w-6" />
+        <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
+          <div className="relative w-12 h-12 drop-shadow-sm transition-transform group-hover:scale-105">
+            <Image src="/images/ua-seal.png" alt="University of the Assumption Seal" width={48} height={48} className="object-contain" priority />
           </div>
-          <span className="text-xl font-bold text-[#0F172A] tracking-tight">IT Dept Portal</span>
+          <div className="text-left">
+            <span className="text-base font-extrabold text-[#103058] tracking-tight block leading-tight">UNIVERSITY OF THE ASSUMPTION</span>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">IT Department Portal</span>
+          </div>
         </Link>
-        <h1 className="text-2xl font-extrabold text-[#0F172A] tracking-tight">
+        <h1 className="text-2xl font-extrabold text-[#103058] tracking-tight">
           Student Account Recovery
         </h1>
         <p className="mt-1 text-xs text-slate-500">
