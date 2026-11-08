@@ -19,6 +19,8 @@ import {
   Eye,
   EyeOff,
   ArrowLeft,
+  Check,
+  Info,
 } from 'lucide-react';
 
 export default function StudentRegisterPage() {
@@ -31,6 +33,14 @@ export default function StudentRegisterPage() {
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Live password validation criteria
+  const hasMinLength = password.length >= 6;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
+  const allCriteriaMet = hasMinLength && hasUppercase && hasLowercase && hasNumber && hasSpecial;
 
   async function handleSubmit(formData: FormData) {
     setError(null);
@@ -46,8 +56,28 @@ export default function StudentRegisterPage() {
       return;
     }
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long.');
+    if (!hasMinLength) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (!hasUppercase) {
+      setError('Password must contain at least one uppercase letter (A-Z).');
+      return;
+    }
+
+    if (!hasLowercase) {
+      setError('Password must contain at least one lowercase letter (a-z).');
+      return;
+    }
+
+    if (!hasNumber) {
+      setError('Password must contain at least one number (0-9).');
+      return;
+    }
+
+    if (!hasSpecial) {
+      setError('Password must contain at least one special character (e.g. !@#$%^&*).');
       return;
     }
 
@@ -151,10 +181,17 @@ export default function StudentRegisterPage() {
               </div>
 
               {/* Password */}
-              <div className="space-y-1">
-                <Label htmlFor="password" className="text-xs font-semibold text-slate-700">
-                  Password (minimum 6 characters) <span className="text-rose-500">*</span>
-                </Label>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-xs font-semibold text-slate-700">
+                    Password <span className="text-rose-500">*</span>
+                  </Label>
+                  {password.length > 0 && allCriteriaMet && (
+                    <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                      <Check className="h-3 w-3" /> Requirements met
+                    </span>
+                  )}
+                </div>
                 <div className="relative">
                   <Lock className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
                   <Input
@@ -177,6 +214,70 @@ export default function StudentRegisterPage() {
                     {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                   </button>
                 </div>
+
+                {/* Password Complexity Requirement Helper Text */}
+                <p className="text-[11px] text-slate-500 leading-relaxed pt-0.5 flex items-start gap-1.5">
+                  <Info className="h-3.5 w-3.5 text-[#4682A9] flex-shrink-0 mt-0.5" />
+                  <span>
+                    Must contain at least one number, one lowercase letter, one uppercase letter, one special character, and be at least 6 characters long.
+                  </span>
+                </p>
+
+                {/* Real-time Interactive Password Criteria Checklist */}
+                {password.length > 0 && (
+                  <div className="pt-1.5 grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[10px]">
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium transition-colors ${
+                        hasMinLength
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-slate-50 text-slate-500 border border-slate-200'
+                      }`}
+                    >
+                      <Check className={`h-3 w-3 ${hasMinLength ? 'text-emerald-600' : 'text-slate-300'}`} />
+                      6+ Characters
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium transition-colors ${
+                        hasUppercase
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-slate-50 text-slate-500 border border-slate-200'
+                      }`}
+                    >
+                      <Check className={`h-3 w-3 ${hasUppercase ? 'text-emerald-600' : 'text-slate-300'}`} />
+                      Uppercase (A-Z)
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium transition-colors ${
+                        hasLowercase
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-slate-50 text-slate-500 border border-slate-200'
+                      }`}
+                    >
+                      <Check className={`h-3 w-3 ${hasLowercase ? 'text-emerald-600' : 'text-slate-300'}`} />
+                      Lowercase (a-z)
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium transition-colors ${
+                        hasNumber
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-slate-50 text-slate-500 border border-slate-200'
+                      }`}
+                    >
+                      <Check className={`h-3 w-3 ${hasNumber ? 'text-emerald-600' : 'text-slate-300'}`} />
+                      Number (0-9)
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium transition-colors ${
+                        hasSpecial
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-slate-50 text-slate-500 border border-slate-200'
+                      }`}
+                    >
+                      <Check className={`h-3 w-3 ${hasSpecial ? 'text-emerald-600' : 'text-slate-300'}`} />
+                      Special (!@#...)
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Confirm Password */}

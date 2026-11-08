@@ -70,7 +70,7 @@ export function verifyPassword(password: string, storedHash: string): boolean {
 
 /**
  * Validates password complexity requirements:
- * - At least 8 characters
+ * - At least 6 characters
  * - At least one uppercase letter (A-Z)
  * - At least one lowercase letter (a-z)
  * - At least one digit (0-9)
@@ -79,8 +79,8 @@ export function verifyPassword(password: string, storedHash: string): boolean {
 export function validatePasswordStrength(password: string): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
-  if (!password || password.length < 8) {
-    errors.push('Password must be at least 8 characters long.');
+  if (!password || password.length < 6) {
+    errors.push('Password must be at least 6 characters long.');
   }
   if (!/[A-Z]/.test(password)) {
     errors.push('Password must contain at least one uppercase letter (A-Z).');
