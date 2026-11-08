@@ -625,7 +625,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- 5. Seed QR Codes
 INSERT INTO qr_codes (id, survey_id, code_data, access_url, qr_image_data, is_active, scans_count) VALUES
-('q1111111-1111-1111-1111-111111111111', 
+('e1111111-1111-1111-1111-111111111111', 
  'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 
  'QR-SRV-MIDTERM-2026', 
  '/surveys/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 
@@ -646,3 +646,4 @@ INSERT INTO audit_logs (actor_id, actor_email, action, entity_type, entity_id, d
 
 -- Done
 SELECT 'Database schema and seed data setup completed successfully!' AS status;
+

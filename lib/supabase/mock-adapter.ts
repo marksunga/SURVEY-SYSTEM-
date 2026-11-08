@@ -268,7 +268,7 @@ const INITIAL_QUESTIONS: SurveyQuestion[] = [
 
 const INITIAL_QR_CODES: QRCodeRecord[] = [
   {
-    id: 'q1111111-1111-1111-1111-111111111111',
+    id: 'e1111111-1111-1111-1111-111111111111',
     survey_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
     code_data: 'QR-SRV-MIDTERM-2026',
     access_url: '/surveys/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
@@ -279,7 +279,7 @@ const INITIAL_QR_CODES: QRCodeRecord[] = [
     updated_at: new Date().toISOString(),
   },
   {
-    id: 'q2222222-2222-2222-2222-222222222222',
+    id: 'e2222222-2222-2222-2222-222222222222',
     survey_id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
     code_data: 'QR-SRV-LABS-2026',
     access_url: '/surveys/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
@@ -293,7 +293,7 @@ const INITIAL_QR_CODES: QRCodeRecord[] = [
 
 const INITIAL_NOTIFICATIONS: SystemNotification[] = [
   {
-    id: 'n1111111-1111-1111-1111-111111111111',
+    id: 'd1111111-1111-1111-1111-111111111111',
     user_id: null,
     target_role: 'STUDENT',
     title: 'New Mid-Term Survey Published',
@@ -304,7 +304,7 @@ const INITIAL_NOTIFICATIONS: SystemNotification[] = [
     created_at: new Date(Date.now() - 3600000).toISOString(),
   },
   {
-    id: 'n2222222-2222-2222-2222-222222222222',
+    id: 'd2222222-2222-2222-2222-222222222222',
     user_id: null,
     target_role: 'STUDENT',
     title: 'Laboratory Readiness Feedback Requested',
@@ -315,7 +315,7 @@ const INITIAL_NOTIFICATIONS: SystemNotification[] = [
     created_at: new Date(Date.now() - 7200000).toISOString(),
   },
   {
-    id: 'n3333333-3333-3333-3333-333333333333',
+    id: 'd3333333-3333-3333-3333-333333333333',
     user_id: '44444444-4444-4444-4444-444444444444',
     target_role: null,
     title: 'Survey Reminder',
@@ -329,7 +329,7 @@ const INITIAL_NOTIFICATIONS: SystemNotification[] = [
 
 const INITIAL_AUDIT_LOGS: AuditLog[] = [
   {
-    id: 'l1111111-1111-1111-1111-111111111111',
+    id: 'c1111111-1111-1111-1111-111111111111',
     actor_id: '11111111-1111-1111-1111-111111111111',
     actor_email: 'admin@itdept.edu',
     action: 'SURVEY_CREATED',
@@ -340,7 +340,7 @@ const INITIAL_AUDIT_LOGS: AuditLog[] = [
     created_at: new Date(Date.now() - 3 * 86400000).toISOString(),
   },
   {
-    id: 'l2222222-2222-2222-2222-222222222222',
+    id: 'c2222222-2222-2222-2222-222222222222',
     actor_id: '11111111-1111-1111-1111-111111111111',
     actor_email: 'admin@itdept.edu',
     action: 'SURVEY_STATUS_CHANGED',
@@ -351,12 +351,12 @@ const INITIAL_AUDIT_LOGS: AuditLog[] = [
     created_at: new Date(Date.now() - 3 * 86400000).toISOString(),
   },
   {
-    id: 'l3333333-3333-3333-3333-333333333333',
+    id: 'c3333333-3333-3333-3333-333333333333',
     actor_id: '22222222-2222-2222-2222-222222222222',
     actor_email: 'officer@itdept.edu',
     action: 'QR_CODE_GENERATED',
     entity_type: 'QR_CODE',
-    entity_id: 'q1111111-1111-1111-1111-111111111111',
+    entity_id: 'e1111111-1111-1111-1111-111111111111',
     details: { survey_id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' },
     ip_address: '192.168.1.45',
     created_at: new Date(Date.now() - 86400000).toISOString(),

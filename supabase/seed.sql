@@ -125,14 +125,14 @@ ON CONFLICT (id) DO NOTHING;
 
 -- 4. Seed QR Codes
 INSERT INTO qr_codes (id, survey_id, code_data, access_url, qr_image_data, is_active, scans_count) VALUES
-('q1111111-1111-1111-1111-111111111111', 
+('e1111111-1111-1111-1111-111111111111', 
  'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 
  'QR-SRV-MIDTERM-2026', 
  '/surveys/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 
  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23f1f5f9"/><text x="100" y="105" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%230f172a">QR-SRV-MIDTERM-2026</text></svg>', 
  TRUE, 18),
 
-('q2222222-2222-2222-2222-222222222222', 
+('e2222222-2222-2222-2222-222222222222', 
  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 
  'QR-SRV-LABS-2026', 
  '/surveys/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 
@@ -151,5 +151,5 @@ INSERT INTO notifications (user_id, target_role, title, message, link, type, is_
 INSERT INTO audit_logs (actor_id, actor_email, action, entity_type, entity_id, details, ip_address) VALUES
 ('11111111-1111-1111-1111-111111111111', 'admin@itdept.edu', 'SURVEY_CREATED', 'SURVEY', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '{"title": "Mid-Term IT Course & Instructor Evaluation"}'::JSONB, '127.0.0.1'),
 ('11111111-1111-1111-1111-111111111111', 'admin@itdept.edu', 'SURVEY_STATUS_CHANGED', 'SURVEY', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '{"from": "DRAFT", "to": "ACTIVE"}'::JSONB, '127.0.0.1'),
-('22222222-2222-2222-2222-222222222222', 'officer@itdept.edu', 'QR_CODE_GENERATED', 'QR_CODE', 'q1111111-1111-1111-1111-111111111111', '{"survey_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}'::JSONB, '192.168.1.45');
+('22222222-2222-2222-2222-222222222222', 'officer@itdept.edu', 'QR_CODE_GENERATED', 'QR_CODE', 'e1111111-1111-1111-1111-111111111111', '{"survey_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}'::JSONB, '192.168.1.45');
 
