@@ -265,7 +265,7 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                     className="absolute right-2.5 top-2.5 p-1 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                   </button>
                 </div>
               </div>

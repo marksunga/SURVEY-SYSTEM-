@@ -300,7 +300,7 @@ const INITIAL_NOTIFICATIONS: SystemNotification[] = [
     message: 'Please complete the Mid-Term IT Course Evaluation before the deadline.',
     link: '/surveys/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
     type: 'SURVEY_INVITE',
-    is_read: false,
+    is_read: true,
     created_at: new Date(Date.now() - 3600000).toISOString(),
   },
   {
@@ -311,7 +311,7 @@ const INITIAL_NOTIFICATIONS: SystemNotification[] = [
     message: 'IT Department has opened the IT Lab Hardware & Software survey.',
     link: '/surveys/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
     type: 'SURVEY_INVITE',
-    is_read: false,
+    is_read: true,
     created_at: new Date(Date.now() - 7200000).toISOString(),
   },
   {
@@ -322,7 +322,7 @@ const INITIAL_NOTIFICATIONS: SystemNotification[] = [
     message: 'Only 5 days left to submit your responses for Course Evaluation.',
     link: '/surveys/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
     type: 'DEADLINE_REMINDER',
-    is_read: false,
+    is_read: true,
     created_at: new Date(Date.now() - 14400000).toISOString(),
   },
 ];
@@ -402,6 +402,199 @@ const INITIAL_FEEDBACK: Feedback[] = [
   },
 ];
 
+// Seed responses and answers for realistic analytics & dashboard reports
+const surveyAId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+const surveyBId = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+
+const INITIAL_RESPONSES: SurveyResponse[] = [];
+const INITIAL_ANSWERS: ResponseAnswer[] = [];
+const INITIAL_RECEIPTS: SurveyParticipationReceipt[] = [];
+
+// 12 responses for Survey A
+const surveyARatings = [5, 4, 5, 5, 4, 3, 5, 4, 5, 4, 5, 4];
+const surveyACheckboxes = [
+  ['Cloud Architecture & DevOps', 'Full-Stack Web Engineering'],
+  ['Full-Stack Web Engineering', 'Database Systems & SQL Optimization'],
+  ['Database Systems & SQL Optimization', 'Cybersecurity & Cryptography'],
+  ['Cloud Architecture & DevOps', 'Cybersecurity & Cryptography'],
+  ['Full-Stack Web Engineering'],
+  ['Cloud Architecture & DevOps', 'Full-Stack Web Engineering', 'Cybersecurity & Cryptography'],
+  ['Database Systems & SQL Optimization'],
+  ['Full-Stack Web Engineering', 'Database Systems & SQL Optimization'],
+  ['Cloud Architecture & DevOps'],
+  ['Full-Stack Web Engineering', 'Cybersecurity & Cryptography'],
+  ['Cloud Architecture & DevOps', 'Database Systems & SQL Optimization'],
+  ['Full-Stack Web Engineering'],
+];
+const surveyAYesNo = ['Yes', 'Yes', 'Yes', 'No', 'Yes', 'Yes', 'Yes', 'Yes', 'No', 'Yes', 'Yes', 'Yes'];
+const surveyAEnv = [
+  'Campus Computer Labs',
+  'Personal Laptop (Mac/Windows)',
+  'Hybrid',
+  'Campus Computer Labs',
+  'Personal Laptop (Mac/Windows)',
+  'Campus Computer Labs',
+  'Hybrid',
+  'Personal Laptop (Mac/Windows)',
+  'Campus Computer Labs',
+  'Hybrid',
+  'Personal Laptop (Mac/Windows)',
+  'Campus Computer Labs',
+];
+const surveyASkills = [
+  'PostgreSQL indexing & query tuning',
+  'Next.js Server Actions with TypeScript',
+  'Docker containerization & orchestration',
+  'Database transaction isolation levels',
+  'Cloud RESTful API development',
+  'Git version control & CI/CD workflows',
+  'React custom hooks & UI state management',
+  'Relational schema normalization',
+  'Unit and integration automated testing',
+  'Secure authentication & role authorization',
+  'Linux CLI server administration',
+  'Modern microservice architecture',
+];
+const surveyAComments = [
+  'The instructor gave prompt code reviews and clear practical demonstrations.',
+  'Excellent course pacing and industry-relevant modern tooling.',
+  'Would love even more hands-on lab exercises for database optimization.',
+  'Great balance between theoretical foundation and software architecture.',
+  'Clear rubrics and helpful weekly programming lab challenges.',
+  'The hands-on projects helped me build confidence for technical interviews.',
+  'Very organized lectures and supportive instructional staff.',
+  'Overall an exceptional course for computer science and IT majors.',
+];
+
+for (let i = 0; i < 12; i++) {
+  const respId = `r1111111-1111-1111-1111-${(100000000000 + i).toString()}`;
+  const isAnon = i < 8; // 8 anonymous, 4 identified
+  const token = `SUB-MID-${(1000 + i).toString()}`;
+  const createdDate = new Date(Date.now() - (12 - i) * 14400000).toISOString();
+
+  INITIAL_RESPONSES.push({
+    id: respId,
+    survey_id: surveyAId,
+    user_id: isAnon ? null : `seed-student-${i}`,
+    is_anonymous: isAnon,
+    submission_token: token,
+    completed_at: createdDate,
+  });
+
+  INITIAL_RECEIPTS.push({
+    id: `rc111111-1111-1111-1111-${(100000000000 + i).toString()}`,
+    survey_id: surveyAId,
+    user_id: isAnon ? `user-anon-${i}` : `seed-student-${i}`,
+    created_at: createdDate,
+  });
+
+  INITIAL_ANSWERS.push(
+    {
+      id: crypto.randomUUID(),
+      response_id: respId,
+      question_id: 'a1111111-1111-1111-1111-111111111111',
+      answer_value: surveyARatings[i],
+      created_at: createdDate,
+    },
+    {
+      id: crypto.randomUUID(),
+      response_id: respId,
+      question_id: 'a2222222-2222-2222-2222-222222222222',
+      answer_value: surveyACheckboxes[i],
+      created_at: createdDate,
+    },
+    {
+      id: crypto.randomUUID(),
+      response_id: respId,
+      question_id: 'a3333333-3333-3333-3333-333333333333',
+      answer_value: surveyAYesNo[i],
+      created_at: createdDate,
+    },
+    {
+      id: crypto.randomUUID(),
+      response_id: respId,
+      question_id: 'a4444444-4444-4444-4444-444444444444',
+      answer_value: surveyAEnv[i],
+      created_at: createdDate,
+    },
+    {
+      id: crypto.randomUUID(),
+      response_id: respId,
+      question_id: 'a5555555-5555-5555-5555-555555555555',
+      answer_value: surveyASkills[i],
+      created_at: createdDate,
+    },
+    {
+      id: crypto.randomUUID(),
+      response_id: respId,
+      question_id: 'a6666666-6666-6666-6666-666666666666',
+      answer_value: surveyAComments[i % surveyAComments.length],
+      created_at: createdDate,
+    }
+  );
+}
+
+// 8 responses for Survey B
+const surveyBRatings = [4, 4, 3, 5, 4, 4, 3, 5];
+const surveyBYesNo = ['No', 'No', 'Yes', 'No', 'No', 'Yes', 'No', 'No'];
+const surveyBCheckboxes = [
+  ['Docker Desktop & Podman', 'VS Code with Remote SSH'],
+  ['VS Code with Remote SSH', 'Node.js & Python SDKs'],
+  ['PostgreSQL Admin GUI (DBeaver)', 'Postman / Bruno API Client'],
+  ['Docker Desktop & Podman', 'Node.js & Python SDKs'],
+  ['VS Code with Remote SSH', 'PostgreSQL Admin GUI (DBeaver)'],
+  ['Postman / Bruno API Client', 'Docker Desktop & Podman'],
+  ['Node.js & Python SDKs', 'VS Code with Remote SSH'],
+  ['Docker Desktop & Podman', 'VS Code with Remote SSH', 'PostgreSQL Admin GUI (DBeaver)'],
+];
+
+for (let i = 0; i < 8; i++) {
+  const respId = `r2222222-2222-2222-2222-${(200000000000 + i).toString()}`;
+  const isAnon = i < 5; // 5 anonymous, 3 identified
+  const token = `SUB-LAB-${(2000 + i).toString()}`;
+  const createdDate = new Date(Date.now() - (8 - i) * 21600000).toISOString();
+
+  INITIAL_RESPONSES.push({
+    id: respId,
+    survey_id: surveyBId,
+    user_id: isAnon ? null : `seed-student-b-${i}`,
+    is_anonymous: isAnon,
+    submission_token: token,
+    completed_at: createdDate,
+  });
+
+  INITIAL_RECEIPTS.push({
+    id: `rc222222-2222-2222-2222-${(200000000000 + i).toString()}`,
+    survey_id: surveyBId,
+    user_id: isAnon ? `user-anon-lab-${i}` : `seed-student-b-${i}`,
+    created_at: createdDate,
+  });
+
+  INITIAL_ANSWERS.push(
+    {
+      id: crypto.randomUUID(),
+      response_id: respId,
+      question_id: 'b1111111-1111-1111-1111-111111111111',
+      answer_value: surveyBRatings[i],
+      created_at: createdDate,
+    },
+    {
+      id: crypto.randomUUID(),
+      response_id: respId,
+      question_id: 'b2222222-2222-2222-2222-222222222222',
+      answer_value: surveyBYesNo[i],
+      created_at: createdDate,
+    },
+    {
+      id: crypto.randomUUID(),
+      response_id: respId,
+      question_id: 'b3333333-3333-3333-3333-333333333333',
+      answer_value: surveyBCheckboxes[i],
+      created_at: createdDate,
+    }
+  );
+}
+
 // Singleton store in globalThis for Next.js hot reload persistence
 declare global {
   var __mockDbState: MockDatabaseState | undefined;
@@ -421,9 +614,9 @@ if (!globalThis.__mockDbState) {
     profiles: [...INITIAL_PROFILES],
     surveys: [...INITIAL_SURVEYS],
     questions: [...INITIAL_QUESTIONS],
-    responses: [],
-    answers: [],
-    receipts: [],
+    responses: [...INITIAL_RESPONSES],
+    answers: [...INITIAL_ANSWERS],
+    receipts: [...INITIAL_RECEIPTS],
     feedback: [...INITIAL_FEEDBACK],
     qrCodes: [...INITIAL_QR_CODES],
     notifications: [...INITIAL_NOTIFICATIONS],
@@ -1159,6 +1352,17 @@ export const MockAdapter = {
   incrementQRScan(id: string) {
     const qr = db.qrCodes.find((q) => q.id === id);
     if (qr) qr.scans_count++;
+  },
+
+  getQRCodes(): QRCodeRecord[] {
+    return [...db.qrCodes];
+  },
+
+  deleteQRCode(id: string): boolean {
+    const idx = db.qrCodes.findIndex((q) => q.id === id || q.survey_id === id);
+    if (idx === -1) return false;
+    db.qrCodes.splice(idx, 1);
+    return true;
   },
 
   // --- Notifications ---

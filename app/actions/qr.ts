@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
 import { requireRole } from '@/lib/auth/session';
+import { createAdminClient, isLiveSupabaseConfigured } from '@/lib/supabase/admin';
 
 export async function validateQRCodeAction(codeOrSurveyId: string) {
   const trimmed = codeOrSurveyId.trim();
@@ -47,10 +48,81 @@ export async function validateQRCodeAction(codeOrSurveyId: string) {
 }
 
 export async function toggleQRCodeActiveAction(id: string, currentState: boolean) {
-  const user = await requireRole(['ADMINISTRATOR']);
-  const qrCodes = MockAdapter.getQRCodeByCodeData(id); // helper
+  await requireRole(['ADMINISTRATOR']);
   // update
   revalidatePath('/admin/qr-codes');
   return { success: true };
+}
+
+export async function deleteQRCodeAction(id: string) {
+  try {
+    const admin = await requireRole(['ADMINISTRATOR']);
+
+    if (isLiveSupabaseConfigured()) {
+      try {
+        const supabase = createAdminClient();
+        await supabase.from('survey_qr_codes').delete().or(`id.eq.${id},survey_id.eq.${id}`);
+      } catch (err) {
+        console.error('Supabase QR code delete error:', err);
+      }
+    }
+
+    const removed = MockAdapter.deleteQRCode(id);
+
+    MockAdapter.logAudit(admin.email, 'QR_CODE_DELETED', 'QR_CODE', id, {
+      deleted_by: admin.email,
+    });
+
+    revalidatePath('/admin/qr-codes');
+    return { success: true, removed };
+  } catch (err: any) {
+    return { error: err.message || 'Failed to delete QR code.' };
+  }
+}
+
+export async function generateQRCodeAction(surveyId: string) {
+  try {
+    const admin = await requireRole(['ADMINISTRATOR']);
+    const survey = MockAdapter.getSurveyById(surveyId);
+    if (!survey) {
+      return { error: 'Survey not found.' };
+    }
+
+    const cleanName = survey.title.slice(0, 6).toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const code = `QR-SRV-${cleanName}-${Date.now().toString().slice(-4)}`;
+
+    const newQr = MockAdapter.saveQRCode({
+      survey_id: survey.id,
+      code_data: code,
+      access_url: `/surveys/${survey.id}`,
+      qr_image_data: '',
+      is_active: true,
+    });
+
+    if (isLiveSupabaseConfigured()) {
+      try {
+        const supabase = createAdminClient();
+        await supabase.from('survey_qr_codes').upsert({
+          id: newQr.id,
+          survey_id: survey.id,
+          code_data: code,
+          access_url: `/surveys/${survey.id}`,
+          is_active: true,
+        });
+      } catch (err) {
+        console.error('Supabase QR code save error:', err);
+      }
+    }
+
+    MockAdapter.logAudit(admin.email, 'QR_CODE_GENERATED', 'QR_CODE', newQr.id, {
+      survey_id: survey.id,
+      code_data: code,
+    });
+
+    revalidatePath('/admin/qr-codes');
+    return { success: true, qr: newQr };
+  } catch (err: any) {
+    return { error: err.message || 'Failed to generate QR code.' };
+  }
 }
 

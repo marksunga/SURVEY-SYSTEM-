@@ -576,8 +576,8 @@ ON CONFLICT (survey_id) DO NOTHING;
 
 -- 6. Seed Notifications
 INSERT INTO notifications (user_id, target_role, title, message, link, type, is_read) VALUES
-(NULL, 'STUDENT', 'New Mid-Term Survey Published', 'Please complete the Mid-Term IT Course Evaluation before the deadline.', '/surveys/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'SURVEY_INVITE', FALSE),
-('44444444-4444-4444-4444-444444444444', NULL, 'Survey Reminder', 'Only 5 days left to submit your responses for Course Evaluation.', '/surveys/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'DEADLINE_REMINDER', FALSE),
+(NULL, 'STUDENT', 'New Mid-Term Survey Published', 'Please complete the Mid-Term IT Course Evaluation before the deadline.', '/surveys/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'SURVEY_INVITE', TRUE),
+('44444444-4444-4444-4444-444444444444', NULL, 'Survey Reminder', 'Only 5 days left to submit your responses for Course Evaluation.', '/surveys/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'DEADLINE_REMINDER', TRUE),
 ('11111111-1111-1111-1111-111111111111', NULL, 'System Health Normal', 'Automated security checks and audit log synchronization completed successfully.', '/admin/dashboard', 'SYSTEM_ALERT', TRUE);
 
 -- 7. Seed Audit Logs

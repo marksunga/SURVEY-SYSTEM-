@@ -293,7 +293,7 @@ export default function FeedbackPage() {
                       </span>
                     ) : (
                       <span className="flex items-center gap-1.5">
-                        <Send className="h-3.5 w-3.5" />
+                        <Lock className="h-3.5 w-3.5" />
                         Encrypt & Submit Feedback
                       </span>
                     )}

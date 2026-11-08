@@ -17,6 +17,7 @@ import {
   Eye,
   Filter,
   Trash2,
+  UserX,
 } from 'lucide-react';
 import { updateFeedbackStatusAction, deleteFeedbackAction } from '@/app/actions/feedback';
 import { Feedback, FeedbackStatus } from '@/lib/types/database';
@@ -141,7 +142,7 @@ export default function AdminFeedbackPage() {
                     <td className="p-3.5">
                       {f.is_anonymous ? (
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full">
-                          <Lock className="h-3 w-3 text-slate-500" /> Anonymous Student
+                          <UserX className="h-3 w-3 text-slate-500" /> Anonymous Student
                         </span>
                       ) : (
                         <div>
@@ -152,8 +153,8 @@ export default function AdminFeedbackPage() {
                     </td>
 
                     <td className="p-3.5">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                        <ShieldCheck className="h-3 w-3" /> AES-256-GCM
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200" title="Payload is cryptographically encrypted using AES-256-GCM">
+                        <Lock className="h-3 w-3 text-emerald-600" /> AES-256-GCM Encrypted
                       </span>
                     </td>
 
@@ -182,10 +183,11 @@ export default function AdminFeedbackPage() {
                             setSelectedFeedback(f);
                             setAdminNotes(f.admin_notes || '');
                           }}
-                          className="h-7 text-xs px-2.5"
+                          className="h-7 text-xs px-2.5 text-blue-700 hover:text-blue-800 hover:bg-blue-50 border-blue-200"
+                          title="Decrypt ciphertext with server key and inspect feedback"
                         >
-                          <Eye className="h-3.5 w-3.5 mr-1 text-blue-600" />
-                          Inspect & Decrypt
+                          <Unlock className="h-3.5 w-3.5 mr-1 text-blue-600" />
+                          Decrypt & Review
                         </Button>
                         <Button
                           type="button"
@@ -235,7 +237,7 @@ export default function AdminFeedbackPage() {
               {/* Decrypted Payload */}
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                  <Unlock className="h-3.5 w-3.5 text-emerald-600" />
                   Decrypted Message Content (Plaintext):
                 </Label>
                 <div className="p-4 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 leading-relaxed font-sans whitespace-pre-wrap">

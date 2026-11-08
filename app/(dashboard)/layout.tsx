@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth/session';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
+import { createAdminClient, isLiveSupabaseConfigured } from '@/lib/supabase/admin';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { AppHeader } from '@/components/layout/AppHeader';
 
@@ -15,8 +16,30 @@ export default async function DashboardLayout({
     redirect('/auth/login');
   }
 
-  const notifications = MockAdapter.getNotifications(user.id, user.role_id);
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
+  let unreadCount = 0;
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_read', false)
+        .or(`user_id.eq.${user.id},and(user_id.is.null,or(target_role.is.null,target_role.eq.${user.role_id}))`);
+
+      if (!error && count !== null) {
+        unreadCount = count;
+      } else {
+        const notifications = MockAdapter.getNotifications(user.id, user.role_id);
+        unreadCount = notifications.filter((n) => !n.is_read).length;
+      }
+    } catch {
+      const notifications = MockAdapter.getNotifications(user.id, user.role_id);
+      unreadCount = notifications.filter((n) => !n.is_read).length;
+    }
+  } else {
+    const notifications = MockAdapter.getNotifications(user.id, user.role_id);
+    unreadCount = notifications.filter((n) => !n.is_read).length;
+  }
 
   return (
     <div className="flex min-h-screen bg-[#F3F5F7]">
@@ -28,4 +51,3 @@ export default async function DashboardLayout({
     </div>
   );
 }
-

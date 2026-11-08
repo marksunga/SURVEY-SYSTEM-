@@ -24,7 +24,9 @@ export default async function AvailableSurveysPage({
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const allSurveys = MockAdapter.getSurveys(user.role_id);
+  const allSurveys = user.role_id === 'ADMINISTRATOR'
+    ? MockAdapter.getSurveys()
+    : MockAdapter.getSurveys(user.role_id);
   const completedIds = MockAdapter.getUserCompletedSurveyIds(user.id);
 
   const selectedCategory = searchParams.category;

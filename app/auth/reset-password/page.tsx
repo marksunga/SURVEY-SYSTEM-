@@ -233,7 +233,7 @@ function ResetPasswordForm() {
                   tabIndex={-1}
                   aria-label={showNewPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showNewPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                 </button>
               </div>
             </div>
@@ -261,7 +261,7 @@ function ResetPasswordForm() {
                   tabIndex={-1}
                   aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showConfirmPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                 </button>
               </div>
             </div>

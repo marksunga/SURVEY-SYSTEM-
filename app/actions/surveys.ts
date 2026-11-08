@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
 import { getCurrentUser, requireRole } from '@/lib/auth/session';
+import { createAdminClient, isLiveSupabaseConfigured } from '@/lib/supabase/admin';
 import { SurveyCategory, SurveyStatus, UserRole } from '@/lib/types/database';
 import { DraftQuestion } from '@/components/surveys/QuestionBuilder';
 
@@ -199,6 +200,43 @@ export async function submitSurveyAnswersAction(
       isAnonymous,
       answers
     );
+
+    // If live Supabase is configured, persist response, answers and participation receipt
+    if (isLiveSupabaseConfigured()) {
+      try {
+        const supabase = createAdminClient();
+        const responseId = crypto.randomUUID();
+
+        await supabase.from('survey_responses').insert({
+          id: responseId,
+          survey_id: surveyId,
+          user_id: isAnonymous ? null : user.id,
+          is_anonymous: isAnonymous,
+          submission_token: result.token,
+          receipt_token: result.token,
+        });
+
+        const answerRows = Object.entries(answers).map(([qId, val]) => ({
+          id: crypto.randomUUID(),
+          response_id: responseId,
+          question_id: qId,
+          answer_value: typeof val === 'object' ? JSON.stringify(val) : String(val),
+        }));
+
+        if (answerRows.length > 0) {
+          await supabase.from('response_answers').insert(answerRows);
+        }
+
+        await supabase.from('survey_participation_receipts').insert({
+          id: crypto.randomUUID(),
+          survey_id: surveyId,
+          user_id: user.id,
+          receipt_token: result.token,
+        });
+      } catch (dbErr) {
+        console.error('Failed to persist survey response to Supabase:', dbErr);
+      }
+    }
 
     // Audit log (Without logging answers to maintain privacy)
     MockAdapter.logAudit(

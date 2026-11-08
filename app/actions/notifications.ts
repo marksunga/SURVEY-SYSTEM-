@@ -3,14 +3,25 @@
 import { revalidatePath } from 'next/cache';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
 import { getCurrentUser, requireRole } from '@/lib/auth/session';
+import { createAdminClient, isLiveSupabaseConfigured } from '@/lib/supabase/admin';
 import { NotificationType, SystemNotification, UserRole } from '@/lib/types/database';
 
 export async function markNotificationReadAction(id: string) {
   const user = await getCurrentUser();
   if (!user) return { error: 'Not authenticated.' };
 
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    } catch (err) {
+      console.error('Supabase markNotificationRead error:', err);
+    }
+  }
+
   MockAdapter.markNotificationAsRead(id);
   revalidatePath('/notifications');
+  revalidatePath('/admin/notifications');
   return { success: true };
 }
 
@@ -33,6 +44,24 @@ export async function createBroadcastNotificationAction(data: {
       type: data.type,
     });
 
+    if (isLiveSupabaseConfigured()) {
+      try {
+        const supabase = createAdminClient();
+        await supabase.from('notifications').insert({
+          id: notif.id,
+          user_id: null,
+          target_role: data.targetRole === 'ALL' ? null : data.targetRole,
+          title: data.title,
+          message: data.message,
+          link: data.link || null,
+          type: data.type,
+          is_read: false,
+        });
+      } catch (err) {
+        console.error('Supabase broadcast notification insert error:', err);
+      }
+    }
+
     MockAdapter.logAudit(admin.email, 'NOTIFICATION_BROADCAST', 'NOTIFICATION', notif.id, {
       target: data.targetRole,
       title: data.title,
@@ -50,13 +79,47 @@ export async function deleteNotificationAction(id: string) {
   const user = await getCurrentUser();
   if (!user) return { error: 'Not authenticated.' };
 
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      await supabase.from('notifications').delete().eq('id', id);
+    } catch (err) {
+      console.error('Supabase delete notification error:', err);
+    }
+  }
+
   const success = MockAdapter.deleteNotification(id);
-  if (!success) {
+  if (!success && !isLiveSupabaseConfigured()) {
     return { error: 'Notification not found.' };
   }
 
   revalidatePath('/notifications');
   revalidatePath('/admin/notifications');
+  return { success: true };
+}
+
+export async function markAllNotificationsReadAction() {
+  const user = await getCurrentUser();
+  if (!user) return { error: 'Not authenticated.' };
+
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .or(`user_id.eq.${user.id},and(user_id.is.null,or(target_role.is.null,target_role.eq.${user.role_id}))`);
+    } catch (err) {
+      console.error('Supabase markAllRead error:', err);
+    }
+  }
+
+  const userNotifs = MockAdapter.getNotifications(user.id, user.role_id);
+  for (const n of userNotifs) {
+    MockAdapter.markNotificationAsRead(n.id);
+  }
+
+  revalidatePath('/notifications');
   return { success: true };
 }
 
@@ -74,6 +137,24 @@ export async function sendSurveyRemindersAction(surveyId: string) {
       link: `/surveys/${survey.id}`,
       type: 'DEADLINE_REMINDER',
     });
+
+    if (isLiveSupabaseConfigured()) {
+      try {
+        const supabase = createAdminClient();
+        await supabase.from('notifications').insert({
+          id: notif.id,
+          target_role: role,
+          title: notif.title,
+          message: notif.message,
+          link: notif.link,
+          type: notif.type,
+          is_read: false,
+        });
+      } catch (err) {
+        console.error('Supabase reminder insert error:', err);
+      }
+    }
+
     notifsCreated.push(notif);
   }
 
