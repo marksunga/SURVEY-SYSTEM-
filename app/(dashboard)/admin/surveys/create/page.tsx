@@ -105,7 +105,7 @@ export default function CreateSurveyPage() {
       if (res?.error) {
         setError(res.error);
       } else if (res?.surveyId) {
-        router.push(`/admin/surveys/${res.surveyId}/results`);
+        router.push('/admin/surveys');
       }
     } catch (err: any) {
       setError(err?.message || 'Failed to create survey.');

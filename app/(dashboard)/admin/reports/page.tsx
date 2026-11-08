@@ -25,7 +25,6 @@ import { SurveyStatus } from '@/lib/types/database';
 export default function AdminReportsPage() {
   const [surveys, setSurveys] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
-  const [dateFilter, setDateFilter] = useState<string>('ALL');
   const [selectedSurveyId, setSelectedSurveyId] = useState<string>('');
   const [reportData, setReportData] = useState<any>(null);
   const [loadingSurveys, setLoadingSurveys] = useState(true);
@@ -44,23 +43,15 @@ export default function AdminReportsPage() {
       .finally(() => setLoadingSurveys(false));
   }, []);
 
-  // Filter available surveys based on status and date range
+  // Filter available surveys based on status
   const filteredSurveyOptions = useMemo(() => {
     return surveys.filter((s) => {
       if (statusFilter !== 'ALL' && s.status !== statusFilter) {
         return false;
       }
-      if (dateFilter !== 'ALL') {
-        const surveyTime = new Date(s.created_at).getTime();
-        const now = Date.now();
-        const days = dateFilter === '7D' ? 7 : dateFilter === '30D' ? 30 : 90;
-        if (now - surveyTime > days * 86400000) {
-          return false;
-        }
-      }
       return true;
     });
-  }, [surveys, statusFilter, dateFilter]);
+  }, [surveys, statusFilter]);
 
   // When filtered options change, update selected survey if current selection is invalid
   useEffect(() => {
@@ -134,9 +125,9 @@ export default function AdminReportsPage() {
 
       {/* Filtering Toolbar */}
       <Card className="border-slate-200 bg-white shadow-xs rounded-xl">
-        <CardContent className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <CardContent className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Survey Selector */}
-          <div className="sm:col-span-1 space-y-1">
+          <div className="space-y-1">
             <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
               <Filter className="h-3 w-3 text-[#4682A9]" />
               <span>Select Survey:</span>
@@ -173,24 +164,6 @@ export default function AdminReportsPage() {
               <option value="EXPIRED">Expired</option>
               <option value="CLOSED">Closed</option>
               <option value="DRAFT">Draft</option>
-            </select>
-          </div>
-
-          {/* Date Filter */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
-              <Calendar className="h-3 w-3 text-blue-600" />
-              <span>Date Period:</span>
-            </label>
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="flex h-9 w-full rounded-md border border-input bg-white px-2.5 py-1 text-xs text-slate-700"
-            >
-              <option value="ALL">All Time</option>
-              <option value="7D">Last 7 Days</option>
-              <option value="30D">Last 30 Days</option>
-              <option value="90D">Last 90 Days</option>
             </select>
           </div>
         </CardContent>

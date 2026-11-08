@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth/session';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
+import { createAdminClient, isLiveSupabaseConfigured } from '@/lib/supabase/admin';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,10 +25,56 @@ export default async function AvailableSurveysPage({
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const allSurveys = user.role_id === 'ADMINISTRATOR'
-    ? MockAdapter.getSurveys()
-    : MockAdapter.getSurveys(user.role_id);
-  const completedIds = MockAdapter.getUserCompletedSurveyIds(user.id);
+  let allSurveys: any[] = [];
+  let completedIds: string[] = [];
+
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      let query = supabase.from('surveys').select('*').order('created_at', { ascending: false });
+      if (user.role_id !== 'ADMINISTRATOR') {
+        query = query.eq('status', 'ACTIVE');
+      }
+      const { data: dbSurveys, error } = await query;
+      if (!error && dbSurveys && dbSurveys.length > 0) {
+        allSurveys = await Promise.all(
+          dbSurveys.map(async (s: any) => {
+            const [qRes, rRes] = await Promise.all([
+              supabase.from('survey_questions').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+              supabase.from('survey_responses').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+            ]);
+            return {
+              ...s,
+              questions_count: qRes.count || 0,
+              responses_count: rRes.count || 0,
+            };
+          })
+        );
+      }
+
+      const { data: receipts } = await supabase
+        .from('survey_participation_receipts')
+        .select('survey_id')
+        .eq('user_id', user.id);
+      if (receipts) {
+        completedIds = receipts.map((r: any) => r.survey_id);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch surveys from live Supabase:', err);
+    }
+  }
+
+  if (allSurveys.length === 0) {
+    allSurveys = user.role_id === 'ADMINISTRATOR'
+      ? MockAdapter.getSurveys()
+      : MockAdapter.getSurveys(user.role_id);
+  } else if (user.role_id !== 'ADMINISTRATOR') {
+    allSurveys = allSurveys.filter((s) => s.target_roles?.includes(user.role_id));
+  }
+
+  if (completedIds.length === 0) {
+    completedIds = MockAdapter.getUserCompletedSurveyIds(user.id);
+  }
 
   const selectedCategory = searchParams.category;
 

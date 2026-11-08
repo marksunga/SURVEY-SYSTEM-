@@ -2,18 +2,42 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
 import { QRCodeDisplay } from '@/components/qr/QRCodeDisplay';
-import { ArrowLeft, QrCode } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { createAdminClient, isLiveSupabaseConfigured } from '@/lib/supabase/admin';
 
 export default async function SurveyQRPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const survey = MockAdapter.getSurveyById(params.id);
+  let survey = MockAdapter.getSurveyById(params.id);
+  let qr = MockAdapter.getQRCodeBySurveyId(params.id);
+
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      const { data: dbSurvey } = await supabase
+        .from('surveys')
+        .select('*')
+        .eq('id', params.id)
+        .single();
+
+      if (dbSurvey) {
+        survey = dbSurvey as any;
+        const { data: dbQr } = await supabase
+          .from('survey_qr_codes')
+          .select('*')
+          .eq('survey_id', params.id)
+          .single();
+        if (dbQr) qr = dbQr as any;
+      }
+    } catch (err) {
+      console.warn('Supabase survey QR page fallback:', err);
+    }
+  }
+
   if (!survey) notFound();
 
-  let qr = MockAdapter.getQRCodeBySurveyId(survey.id);
   if (!qr) {
     const code = `QR-SRV-${survey.title.slice(0, 6).toUpperCase().replace(/[^A-Z0-9]/g, '')}-${Date.now().toString().slice(-4)}`;
     qr = MockAdapter.saveQRCode({
@@ -35,7 +59,7 @@ export default async function SurveyQRPage({
           <ArrowLeft className="h-3.5 w-3.5 mr-1" />
           Back to Survey
         </Link>
-        <span className="text-xs text-slate-400">Scan Count: {qr.scans_count} scans</span>
+        <span className="text-xs text-slate-400">Scan Count: {qr.scans_count || 0} scans</span>
       </div>
 
       <div className="text-center space-y-1">
@@ -49,8 +73,8 @@ export default async function SurveyQRPage({
         codeData={qr.code_data}
         surveyTitle={survey.title}
         accessUrl={qr.access_url}
+        surveyDescription={survey.description}
       />
     </div>
   );
 }
-

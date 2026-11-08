@@ -30,7 +30,10 @@ export default function AdminFeedbackPage() {
   const [feedbackToDelete, setFeedbackToDelete] = useState<Feedback | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
+  const [dialogStatus, setDialogStatus] = useState<FeedbackStatus>('PENDING');
   const [updating, setUpdating] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,18 +44,35 @@ export default function AdminFeedbackPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function handleStatusUpdate(id: string, newStatus: FeedbackStatus) {
+  async function handleSaveNotes() {
+    if (!selectedFeedback) return;
     setUpdating(true);
-    const res = await updateFeedbackStatusAction(id, newStatus, adminNotes);
-    if (res?.success) {
-      setFeedbacks((prev) =>
-        prev.map((f) => (f.id === id ? { ...f, status: newStatus, admin_notes: adminNotes } : f))
-      );
-      if (selectedFeedback && selectedFeedback.id === id) {
-        setSelectedFeedback({ ...selectedFeedback, status: newStatus, admin_notes: adminNotes });
+    setSaveSuccess(false);
+    setSaveError(null);
+
+    try {
+      const res = await updateFeedbackStatusAction(selectedFeedback.id, dialogStatus, adminNotes);
+      if (res?.success) {
+        setFeedbacks((prev) =>
+          prev.map((f) =>
+            f.id === selectedFeedback.id
+              ? { ...f, status: dialogStatus, admin_notes: adminNotes }
+              : f
+          )
+        );
+        setSelectedFeedback((prev) =>
+          prev ? { ...prev, status: dialogStatus, admin_notes: adminNotes } : null
+        );
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3500);
+      } else {
+        setSaveError(res?.error || 'Failed to save administrative notes.');
       }
+    } catch (err: any) {
+      setSaveError(err?.message || 'Error occurred while saving notes.');
+    } finally {
+      setUpdating(false);
     }
-    setUpdating(false);
   }
 
   async function handleConfirmDeleteFeedback() {
@@ -182,6 +202,9 @@ export default function AdminFeedbackPage() {
                           onClick={() => {
                             setSelectedFeedback(f);
                             setAdminNotes(f.admin_notes || '');
+                            setDialogStatus(f.status);
+                            setSaveSuccess(false);
+                            setSaveError(null);
                           }}
                           className="h-7 text-xs px-2.5 text-blue-700 hover:text-blue-800 hover:bg-blue-50 border-blue-200"
                           title="Decrypt ciphertext with server key and inspect feedback"
@@ -257,14 +280,29 @@ export default function AdminFeedbackPage() {
                 />
               </div>
 
-              {/* Status Update Buttons */}
+              {/* Responsive Save Feedback Alert */}
+              {saveSuccess && (
+                <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 animate-in fade-in">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span className="font-medium">Administrative notes and resolution status saved successfully!</span>
+                </div>
+              )}
+
+              {saveError && (
+                <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2 animate-in fade-in">
+                  <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
+                  <span>{saveError}</span>
+                </div>
+              )}
+
+              {/* Status Update & Save Buttons */}
               <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-slate-500">Change Status:</span>
+                  <span className="text-xs text-slate-500 font-medium">Status:</span>
                   <select
-                    value={selectedFeedback.status}
-                    onChange={(e) => handleStatusUpdate(selectedFeedback.id, e.target.value as FeedbackStatus)}
-                    className="h-8 rounded border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-800"
+                    value={dialogStatus}
+                    onChange={(e) => setDialogStatus(e.target.value as FeedbackStatus)}
+                    className="h-9 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="PENDING">PENDING</option>
                     <option value="UNDER_REVIEW">UNDER REVIEW</option>
@@ -276,11 +314,26 @@ export default function AdminFeedbackPage() {
                 <Button
                   type="button"
                   size="sm"
-                  onClick={() => handleStatusUpdate(selectedFeedback.id, selectedFeedback.status)}
+                  onClick={handleSaveNotes}
                   disabled={updating}
-                  className="bg-blue-600 text-white text-xs"
+                  className="bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs font-semibold px-4 min-h-[36px] shadow-xs cursor-pointer transition-all"
                 >
-                  Save Notes
+                  {updating ? (
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Saving Notes...
+                    </span>
+                  ) : saveSuccess ? (
+                    <span className="flex items-center gap-1.5 text-emerald-100 font-bold">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                      Saved Successfully!
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      Save Resolution Notes
+                    </span>
+                  )}
                 </Button>
               </div>
             </div>

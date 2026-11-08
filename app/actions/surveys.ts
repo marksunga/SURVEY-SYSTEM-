@@ -85,6 +85,59 @@ export async function createSurveyAction(data: {
       }
     }
 
+    // 6. Persist to live Supabase if configured (persists across serverless instances)
+    if (isLiveSupabaseConfigured()) {
+      try {
+        const supabase = createAdminClient();
+        await supabase.from('surveys').insert({
+          id: newSurvey.id,
+          title: newSurvey.title,
+          description: newSurvey.description,
+          category: newSurvey.category,
+          status: newSurvey.status,
+          target_roles: newSurvey.target_roles,
+          is_anonymous_allowed: newSurvey.is_anonymous_allowed,
+          start_date: startDate,
+          end_date: data.end_date,
+          created_by: user.id,
+        });
+
+        if (data.questions.length > 0) {
+          const questionRows = data.questions.map((q, idx) => ({
+            survey_id: newSurvey.id,
+            question_text: q.question_text,
+            question_type: q.question_type,
+            options: q.options || [],
+            is_required: q.is_required,
+            order_index: idx,
+          }));
+          await supabase.from('survey_questions').insert(questionRows);
+        }
+
+        await supabase.from('survey_qr_codes').insert({
+          survey_id: newSurvey.id,
+          code_data: codeData,
+          access_url: `/surveys/${newSurvey.id}`,
+          is_active: true,
+        });
+
+        if (newSurvey.status === 'ACTIVE') {
+          for (const role of data.target_roles) {
+            await supabase.from('notifications').insert({
+              target_role: role,
+              title: 'New Survey Available',
+              message: `A new survey "${newSurvey.title}" is now open for your response.`,
+              link: `/surveys/${newSurvey.id}`,
+              type: 'SURVEY_INVITE',
+              is_read: false,
+            });
+          }
+        }
+      } catch (dbErr) {
+        console.error('Supabase survey creation error:', dbErr);
+      }
+    }
+
     revalidatePath('/surveys');
     revalidatePath('/admin/surveys');
     return { success: true, surveyId: newSurvey.id };
@@ -124,6 +177,28 @@ export async function updateSurveyAction(
 
     MockAdapter.logAudit(user.email, 'SURVEY_UPDATED', 'SURVEY', id, { updates });
 
+    if (isLiveSupabaseConfigured()) {
+      try {
+        const supabase = createAdminClient();
+        await supabase.from('surveys').update(updates).eq('id', id);
+
+        if (questions) {
+          await supabase.from('survey_questions').delete().eq('survey_id', id);
+          const questionRows = questions.map((q, idx) => ({
+            survey_id: id,
+            question_text: q.question_text,
+            question_type: q.question_type,
+            options: q.options || [],
+            is_required: q.is_required,
+            order_index: idx,
+          }));
+          await supabase.from('survey_questions').insert(questionRows);
+        }
+      } catch (dbErr) {
+        console.error('Supabase update survey error:', dbErr);
+      }
+    }
+
     revalidatePath(`/surveys/${id}`);
     revalidatePath('/admin/surveys');
     return { success: true };
@@ -137,6 +212,15 @@ export async function updateSurveyStatusAction(id: string, status: SurveyStatus)
 
   const updated = MockAdapter.updateSurvey(id, { status });
 
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      await supabase.from('surveys').update({ status }).eq('id', id);
+    } catch (dbErr) {
+      console.error('Supabase survey status update error:', dbErr);
+    }
+  }
+
   MockAdapter.logAudit(user.email, 'SURVEY_STATUS_CHANGED', 'SURVEY', id, { status });
 
   revalidatePath('/admin/surveys');
@@ -146,6 +230,15 @@ export async function updateSurveyStatusAction(id: string, status: SurveyStatus)
 
 export async function deleteSurveyAction(id: string) {
   const user = await requireRole(['ADMINISTRATOR']);
+
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      await supabase.from('surveys').delete().eq('id', id);
+    } catch (dbErr) {
+      console.error('Supabase survey delete error:', dbErr);
+    }
+  }
 
   MockAdapter.deleteSurvey(id);
 
@@ -166,7 +259,25 @@ export async function submitSurveyAnswersAction(
     return { error: 'Please log in to submit this survey.' };
   }
 
-  const survey = MockAdapter.getSurveyById(surveyId);
+  let survey = MockAdapter.getSurveyById(surveyId);
+  if (!survey && isLiveSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      const { data: dbSurvey } = await supabase.from('surveys').select('*').eq('id', surveyId).single();
+      if (dbSurvey) {
+        const { data: dbQuestions } = await supabase
+          .from('survey_questions')
+          .select('*')
+          .eq('survey_id', surveyId)
+          .order('order_index', { ascending: true });
+        MockAdapter.upsertSurveyFromDb(dbSurvey, dbQuestions || []);
+        survey = MockAdapter.getSurveyById(surveyId);
+      }
+    } catch (dbErr) {
+      console.warn('Failed to fetch survey from Supabase during submission:', dbErr);
+    }
+  }
+
   if (!survey) {
     return { error: 'Survey not found.' };
   }

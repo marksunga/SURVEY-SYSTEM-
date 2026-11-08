@@ -1044,6 +1044,19 @@ export const MockAdapter = {
     return true;
   },
 
+  upsertSurveyFromDb(survey: any, questions?: any[]): void {
+    const idx = db.surveys.findIndex((s) => s.id === survey.id);
+    if (idx >= 0) {
+      db.surveys[idx] = { ...db.surveys[idx], ...survey };
+    } else {
+      db.surveys.unshift(survey);
+    }
+    if (questions && questions.length > 0) {
+      db.questions = db.questions.filter((q) => q.survey_id !== survey.id);
+      db.questions.push(...questions);
+    }
+  },
+
   // --- Questions ---
   getQuestionsBySurveyId(surveyId: string): SurveyQuestion[] {
     return db.questions
