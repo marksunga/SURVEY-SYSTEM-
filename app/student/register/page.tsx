@@ -15,6 +15,7 @@ import {
   EyeOff,
   Info,
   ShieldCheck,
+  Shield,
   CheckCircle2,
   Zap,
   Monitor,
@@ -218,19 +219,25 @@ export default function StudentRegisterPage() {
           - Informational badges: 24/7 IT Access, Fast & Reliable, Official UA
           - Desktop: Large gold UA circular seal on right
          ════════════════════════════════════════════════════════════════════ */}
-      <section className="relative w-full overflow-hidden bg-[#0A2644] text-white pt-8 sm:pt-12 md:pt-16 lg:pt-20 pb-28 sm:pb-36 lg:pb-44">
-        {/* Real Campus Photo Background with Deep Navy Gradient Overlays */}
+      <section className="relative w-full overflow-hidden bg-[#073663] text-white pt-8 sm:pt-12 md:pt-16 lg:pt-20 pb-28 sm:pb-36 lg:pb-44">
+        {/* Real Campus Photo Background */}
         <div className="absolute inset-0 z-0">
           <Image
             src="/images/ua-building.jpg"
             alt="University of the Assumption Campus Facade and Fountain"
             fill
-            className="object-cover object-[center_30%] sm:object-[center_35%] filter contrast-110 brightness-95"
+            className="object-cover object-[72%_35%] sm:object-[65%_35%] lg:object-[58%_35%] filter contrast-105 brightness-100"
             priority
           />
-          {/* Deep Navy/Blue Atmospheric Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0C2B4E]/95 via-[#11406E]/88 to-[#09223D]/92 mix-blend-multiply" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0A2644]/40 via-transparent to-[#0A2644]/80" />
+
+          {/* Desktop Gradient Overlay: Solid royal navy on left, transitioning smoothly to transparent on right so statue & building are crisp and natural */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#06315A] via-[#084277]/85 via-50% to-transparent hidden md:block" />
+
+          {/* Mobile Gradient: Stronger on the left for text legibility, translucent on right so fountain statue stays visible */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#06315A]/95 via-[#073A6B]/80 to-[#073A6B]/30 md:hidden" />
+
+          {/* Subtle top & bottom shadow gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-[#073663]/60" />
 
           {/* Diagonal Stone Watermark Texture */}
           <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none select-none">
@@ -246,8 +253,8 @@ export default function StudentRegisterPage() {
             {/* Left Column: Heading, Subtitle, Actions, Badges */}
             <div className="lg:col-span-8 space-y-4 sm:space-y-5 text-center lg:text-left flex flex-col items-center lg:items-start">
               {/* Category Pill Chip */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-white shadow-xs">
-                <Monitor className="h-3 w-3 text-[#38BDF8]" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 border border-white/30 backdrop-blur-md text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-white shadow-xs">
+                <Monitor className="h-3.5 w-3.5 text-[#38BDF8]" />
                 <span>INFORMATION TECHNOLOGY DEPARTMENT</span>
               </div>
 
@@ -281,30 +288,39 @@ export default function StudentRegisterPage() {
               </div>
 
               {/* 3 Informational Badges Row */}
-              <div className="pt-2 flex items-center justify-center lg:justify-start gap-4 sm:gap-6 text-[11px] sm:text-xs text-white/80 font-medium flex-wrap">
+              <div className="pt-2 flex items-center justify-center lg:justify-start gap-4 sm:gap-6 text-xs text-white/90 font-medium flex-wrap">
                 <div className="flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5 text-[#38BDF8]" />
-                  <span>24/7 IT Access</span>
+                  <Shield className="h-3.5 w-3.5 text-[#38BDF8]" />
+                  <span>
+                    <span className="hidden sm:inline">Secure Access</span>
+                    <span className="sm:hidden">Secure</span>
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Zap className="h-3.5 w-3.5 text-[#38BDF8]" />
-                  <span>Fast & Reliable</span>
+                  <span>
+                    <span className="hidden sm:inline">Fast & Reliable</span>
+                    <span className="sm:hidden">Reliable</span>
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-[#38BDF8]" />
-                  <span>Official UA System</span>
+                  <ShieldCheck className="h-3.5 w-3.5 text-[#38BDF8]" />
+                  <span>
+                    <span className="hidden sm:inline">Official UA System</span>
+                    <span className="sm:hidden">Official</span>
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Right Column (Desktop): Iconic Large Circular Seal */}
             <div className="hidden lg:col-span-4 lg:flex justify-end items-center">
-              <div className="relative w-44 h-44 xl:w-52 xl:h-52 drop-shadow-[0_15px_30px_rgba(0,0,0,0.45)] transition-transform hover:scale-105 duration-300">
+              <div className="relative w-48 h-48 xl:w-56 xl:h-56 drop-shadow-[0_15px_30px_rgba(0,0,0,0.45)] transition-transform hover:scale-105 duration-300">
                 <Image
                   src="/images/ua-seal.png"
                   alt="University of the Assumption Circular Seal"
-                  width={208}
-                  height={208}
+                  width={224}
+                  height={224}
                   className="object-contain"
                   priority
                 />

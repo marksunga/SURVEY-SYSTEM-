@@ -23,6 +23,7 @@ import {
   X,
   Shield,
   HelpCircle,
+  Hexagon,
 } from 'lucide-react';
 
 interface UALoginPortalProps {
@@ -97,16 +98,16 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
   return (
     <div className="min-h-screen w-full bg-[#F4F9FD] flex flex-col justify-between overflow-x-hidden text-slate-800 antialiased selection:bg-[#185A9D] selection:text-white">
       {/* ════════════════════════════════════════════════════════════════════
-          1. TOP NAVIGATION BAR (Exact Match to Reference 1 & Reference 2)
+          1. TOP NAVIGATION BAR (Exact Match to Inspiration Reference)
           - White horizontal navbar
-          - University logo + "University of the Assumption" / "IT Department Portal"
+          - University seal + "University of the Assumption" / "IT Department Portal"
           - Desktop: Admin text link + "Student Login" blue pill button
           - Mobile: Compact header with Hamburger menu button
          ════════════════════════════════════════════════════════════════════ */}
       <header className="w-full bg-white border-b border-slate-200/80 sticky top-0 z-40 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
           {/* Left: University Seal & Typography */}
-          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group">
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group min-w-0">
             <div className="relative w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 transition-transform group-hover:scale-105">
               <Image
                 src="/images/ua-seal.png"
@@ -117,18 +118,18 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
                 priority
               />
             </div>
-            <div className="flex flex-col text-left">
-              <span className="text-xs sm:text-sm font-bold text-[#0E2F52] tracking-tight leading-tight group-hover:text-[#185A9D] transition-colors">
+            <div className="flex flex-col text-left min-w-0">
+              <span className="text-xs sm:text-sm font-bold text-[#0E2F52] tracking-tight leading-tight group-hover:text-[#185A9D] transition-colors truncate">
                 University of the Assumption
               </span>
-              <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium leading-none mt-0.5">
+              <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium leading-none mt-0.5 truncate">
                 IT Department Portal
               </span>
             </div>
           </Link>
 
           {/* Desktop Right: Admin link + Student Login button */}
-          <nav className="hidden md:flex items-center gap-4 lg:gap-6">
+          <nav className="hidden md:flex items-center gap-4 lg:gap-6 flex-shrink-0">
             <button
               type="button"
               onClick={() => scrollToLoginCard('ADMINISTRATOR')}
@@ -155,7 +156,7 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle navigation menu"
-            className="md:hidden p-2 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="md:hidden p-2 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
@@ -203,27 +204,35 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
 
       {/* ════════════════════════════════════════════════════════════════════
           2. HERO SECTION WITH CAMPUS & FOUNTAIN BACKGROUND
-          - Large blue hero with real campus & fountain photography
+          - Real Campus & Statue Fountain photography clearly visible
+          - Smooth horizontal gradient overlay (dark royal blue on left for text contrast,
+            fading to transparent on center/right so statue & building shine naturally)
           - Information Technology Department chip
           - Heading: "IT Department Portal" (Portal in cyan #38BDF8)
-          - Subtitle: Course evaluations, surveys, feedback system
-          - Buttons: "-> Login to Portal" & "Create Student Account"
-          - Informational links row (24/7 Access, Fast & Reliable, Official UA)
-          - Desktop: Large gold UA circular seal on right
+          - Subtitle: Course evaluations, academic surveys, and departmental feedback system.
+          - Buttons: "-> Login to Portal" (blue) & "Create Student Account" (glass)
+          - Badges: "Secure Access", "Fast & Reliable", "Official UA System"
+          - Desktop: Large gold UA circular seal floating on right
          ════════════════════════════════════════════════════════════════════ */}
-      <section className="relative w-full overflow-hidden bg-[#0A2644] text-white pt-8 sm:pt-12 md:pt-16 lg:pt-20 pb-28 sm:pb-36 lg:pb-44">
-        {/* Real Campus Photo Background with Deep Navy Gradient Overlays */}
+      <section className="relative w-full overflow-hidden bg-[#073663] text-white pt-8 sm:pt-12 md:pt-16 lg:pt-20 pb-28 sm:pb-36 lg:pb-44">
+        {/* Real Campus Photo Background */}
         <div className="absolute inset-0 z-0">
           <Image
             src="/images/ua-building.jpg"
             alt="University of the Assumption Campus Facade and Fountain"
             fill
-            className="object-cover object-[center_30%] sm:object-[center_35%] filter contrast-110 brightness-95"
+            className="object-cover object-[72%_35%] sm:object-[65%_35%] lg:object-[58%_35%] filter contrast-105 brightness-100"
             priority
           />
-          {/* Deep Navy/Blue Atmospheric Gradient Overlay (Preserves readability while highlighting the fountain & stone building) */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0C2B4E]/95 via-[#11406E]/88 to-[#09223D]/92 mix-blend-multiply" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0A2644]/40 via-transparent to-[#0A2644]/80" />
+
+          {/* Desktop Gradient Overlay: Solid royal navy on left, transitioning smoothly to transparent on right so statue & building are crisp and natural */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#06315A] via-[#084277]/85 via-50% to-transparent hidden md:block" />
+
+          {/* Mobile Gradient: Stronger on the left for text legibility, translucent on right so fountain statue stays visible */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#06315A]/95 via-[#073A6B]/80 to-[#073A6B]/30 md:hidden" />
+
+          {/* Subtle top & bottom shadow gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-[#073663]/60" />
 
           {/* Diagonal Stone Watermark Texture matching Reference */}
           <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none select-none">
@@ -239,8 +248,8 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
             {/* Left Column: Heading, Subtitle, Actions, Badges */}
             <div className="lg:col-span-8 space-y-4 sm:space-y-5 text-center lg:text-left flex flex-col items-center lg:items-start">
               {/* Category Pill Chip */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-white shadow-xs">
-                <Monitor className="h-3 w-3 text-[#38BDF8]" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 border border-white/30 backdrop-blur-md text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-white shadow-xs">
+                <Monitor className="h-3.5 w-3.5 text-[#38BDF8]" />
                 <span>INFORMATION TECHNOLOGY DEPARTMENT</span>
               </div>
 
@@ -268,36 +277,45 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
                   href="/student/register"
                   className="w-full sm:w-auto rounded-full border border-white/40 bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold px-5 py-2.5 sm:py-3 backdrop-blur-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                 >
-                  <UserPlus className="h-4 w-4 text-sky-300" />
+                  <UserPlus className="h-4 w-4 text-sky-200" />
                   <span>Create Student Account</span>
                 </Link>
               </div>
 
-              {/* 3 Informational Badges Row */}
-              <div className="pt-2 flex items-center justify-center lg:justify-start gap-4 sm:gap-6 text-[11px] sm:text-xs text-white/80 font-medium flex-wrap">
+              {/* 3 Informational Badges Row (Secure Access, Fast & Reliable, Official UA System) */}
+              <div className="pt-2 flex items-center justify-center lg:justify-start gap-4 sm:gap-6 text-xs text-white/90 font-medium flex-wrap">
                 <div className="flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5 text-[#38BDF8]" />
-                  <span>24/7 IT Access</span>
+                  <Shield className="h-3.5 w-3.5 text-[#38BDF8]" />
+                  <span>
+                    <span className="hidden sm:inline">Secure Access</span>
+                    <span className="sm:hidden">Secure</span>
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Zap className="h-3.5 w-3.5 text-[#38BDF8]" />
-                  <span>Fast & Reliable</span>
+                  <span>
+                    <span className="hidden sm:inline">Fast & Reliable</span>
+                    <span className="sm:hidden">Reliable</span>
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-[#38BDF8]" />
-                  <span>Official UA System</span>
+                  <ShieldCheck className="h-3.5 w-3.5 text-[#38BDF8]" />
+                  <span>
+                    <span className="hidden sm:inline">Official UA System</span>
+                    <span className="sm:hidden">Official</span>
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Right Column (Desktop): Iconic Large Circular Seal */}
             <div className="hidden lg:col-span-4 lg:flex justify-end items-center">
-              <div className="relative w-44 h-44 xl:w-52 xl:h-52 drop-shadow-[0_15px_30px_rgba(0,0,0,0.45)] transition-transform hover:scale-105 duration-300">
+              <div className="relative w-48 h-48 xl:w-56 xl:h-56 drop-shadow-[0_15px_30px_rgba(0,0,0,0.45)] transition-transform hover:scale-105 duration-300">
                 <Image
                   src="/images/ua-seal.png"
                   alt="University of the Assumption Circular Seal"
-                  width={208}
-                  height={208}
+                  width={224}
+                  height={224}
                   className="object-contain"
                   priority
                 />
@@ -309,8 +327,7 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
         {/* ════════════════════════════════════════════════════════════════════
             C. HERO-TO-CONTENT TRANSITION
             - Large curved organic SVG wave transition
-            - Smooth overlapping effect between the blue hero & lower section
-            - Light-blue decorative curved shapes
+            - Light cyan accent wave + clean white main wave
            ════════════════════════════════════════════════════════════════════ */}
         <div className="absolute bottom-0 inset-x-0 overflow-hidden leading-none z-10 pointer-events-none">
           <svg
@@ -323,7 +340,7 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
             <path
               d="M0,35 C320,115 520,140 720,125 C920,110 1140,45 1440,65 L1440,140 L0,140 Z"
               fill="#D6E8F6"
-              opacity="0.7"
+              opacity="0.75"
             />
             {/* Main clean white bottom transition wave */}
             <path
@@ -337,7 +354,7 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
       {/* ════════════════════════════════════════════════════════════════════
           3. CENTERED LOGIN CARD SECTION
           - Overlaps the hero and lower section
-          - Pure white background, rounded corners, subtle shadow
+          - Pure white background, rounded-3xl, subtle shadow
           - Student & Administrator pill selectors side-by-side
           - Username or Institutional Email pill input
           - Password pill input with toggle
@@ -447,7 +464,7 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full rounded-full bg-[#185A9D] hover:bg-[#124578] text-white font-bold text-xs sm:text-sm h-11 shadow-md shadow-blue-900/15 flex items-center justify-center gap-2 cursor-pointer transition-all mt-4"
+              className="w-full rounded-full bg-[#185A9D] hover:bg-[#124578] text-white font-bold text-xs sm:text-sm h-11 shadow-md shadow-blue-900/15 flex items-center justify-center gap-2 cursor-pointer transition-all mt-4 active:scale-95"
             >
               {loading ? (
                 <span>Authenticating...</span>
