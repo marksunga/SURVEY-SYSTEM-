@@ -110,21 +110,21 @@ export default function StudentRegisterPage() {
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
-        <Card className="border-slate-200 bg-white shadow-sm rounded-xl">
-          <CardHeader className="pb-3">
+        <Card className="border-slate-200/80 bg-white shadow-md shadow-slate-900/5 rounded-2xl">
+          <CardHeader className="pb-3 pt-6 px-6 sm:px-8">
             <div className="flex items-center justify-between">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EAF2F8] border border-[#D1E3EC] text-[#2C5E7D] text-[11px] font-semibold">
-                <BadgeCheck className="h-3.5 w-3.5 text-[#4682A9]" />
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EAF2F8] border border-[#D1E3EC] text-[#185A9D] text-[11px] font-semibold">
+                <BadgeCheck className="h-3.5 w-3.5 text-[#185A9D]" />
                 <span>Role: Student (Auto-Assigned)</span>
               </div>
               <span className="text-[11px] text-slate-400 font-mono">Student Registration</span>
             </div>
-            <CardTitle className="text-lg text-[#0F172A] mt-2">Student Information</CardTitle>
-            <CardDescription className="text-xs text-slate-500">
+            <CardTitle className="text-lg font-bold text-[#0F172A] mt-3">Student Information</CardTitle>
+            <CardDescription className="text-xs text-slate-500 leading-relaxed">
               Only student accounts can self-register. Administrator accounts are strictly provisioned.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 px-6 sm:px-8 pb-6 sm:pb-8">
             {error && (
               <div
                 role="alert"
@@ -313,10 +313,16 @@ export default function StudentRegisterPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs font-semibold h-11 min-h-[44px] cursor-pointer shadow-xs transition-all mt-2"
+                className="w-full bg-[#185A9D] hover:bg-[#124578] text-white font-bold text-xs sm:text-sm h-11 min-h-[44px] rounded-xl cursor-pointer shadow-md shadow-blue-900/10 transition-all flex items-center justify-center gap-2 mt-4 active:scale-98"
               >
-                {loading ? 'Creating Student Account...' : 'Create Account'}
-                <ArrowRight className="h-4 w-4 ml-2" />
+                {loading ? (
+                  <span>Creating Student Account...</span>
+                ) : (
+                  <>
+                    <span>Create Account</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
               </Button>
             </form>
 
@@ -324,7 +330,7 @@ export default function StudentRegisterPage() {
             <div className="pt-4 border-t border-slate-100 text-center">
               <Link
                 href="/student/login"
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-[#4682A9] hover:underline min-h-[44px] py-2 px-1"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#185A9D] hover:underline min-h-[44px] py-2 px-3 rounded-lg transition-colors"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
                 <span>Back to Student Login</span>
