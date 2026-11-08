@@ -1,9 +1,8 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { requireRole } from '@/lib/auth/session';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
 import { StatCard } from '@/components/dashboard/StatCard';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import {
   Users,
   ClipboardList,
@@ -13,8 +12,11 @@ import {
   PlusCircle,
   BarChart3,
   ShieldCheck,
+  Boxes,
+  Calendar,
+  Edit,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDateTime } from '@/lib/utils';
 
 export default async function AdminDashboardPage() {
   const admin = await requireRole(['ADMINISTRATOR']);
@@ -26,7 +28,8 @@ export default async function AdminDashboardPage() {
   const studentCount = profiles.filter((p) => p.role_id === 'STUDENT').length;
   const totalUsers = profiles.length;
   const totalSurveys = surveys.length;
-  const activeSurveys = surveys.filter((s) => s.status === 'ACTIVE').length;
+  const activeSurveysList = surveys.filter((s) => s.status === 'ACTIVE');
+  const activeSurveys = activeSurveysList.length;
   const expiredSurveys = surveys.filter((s) => s.status === 'EXPIRED').length;
   const totalSubmissions = surveys.reduce((acc, s) => acc + (s.responses_count || 0), 0);
   const pendingFeedback = feedbacks.filter((f) => f.status === 'PENDING').length;
@@ -34,64 +37,133 @@ export default async function AdminDashboardPage() {
     studentCount > 0 ? Math.min(100, Math.round((totalSubmissions / Math.max(1, studentCount * (activeSurveys || 1))) * 100)) : 0;
 
   return (
-    <div className="space-y-8">
-      {/* Header Banner - School Institutional Identity */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 sm:p-7 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
-        <div className="space-y-1.5">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#EAF2F8] text-[#2C5E7D] text-xs font-semibold border border-[#D1E3EC]">
-            <ShieldCheck className="h-3.5 w-3.5 text-[#4682A9]" />
-            <span>Administrator Control Center</span>
+    <div className="space-y-6 sm:space-y-7">
+      {/* ════════════════════════════════════════════════════════════════════
+          1. HERO BANNER - Institutional Admin Design Language
+          - Real campus facade & fountain photo background
+          - Deep navy gradient overlay with diagonal watermark
+          - Administrator Control Center pill chip
+          - "Welcome back, {admin.full_name}!" with cyan highlight
+          - Subtitle: "Manage students, create academic surveys..."
+          - Action buttons: "Create Survey" & "Analytics & Reports"
+          - Bottom curved wave transition
+         ════════════════════════════════════════════════════════════════════ */}
+      <div className="relative rounded-2xl overflow-hidden bg-[#0A2644] text-white shadow-md border border-slate-200/50">
+        {/* Background Image with Gradient Overlays */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/images/ua-building.jpg"
+            alt="University of the Assumption Campus & Fountain"
+            fill
+            className="object-cover object-[center_35%] filter contrast-110 brightness-95"
+            priority
+          />
+          {/* Deep Navy/Blue Atmospheric Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#071E36] via-[#0C2F55]/95 to-[#0A2644]/75 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
+
+          {/* Diagonal Stone Watermark Texture */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none select-none">
+            <span className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-widest text-white uppercase transform -rotate-12 whitespace-nowrap">
+              UNIVERSITY OF THE ASSUMPTION
+            </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A]">
-            Administrator Dashboard
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 max-w-xl leading-relaxed">
-            Manage students, create and schedule academic surveys, and moderate encrypted feedback
-            under strict role isolation.
-          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          <Button asChild size="sm" className="bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs font-semibold shadow-xs min-h-[38px]">
-            <Link href="/admin/surveys/create">
-              <PlusCircle className="h-4 w-4 mr-1.5" />
-              Create Survey
+        {/* Hero Content */}
+        <div className="relative z-10 p-6 sm:p-8 md:p-10 pb-12 sm:pb-14 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2.5 max-w-2xl">
+            {/* Pill Chip */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 border border-white/25 backdrop-blur-md text-xs font-semibold text-white shadow-xs">
+              <ShieldCheck className="h-3.5 w-3.5 text-[#38BDF8]" />
+              <span>Administrator Control Center</span>
+            </div>
+
+            {/* Main Greeting */}
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
+              Welcome back, <span className="text-[#38BDF8]">{admin.full_name}!</span>
+            </h1>
+
+            {/* Subtitle */}
+            <p className="text-xs sm:text-sm text-slate-100/90 leading-relaxed font-normal max-w-xl">
+              Manage students, create and schedule academic surveys, and moderate encrypted feedback under strict role isolation.
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+            {/* Button 1: Create Survey */}
+            <Link
+              href="/admin/surveys/create"
+              className="rounded-xl bg-white hover:bg-slate-100 text-[#185A9D] text-xs font-bold px-4 py-2.5 shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all border border-white active:scale-95"
+            >
+              <PlusCircle className="h-4 w-4 text-[#185A9D]" />
+              <span>Create Survey</span>
             </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm" className="border-slate-300 bg-white text-[#0F172A] hover:bg-[#F3F5F7] text-xs font-semibold min-h-[38px]">
-            <Link href="/admin/reports">
-              <BarChart3 className="h-4 w-4 mr-1.5 text-[#4682A9]" />
-              Analytics & Reports
+
+            {/* Button 2: Analytics & Reports */}
+            <Link
+              href="/admin/reports"
+              className="rounded-xl bg-[#08223D]/80 hover:bg-[#08223D] border border-white/25 text-white text-xs font-bold px-4 py-2.5 shadow-md backdrop-blur-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+            >
+              <BarChart3 className="h-4 w-4 text-sky-300" />
+              <span>Analytics & Reports</span>
             </Link>
-          </Button>
+          </div>
+        </div>
+
+        {/* Curved Wave Transition SVG inside hero */}
+        <div className="absolute bottom-0 inset-x-0 overflow-hidden leading-none z-10 pointer-events-none">
+          <svg
+            className="w-full h-6 sm:h-10"
+            viewBox="0 0 1440 60"
+            fill="none"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0,20 C360,60 720,0 1080,40 C1260,60 1380,30 1440,35 L1440,60 L0,60 Z"
+              fill="#D9EBF8"
+              opacity="0.6"
+            />
+            <path
+              d="M0,35 C420,10 840,55 1200,25 C1320,15 1400,30 1440,30 L1440,60 L0,60 Z"
+              fill="#F4F8FC"
+            />
+          </svg>
         </div>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ════════════════════════════════════════════════════════════════════
+          2. OVERVIEW KPI STAT CARDS (4 Columns)
+          - REGISTERED STUDENTS
+          - ACTIVE SURVEYS
+          - TOTAL SUBMISSIONS
+          - PENDING FEEDBACK
+         ════════════════════════════════════════════════════════════════════ */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <StatCard
-          title="Registered Students"
+          title="REGISTERED STUDENTS"
           value={studentCount}
           subtitle={`Total accounts: ${totalUsers}`}
           icon={Users}
           color="blue"
         />
         <StatCard
-          title="Active Surveys"
+          title="ACTIVE SURVEYS"
           value={activeSurveys}
           subtitle={`${expiredSurveys} expired • ${totalSurveys} total`}
           icon={ClipboardList}
           color="emerald"
         />
         <StatCard
-          title="Total Submissions"
+          title="TOTAL SUBMISSIONS"
           value={totalSubmissions}
           subtitle={`~${participationRate}% est. student participation`}
           icon={CheckCircle2}
-          color="indigo"
+          color="purple"
         />
         <StatCard
-          title="Pending Feedback"
+          title="PENDING FEEDBACK"
           value={pendingFeedback}
           subtitle="Awaiting moderation"
           icon={MessageSquare}
@@ -99,89 +171,119 @@ export default async function AdminDashboardPage() {
         />
       </div>
 
-      {/* Active Academic Surveys - Full Width Primary Section */}
-      <div className="w-full space-y-6">
-        <Card className="border-slate-200 bg-white shadow-xs rounded-xl">
-          <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-slate-100">
+      {/* ════════════════════════════════════════════════════════════════════
+          3. CURRENTLY ACTIVE ACADEMIC SURVEYS SECTION
+          - White card container with rounded-2xl & subtle border
+          - Section header with Clipboard icon & "View All Surveys >" link
+          - Clean survey item cards matching the unified styling
+         ════════════════════════════════════════════════════════════════════ */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-7 space-y-5">
+        {/* Section Header */}
+        <div className="flex flex-row items-center justify-between pb-4 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-blue-50 text-[#185A9D] border border-blue-100 flex items-center justify-center">
+              <ClipboardList className="h-5 w-5" />
+            </div>
             <div>
-              <CardTitle className="text-base sm:text-lg font-bold text-[#0F172A]">
-                Active Academic Surveys
-              </CardTitle>
+              <h2 className="text-base sm:text-lg font-bold text-[#0A2540]">
+                Currently Active Surveys
+              </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Surveys currently open for student submissions and evaluations
+                Surveys currently open for student submissions and evaluations.
               </p>
             </div>
-            <Button asChild variant="ghost" size="sm" className="text-xs text-[#4682A9] hover:text-[#386B8C]">
-              <Link href="/admin/surveys">
-                View All Surveys ({surveys.length})
-                <ArrowRight className="h-3.5 w-3.5 ml-1" />
-              </Link>
-            </Button>
-          </CardHeader>
-          <CardContent className="pt-4 space-y-3">
-            {surveys.filter((s) => s.status === 'ACTIVE').length === 0 ? (
-              <div className="text-center py-12 text-xs text-slate-400">
-                No active surveys. Click Create Survey above to publish one.
-              </div>
-            ) : (
-              surveys
-                .filter((s) => s.status === 'ACTIVE')
-                .map((survey) => (
-                  <div
-                    key={survey.id}
-                    className="p-4 sm:p-5 rounded-xl border border-slate-200 bg-white hover:border-[#85B5D2] hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
-                  >
-                    <div className="space-y-1.5 min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-bold text-[#0F172A]">
-                          {survey.title}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
-                          ACTIVE
-                        </span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#F3F5F7] text-slate-700 border border-slate-200">
-                          {survey.category}
-                        </span>
-                      </div>
-                      {survey.description && (
-                        <p className="text-xs text-slate-600 line-clamp-2">
-                          {survey.description}
-                        </p>
-                      )}
-                      <div className="text-xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
-                        <span className="font-medium text-slate-700">{survey.questions_count} Questions</span>
-                        <span>•</span>
-                        <span className="font-semibold text-[#4682A9]">
-                          {survey.responses_count} Responses
-                        </span>
-                        <span>•</span>
-                        <span>Closes {formatDate(survey.end_date)}</span>
-                        {survey.is_anonymous_allowed && (
-                          <>
-                            <span>•</span>
-                            <span className="text-emerald-600 font-medium">Anonymous Submissions Allowed</span>
-                          </>
-                        )}
-                      </div>
+          </div>
+          <Link
+            href="/admin/surveys"
+            className="text-xs font-bold text-[#185A9D] hover:text-[#124578] flex items-center gap-1 transition-colors"
+          >
+            <span>View All Surveys ({surveys.length})</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        {/* Survey Items List */}
+        <div className="space-y-3.5">
+          {activeSurveysList.length === 0 ? (
+            <div className="text-center py-12 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+              <ClipboardList className="h-10 w-10 text-slate-300 mx-auto mb-2.5" />
+              <p className="text-sm font-bold text-[#0A2540]">No active surveys published</p>
+              <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                Click "Create Survey" in the banner above to publish your first student evaluation.
+              </p>
+            </div>
+          ) : (
+            activeSurveysList.map((survey) => {
+              const categoryLabel = (survey.category || 'ACADEMIC').replace('_', ' ').toUpperCase();
+
+              return (
+                <div
+                  key={survey.id}
+                  className="p-5 rounded-xl border border-slate-200/80 hover:border-blue-300 bg-white hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
+                  <div className="space-y-2 flex-1 min-w-0">
+                    {/* Badges Row */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-[#185A9D] uppercase tracking-wide">
+                        {categoryLabel}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                        <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                        <span>Acceptance of Answers</span>
+                      </span>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-center">
-                      <Button asChild variant="outline" size="sm" className="h-9 px-3.5 text-xs border-slate-300 hover:bg-[#F3F5F7]">
-                        <Link href={`/admin/surveys/${survey.id}/results`}>
-                          Results
-                        </Link>
-                      </Button>
-                      <Button asChild size="sm" className="h-9 px-3.5 text-xs bg-[#0F172A] hover:bg-[#1E293B] text-white">
-                        <Link href={`/admin/surveys/${survey.id}/edit`}>
-                          Edit
-                        </Link>
-                      </Button>
+                    {/* Survey Title */}
+                    <h3 className="text-sm sm:text-base font-bold text-[#0A2540] leading-snug">
+                      {survey.title}
+                    </h3>
+
+                    {/* Description */}
+                    {survey.description && (
+                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                        {survey.description}
+                      </p>
+                    )}
+
+                    {/* Metadata Row */}
+                    <div className="text-xs text-slate-500 flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 font-medium">
+                      <span className="inline-flex items-center gap-1.5 text-slate-600">
+                        <Boxes className="h-3.5 w-3.5 text-slate-400" />
+                        <span>{survey.questions_count || 6} questions</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 text-slate-600">
+                        <Users className="h-3.5 w-3.5 text-slate-400" />
+                        <span className="font-semibold text-[#185A9D]">{survey.responses_count || 0} submitted</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 text-slate-600">
+                        <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                        <span>Deadline: {formatDateTime(survey.end_date)}</span>
+                      </span>
                     </div>
                   </div>
-                ))
-            )}
-          </CardContent>
-        </Card>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-center w-full sm:w-auto">
+                    <Link
+                      href={`/admin/surveys/${survey.id}/results`}
+                      className="rounded-xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold px-4 py-2.5 shadow-2xs transition-colors flex items-center justify-center gap-1.5 w-full sm:w-auto"
+                    >
+                      <BarChart3 className="h-3.5 w-3.5 text-[#185A9D]" />
+                      <span>Results</span>
+                    </Link>
+                    <Link
+                      href={`/admin/surveys/${survey.id}/edit`}
+                      className="rounded-xl bg-[#0A2540] hover:bg-[#12365A] text-white text-xs font-bold px-4 py-2.5 shadow-xs transition-colors flex items-center justify-center gap-1.5 w-full sm:w-auto"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                      <span>Edit</span>
+                    </Link>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );

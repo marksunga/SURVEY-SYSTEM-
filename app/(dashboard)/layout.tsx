@@ -67,11 +67,11 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F3F5F7]">
+    <div className="flex min-h-screen bg-[#F4F8FC] text-slate-800 antialiased">
       <AppSidebar user={user} unreadNotificationsCount={unreadCount} />
       <div className="flex-1 flex flex-col min-w-0">
         <AppHeader user={user} unreadCount={unreadCount} />
-        <main className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto">{children}</main>
       </div>
     </div>
   );

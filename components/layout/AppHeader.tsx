@@ -2,19 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Profile } from '@/lib/types/database';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Bell,
-  ShieldCheck,
-  ShieldAlert,
+  CheckCircle2,
   QrCode,
   Menu,
   GraduationCap,
   LayoutDashboard,
   ClipboardList,
-  CheckCircle2,
+  CheckCircle,
   MessageSquarePlus,
   User,
   PlusCircle,
@@ -23,6 +23,9 @@ import {
   History,
   LogOut,
   ChevronDown,
+  Monitor,
+  ShieldCheck,
+  ShieldAlert,
 } from 'lucide-react';
 import { logoutAction } from '@/app/actions/auth';
 import { isStudentNavItemActive, isAdminNavItemActive } from '@/lib/navigation';
@@ -41,477 +44,329 @@ interface AppHeaderProps {
 
 export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [surveyDropdownOpen, setSurveyDropdownOpen] = useState(true);
-  const [notificationsDropdownOpen, setNotificationsDropdownOpen] = useState(true);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const pathname = usePathname();
 
-  // Optimistic navigation state for immediate, single-click visual feedback
   const [optimisticPath, setOptimisticPath] = useState<string | null>(null);
 
-  // Synchronize optimistic state whenever pathname updates
   useEffect(() => {
     setOptimisticPath(null);
   }, [pathname]);
 
   const activePath = optimisticPath || pathname;
-
   const isAdmin = user.role_id === 'ADMINISTRATOR';
-
-  const isSurveyRoute =
-    activePath.startsWith('/admin/surveys') ||
-    activePath.startsWith('/admin/feedback') ||
-    activePath.startsWith('/admin/reports') ||
-    activePath.startsWith('/admin/qr-codes');
-
-  const isNotificationsRoute = activePath.startsWith('/admin/notifications');
-
-  const studentNavItems: NavItem[] = [
-    { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/surveys', label: 'Available Surveys', icon: ClipboardList },
-    { href: '/surveys/history', label: 'My Submissions', icon: CheckCircle2 },
-    { href: '/feedback', label: 'Submit Feedback', icon: MessageSquarePlus },
-    { href: '/scan', label: 'Scan Survey QR', icon: QrCode },
-    {
-      href: '/notifications',
-      label: 'Notifications',
-      icon: Bell,
-      badge: unreadCount > 0 ? unreadCount : null,
-    },
-  ];
-
-  const surveyManagementSubItems = [
-    {
-      href: '/admin/surveys/create',
-      label: 'Create Survey',
-      sublabel: null,
-      icon: PlusCircle,
-    },
-    {
-      href: '/admin/feedback',
-      label: 'Feedback Management',
-      sublabel: 'Moderate Feedback',
-      icon: MessageSquarePlus,
-    },
-    {
-      href: '/admin/reports',
-      label: 'Reports and Analytics',
-      sublabel: null,
-      icon: BarChart3,
-    },
-    {
-      href: '/admin/qr-codes',
-      label: 'QR Code Management',
-      sublabel: null,
-      icon: QrCode,
-    },
-  ];
-
-  const notificationsSubItems = [
-    {
-      href: '/admin/notifications/send',
-      label: 'Send Notifications',
-      sublabel: null,
-      icon: Send,
-    },
-    {
-      href: '/admin/notifications/history',
-      label: 'Notification History',
-      sublabel: null,
-      icon: History,
-    },
-  ];
 
   return (
     <>
-      <header className="h-16 border-b border-slate-200 bg-white/95 backdrop-blur px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20">
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Mobile Navigation Trigger */}
-          <button
-            type="button"
-            onClick={() => setMobileNavOpen(true)}
-            aria-label="Open mobile navigation menu"
-            className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer transition-colors"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-
-          <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-slate-500">
-            <span className="font-semibold text-slate-900">IT Department</span>
-            <span className="hidden sm:inline">/</span>
-            <span className="hidden sm:inline">
-              {isAdmin ? 'Administrator Portal' : 'Student Portal'}
-            </span>
-          </div>
-          <div className="hidden lg:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-medium border border-emerald-200">
-            <ShieldCheck className="h-3 w-3" />
-            <span>Strict RBAC Active</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Quick QR scanner launcher for students */}
-          {!isAdmin && (
-            <Link
-              href="/scan"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:bg-[#F3F5F7] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4682A9] cursor-pointer min-h-[36px]"
-              title="Scan survey QR Code"
+      <header className="h-16 border-b border-slate-200/80 bg-white sticky top-0 z-30 shadow-2xs select-none">
+        <div className="h-full px-4 sm:px-6 flex items-center justify-between gap-4">
+          {/* Left: University Seal, Branding & Breadcrumb */}
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Mobile menu toggle */}
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(true)}
+              aria-label="Open mobile navigation menu"
+              className="md:hidden p-1.5 text-slate-700 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
             >
-              <QrCode className="h-3.5 w-3.5 text-[#4682A9]" />
-              <span className="hidden sm:inline">Scan QR</span>
+              <Menu className="h-5 w-5" />
+            </button>
+
+            {/* University Seal */}
+            <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
+              <div className="relative w-9 h-9 sm:w-10 sm:h-10 transition-transform group-hover:scale-105">
+                <Image
+                  src="/images/ua-seal.png"
+                  alt="University of the Assumption Seal"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-xs sm:text-sm font-black text-[#0A2540] tracking-wider block uppercase leading-none">
+                  UNIVERSITY OF THE ASSUMPTION
+                </span>
+                <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 tracking-wide block mt-1 leading-none">
+                  IT Department Portal
+                </span>
+              </div>
             </Link>
-          )}
 
-          {/* Notifications Icon with accessible label */}
-          <Link
-            href={isAdmin ? '/admin/notifications/send' : '/notifications'}
-            className="relative p-2 rounded-md text-slate-500 hover:bg-[#F3F5F7] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4682A9] cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
-            aria-label={`Notifications, ${unreadCount} unread`}
-            title={`Notifications (${unreadCount} unread)`}
-          >
-            <Bell className="h-4 w-4" />
-            {unreadCount > 0 && (
-              <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white" />
-            )}
-          </Link>
+            {/* Breadcrumb & Security Status Badge (Desktop) */}
+            <div className="hidden lg:flex items-center gap-3 pl-3 border-l border-slate-200 ml-1">
+              <span className="text-xs text-slate-400 font-medium whitespace-nowrap">
+                IT Department / {isAdmin ? 'Administrator Portal' : 'Student Portal'}
+              </span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold whitespace-nowrap">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                <span>Swift IDAC Active</span>
+              </div>
+            </div>
+          </div>
 
-          {/* Authenticated User Badge & Logout */}
-          <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+          {/* Right: Quick Action, Notifications & User Profile */}
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
+            {/* Quick Action Button */}
             {isAdmin ? (
               <Link
-                href="/admin/profile"
-                className="flex items-center gap-2 group hover:opacity-90 transition-opacity"
-                title="View Administrator Profile"
+                href="/admin/surveys/create"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-[#185A9D] text-xs font-semibold shadow-2xs transition-colors"
               >
-                <div className="hidden sm:flex flex-col items-end text-right">
-                  <span className="text-xs font-bold text-[#0F172A] truncate max-w-[140px] group-hover:text-[#4682A9] transition-colors">
-                    {user.full_name}
-                  </span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded uppercase bg-[#0F172A] text-white">
-                    {user.role_id}
-                  </span>
-                </div>
-                <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold uppercase flex-shrink-0 group-hover:scale-105 transition-transform bg-[#0F172A] text-white">
-                  {user.full_name.slice(0, 2)}
-                </div>
+                <PlusCircle className="h-4 w-4 text-[#185A9D]" />
+                <span>Create Survey</span>
               </Link>
             ) : (
-              <div className="flex items-center gap-2 select-none">
-                <div className="hidden sm:flex flex-col items-end text-right">
-                  <span className="text-xs font-bold text-[#0F172A] truncate max-w-[140px]">
+              <Link
+                href="/scan"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-[#185A9D] text-xs font-semibold shadow-2xs transition-colors"
+              >
+                <QrCode className="h-4 w-4 text-[#185A9D]" />
+                <span>Scan QR</span>
+              </Link>
+            )}
+
+            {/* Notification Bell with Badge */}
+            <Link
+              href={isAdmin ? '/admin/notifications/history' : '/notifications'}
+              className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              title="Notifications"
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-600" />
+                </span>
+              )}
+            </Link>
+
+            {/* User Profile Pill */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                className="flex items-center gap-2.5 pl-2.5 pr-2 py-1 rounded-full border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                <div className="hidden sm:flex flex-col text-right">
+                  <span className="text-xs font-bold text-[#0A2540] truncate max-w-[140px] leading-tight">
                     {user.full_name}
                   </span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded uppercase bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]">
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded uppercase tracking-wide bg-blue-100 text-[#185A9D] inline-block self-end mt-0.5">
                     {user.role_id}
                   </span>
                 </div>
-                <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold uppercase flex-shrink-0 bg-[#4682A9] text-white">
+                <div className="h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 bg-[#185A9D] text-white shadow-2xs">
                   {user.full_name.slice(0, 2)}
                 </div>
-              </div>
-            )}
-
-            <form action={logoutAction}>
-              <button
-                type="submit"
-                aria-label="Sign Out"
-                title="Sign Out of Session"
-                className="p-2 rounded-md text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
-              >
-                <LogOut className="h-4 w-4" />
+                <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
               </button>
-            </form>
+
+              {/* Profile Dropdown Menu */}
+              {userDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white shadow-lg border border-slate-200 py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="px-4 py-2 border-b border-slate-100">
+                    <p className="text-xs font-bold text-[#0A2540] truncate">{user.full_name}</p>
+                    <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
+                  </div>
+
+                  {isAdmin ? (
+                    <Link
+                      href="/admin/profile"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-[#185A9D]"
+                    >
+                      <User className="h-4 w-4 text-slate-400" />
+                      <span>Administrator Profile</span>
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/profile"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-[#185A9D]"
+                    >
+                      <User className="h-4 w-4 text-slate-400" />
+                      <span>Student Profile</span>
+                    </Link>
+                  )}
+
+                  <div className="border-t border-slate-100 my-1" />
+
+                  <form action={logoutAction}>
+                    <button
+                      type="submit"
+                      className="w-full flex items-center gap-2 px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 text-left cursor-pointer"
+                    >
+                      <LogOut className="h-4 w-4 text-rose-500" />
+                      <span>Sign Out</span>
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
 
       {/* Mobile Drawer Navigation Modal */}
       <Dialog open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-        <DialogContent className="sm:max-w-xs p-0 gap-0 overflow-hidden max-h-[90vh] flex flex-col">
-          <DialogHeader className="p-4 bg-white text-[#0F172A] flex flex-row items-center justify-between border-b border-slate-200">
+        <DialogContent className="sm:max-w-xs p-0 gap-0 overflow-hidden max-h-[90vh] flex flex-col bg-[#08213B] text-white border border-[#0A2644]">
+          <DialogHeader className="p-4 bg-[#08213B] text-white flex flex-row items-center justify-between border-b border-white/10">
             <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-lg bg-[#4682A9] flex items-center justify-center text-white">
-                <GraduationCap className="h-4 w-4" />
+              <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center text-[#38BDF8]">
+                <Monitor className="h-4 w-4" />
               </div>
               <div>
-                <DialogTitle className="text-sm font-bold text-[#0F172A]">IT Dept Portal</DialogTitle>
-                <p className="text-[10px] text-slate-500">
+                <DialogTitle className="text-sm font-bold text-white">IT Dept Portal</DialogTitle>
+                <p className="text-[10px] text-slate-300">
                   {isAdmin ? 'Administrator Portal' : 'Student Portal'}
                 </p>
               </div>
             </div>
           </DialogHeader>
 
-          {/* User profile banner in drawer */}
-          {isAdmin ? (
-            <Link
-              href="/admin/profile"
-              onClick={() => {
-                setOptimisticPath('/admin/profile');
-                setMobileNavOpen(false);
-              }}
-              className={`p-3 border-b border-slate-200/80 flex items-center gap-3 transition-colors cursor-pointer ${
-                isAdminNavItemActive('/admin/profile', activePath)
-                  ? 'bg-[#EAF2F8] border-l-2 border-[#4682A9]'
-                  : 'bg-[#F3F5F7]/80 hover:bg-[#EAF2F8]/70'
-              }`}
-              title="View Administrator Profile"
-            >
-              <div className="h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 bg-[#0F172A] text-white">
-                {user.full_name.slice(0, 2)}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-[#0F172A] truncate">{user.full_name}</p>
-                <span className="inline-block px-1.5 py-0.2 text-[10px] font-bold rounded uppercase bg-[#0F172A] text-white">
-                  {user.role_id}
-                </span>
-              </div>
-            </Link>
-          ) : (
-            <div className="p-3 border-b border-slate-200/80 bg-[#F3F5F7]/80 flex items-center gap-3 select-none">
-              <div className="h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]">
-                {user.full_name.slice(0, 2)}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-[#0F172A] truncate">{user.full_name}</p>
-                <span className="inline-block px-1.5 py-0.2 text-[10px] font-bold rounded uppercase bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]">
-                  {user.role_id}
-                </span>
-              </div>
+          {/* User Profile in Drawer */}
+          <div className="p-3.5 border-b border-white/10 flex items-center gap-3 select-none">
+            <div className="h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 bg-[#185A9D] text-white border border-white/20">
+              {user.full_name.slice(0, 2)}
             </div>
-          )}
-
-          {/* Navigation Links Scrollable Area */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-4">
-            <div>
-              <div className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                {isAdmin ? 'Administrator Navigation' : 'Student Navigation'}
-              </div>
-
-              <nav className="space-y-1">
-                {isAdmin ? (
-                  <>
-                    {/* 1. Maintain Dashboard */}
-                    <Link
-                      href="/admin/dashboard"
-                      onClick={() => {
-                        setOptimisticPath('/admin/dashboard');
-                        setMobileNavOpen(false);
-                      }}
-                      className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
-                        isAdminNavItemActive('/admin/dashboard', activePath)
-                          ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
-                          : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <LayoutDashboard
-                          className={`h-4 w-4 ${
-                            isAdminNavItemActive('/admin/dashboard', activePath) ? 'text-[#4682A9]' : 'text-slate-400'
-                          }`}
-                        />
-                        <span>Dashboard</span>
-                      </div>
-                    </Link>
-
-                    {/* 2. Survey Management (Dropdown) */}
-                    <div className="pt-1">
-                      <button
-                        type="button"
-                        onClick={() => setSurveyDropdownOpen(!surveyDropdownOpen)}
-                        aria-expanded={surveyDropdownOpen}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer select-none ${
-                          isSurveyRoute
-                            ? 'bg-[#EAF2F8]/70 text-[#154675] font-semibold'
-                            : 'text-slate-700 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <ClipboardList
-                            className={`h-4 w-4 ${
-                              isSurveyRoute ? 'text-[#4682A9]' : 'text-slate-500'
-                            }`}
-                          />
-                          <span>Survey Management</span>
-                        </div>
-                        <ChevronDown
-                          className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
-                            surveyDropdownOpen ? 'rotate-180 text-[#4682A9]' : ''
-                          }`}
-                        />
-                      </button>
-
-                      {/* Survey Sub-items */}
-                      {surveyDropdownOpen && (
-                        <div className="mt-1 ml-4 pl-2.5 border-l-2 border-slate-200 space-y-1 py-0.5">
-                          {surveyManagementSubItems.map((subItem) => {
-                            const active = isAdminNavItemActive(subItem.href, activePath);
-                            const SubIcon = subItem.icon;
-
-                            return (
-                              <Link
-                                key={subItem.href}
-                                href={subItem.href}
-                                onClick={() => {
-                                  setOptimisticPath(subItem.href);
-                                  setMobileNavOpen(false);
-                                }}
-                                className={`group flex items-start gap-2.5 px-2.5 py-2 rounded-md text-xs transition-colors min-h-[38px] ${
-                                  active
-                                    ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
-                                    : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
-                                }`}
-                              >
-                                <SubIcon
-                                  className={`h-4 w-4 mt-0.5 flex-shrink-0 ${
-                                    active
-                                      ? 'text-[#4682A9]'
-                                      : 'text-slate-400 group-hover:text-slate-600'
-                                  }`}
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <div className="leading-tight truncate">{subItem.label}</div>
-                                  {subItem.sublabel && (
-                                    <div className="text-[10px] text-slate-400 font-normal leading-tight mt-0.5">
-                                      ({subItem.sublabel})
-                                    </div>
-                                  )}
-                                </div>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* 3. Notifications (Dropdown) */}
-                    <div className="pt-1">
-                      <button
-                        type="button"
-                        onClick={() => setNotificationsDropdownOpen(!notificationsDropdownOpen)}
-                        aria-expanded={notificationsDropdownOpen}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer select-none ${
-                          isNotificationsRoute
-                            ? 'bg-[#EAF2F8]/70 text-[#154675] font-semibold'
-                            : 'text-slate-700 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <Bell
-                            className={`h-4 w-4 ${
-                              isNotificationsRoute ? 'text-[#4682A9]' : 'text-slate-500'
-                            }`}
-                          />
-                          <span>Notifications</span>
-                        </div>
-                        <ChevronDown
-                          className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
-                            notificationsDropdownOpen ? 'rotate-180 text-[#4682A9]' : ''
-                          }`}
-                        />
-                      </button>
-
-                      {/* Notifications Sub-items */}
-                      {notificationsDropdownOpen && (
-                        <div className="mt-1 ml-4 pl-2.5 border-l-2 border-slate-200 space-y-1 py-0.5">
-                          {notificationsSubItems.map((subItem) => {
-                            const active = isAdminNavItemActive(subItem.href, activePath);
-                            const SubIcon = subItem.icon;
-
-                            return (
-                              <Link
-                                key={subItem.href}
-                                href={subItem.href}
-                                onClick={() => {
-                                  setOptimisticPath(subItem.href);
-                                  setMobileNavOpen(false);
-                                }}
-                                className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-xs transition-colors min-h-[38px] ${
-                                  active
-                                    ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
-                                    : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
-                                }`}
-                              >
-                                <SubIcon
-                                  className={`h-4 w-4 flex-shrink-0 ${
-                                    active
-                                      ? 'text-[#4682A9]'
-                                      : 'text-slate-400 group-hover:text-slate-600'
-                                  }`}
-                                />
-                                <span className="truncate">{subItem.label}</span>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* 4. Bring back Audit Logs */}
-                    <div className="pt-1">
-                      <Link
-                        href="/admin/audit-logs"
-                        onClick={() => {
-                          setOptimisticPath('/admin/audit-logs');
-                          setMobileNavOpen(false);
-                        }}
-                        className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
-                          isAdminNavItemActive('/admin/audit-logs', activePath)
-                            ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
-                            : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <ShieldAlert
-                            className={`h-4 w-4 ${
-                              isAdminNavItemActive('/admin/audit-logs', activePath) ? 'text-[#4682A9]' : 'text-slate-400'
-                            }`}
-                          />
-                          <span>Audit Logs</span>
-                        </div>
-                      </Link>
-                    </div>
-                  </>
-                ) : (
-                  studentNavItems.map((item) => {
-                    const active = isStudentNavItemActive(item.href, activePath);
-                    const Icon = item.icon;
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => {
-                          setOptimisticPath(item.href);
-                          setMobileNavOpen(false);
-                        }}
-                        className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
-                          active
-                            ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
-                            : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <Icon className={`h-4 w-4 ${active ? 'text-[#4682A9]' : 'text-slate-400'}`} />
-                          <span>{item.label}</span>
-                        </div>
-                        {item.badge && (
-                          <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-500 text-white">
-                            {item.badge}
-                          </span>
-                        )}
-                      </Link>
-                    );
-                  })
-                )}
-              </nav>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-white truncate">{user.full_name}</p>
+              <span className="inline-block px-1.5 py-0.2 text-[9px] font-bold rounded uppercase bg-blue-500/20 text-[#38BDF8] border border-blue-400/30">
+                {user.role_id}
+              </span>
             </div>
           </div>
 
-          {/* Drawer Sign Out Footer */}
-          <div className="p-3 border-t border-slate-200 bg-slate-50">
+          {/* Navigation Links in Mobile Drawer */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            {isAdmin ? (
+              <div className="space-y-1">
+                <Link
+                  href="/admin/dashboard"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  <LayoutDashboard className="h-4 w-4 text-[#38BDF8]" />
+                  <span>Dashboard</span>
+                </Link>
+                <Link
+                  href="/admin/surveys"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  <ClipboardList className="h-4 w-4 text-[#38BDF8]" />
+                  <span>Surveys</span>
+                </Link>
+                <Link
+                  href="/admin/feedback"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  <MessageSquarePlus className="h-4 w-4 text-[#38BDF8]" />
+                  <span>Feedback</span>
+                </Link>
+                <Link
+                  href="/admin/reports"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  <BarChart3 className="h-4 w-4 text-[#38BDF8]" />
+                  <span>Analytics</span>
+                </Link>
+                <Link
+                  href="/admin/qr-codes"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  <QrCode className="h-4 w-4 text-[#38BDF8]" />
+                  <span>QR Codes</span>
+                </Link>
+                <Link
+                  href="/admin/notifications/history"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  <Bell className="h-4 w-4 text-[#38BDF8]" />
+                  <span>Notifications</span>
+                </Link>
+                <Link
+                  href="/admin/users"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  <User className="h-4 w-4 text-[#38BDF8]" />
+                  <span>Account Management</span>
+                </Link>
+                <Link
+                  href="/admin/audit-logs"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  <ShieldAlert className="h-4 w-4 text-[#38BDF8]" />
+                  <span>Audit Logs</span>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <Link
+                  href="/student/dashboard"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  <LayoutDashboard className="h-4 w-4 text-[#38BDF8]" />
+                  <span>Dashboard</span>
+                </Link>
+                <Link
+                  href="/surveys"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  <ClipboardList className="h-4 w-4 text-[#38BDF8]" />
+                  <span>Available Surveys</span>
+                </Link>
+                <Link
+                  href="/surveys/history"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  <CheckCircle className="h-4 w-4 text-[#38BDF8]" />
+                  <span>My Submissions</span>
+                </Link>
+                <Link
+                  href="/feedback"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  <MessageSquarePlus className="h-4 w-4 text-[#38BDF8]" />
+                  <span>Student Feedback</span>
+                </Link>
+                <Link
+                  href="/scan"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  <QrCode className="h-4 w-4 text-[#38BDF8]" />
+                  <span>Scan Survey QR</span>
+                </Link>
+                <Link
+                  href="/notifications"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
+                >
+                  <Bell className="h-4 w-4 text-[#38BDF8]" />
+                  <span>Notifications</span>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          <div className="p-3 border-t border-white/10">
             <form action={logoutAction}>
               <button
                 type="submit"
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer min-h-[44px]"
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-rose-300 hover:bg-rose-500/10 cursor-pointer"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Sign Out</span>

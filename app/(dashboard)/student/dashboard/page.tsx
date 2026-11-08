@@ -1,10 +1,9 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth/session';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
 import { StatCard } from '@/components/dashboard/StatCard';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import {
   ClipboardList,
   CheckCircle2,
@@ -12,10 +11,12 @@ import {
   MessageSquarePlus,
   QrCode,
   ArrowRight,
-  GraduationCap,
-  ShieldCheck,
+  Boxes,
+  Users,
+  Calendar,
+  Sparkles,
 } from 'lucide-react';
-import { formatDate, formatDateTime } from '@/lib/utils';
+import { formatDateTime } from '@/lib/utils';
 
 export default async function StudentDashboardPage() {
   const user = await getCurrentUser();
@@ -40,156 +41,253 @@ export default async function StudentDashboardPage() {
   const completedSurveysCount = completedSurveyIds.length;
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Banner - Blue Gradient Header Design with High-Contrast Visible Action Buttons */}
-      <div className="rounded-2xl bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 p-6 sm:p-8 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6 overflow-hidden">
-        <div className="space-y-2 min-w-0">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold backdrop-blur-xs border border-white/30">
-            <GraduationCap className="h-3.5 w-3.5 text-white" />
-            <span>Student Academic Portal</span>
+    <div className="space-y-6 sm:space-y-7">
+      {/* ════════════════════════════════════════════════════════════════════
+          1. HERO BANNER - Exact match to user's design reference
+          - Real campus facade & fountain photo background
+          - Deep navy gradient overlay with diagonal watermark
+          - Student Academic Portal pill chip
+          - "Welcome back, {user.full_name}!" with cyan highlight
+          - Subtitle: "Your portal for course evaluations, academic surveys..."
+          - Action buttons: "Scan Survey QR" & "Submit Feedback"
+          - Bottom curved wave transition
+         ════════════════════════════════════════════════════════════════════ */}
+      <div className="relative rounded-2xl overflow-hidden bg-[#0A2644] text-white shadow-md border border-slate-200/50">
+        {/* Background Image with Gradient Overlays */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/images/ua-building.jpg"
+            alt="University of the Assumption Campus & Fountain"
+            fill
+            className="object-cover object-[center_35%] filter contrast-110 brightness-95"
+            priority
+          />
+          {/* Deep Navy/Blue Atmospheric Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#071E36] via-[#0C2F55]/95 to-[#0A2644]/75 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
+
+          {/* Diagonal Stone Watermark Texture */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none select-none">
+            <span className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-widest text-white uppercase transform -rotate-12 whitespace-nowrap">
+              UNIVERSITY OF THE ASSUMPTION
+            </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Welcome back, {user.full_name}
-          </h1>
-          <p className="text-xs sm:text-sm text-blue-100 max-w-xl leading-relaxed">
-            Your voice directly influences IT curriculum pacing, laboratory hardware upgrades, and student support services.
-          </p>
         </div>
 
-        {/* Action Buttons: Prominently displayed, responsive, properly aligned */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full sm:w-auto">
-          {/* Button 1: Scan Survey QR */}
-          <Button
-            asChild
-            size="sm"
-            className="bg-white text-blue-700 hover:bg-blue-50 font-bold text-xs shadow-md min-h-[42px] px-4 cursor-pointer transition-all border border-white flex items-center justify-center gap-2"
-          >
-            <Link href="/scan">
-              <QrCode className="h-4 w-4 text-blue-600" />
+        {/* Hero Content */}
+        <div className="relative z-10 p-6 sm:p-8 md:p-10 pb-12 sm:pb-14 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2.5 max-w-2xl">
+            {/* Pill Chip */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 border border-white/25 backdrop-blur-md text-xs font-semibold text-white shadow-xs">
+              <CheckCircle2 className="h-3.5 w-3.5 text-[#38BDF8]" />
+              <span>Student Academic Portal</span>
+            </div>
+
+            {/* Main Greeting */}
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
+              Welcome back, <span className="text-[#38BDF8]">{user.full_name}!</span>
+            </h1>
+
+            {/* Subtitle */}
+            <p className="text-xs sm:text-sm text-slate-100/90 leading-relaxed font-normal max-w-xl">
+              Your portal for course evaluations, academic surveys, and departmental feedback services.
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+            {/* Button 1: Scan Survey QR */}
+            <Link
+              href="/scan"
+              className="rounded-xl bg-white hover:bg-slate-100 text-[#185A9D] text-xs font-bold px-4 py-2.5 shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all border border-white active:scale-95"
+            >
+              <QrCode className="h-4 w-4 text-[#185A9D]" />
               <span>Scan Survey QR</span>
             </Link>
-          </Button>
 
-          {/* Button 2: Submit Feedback - Visible, high contrast, readable */}
-          <Button
-            asChild
-            size="sm"
-            className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md min-h-[42px] px-4 cursor-pointer transition-all border border-white/20 flex items-center justify-center gap-2"
-          >
-            <Link href="/feedback">
-              <MessageSquarePlus className="h-4 w-4 text-blue-300" />
+            {/* Button 2: Submit Feedback */}
+            <Link
+              href="/feedback"
+              className="rounded-xl bg-[#08223D]/80 hover:bg-[#08223D] border border-white/25 text-white text-xs font-bold px-4 py-2.5 shadow-md backdrop-blur-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+            >
+              <MessageSquarePlus className="h-4 w-4 text-sky-300" />
               <span>Submit Feedback</span>
             </Link>
-          </Button>
+          </div>
+        </div>
+
+        {/* Curved Wave Transition SVG inside hero */}
+        <div className="absolute bottom-0 inset-x-0 overflow-hidden leading-none z-10 pointer-events-none">
+          <svg
+            className="w-full h-6 sm:h-10"
+            viewBox="0 0 1440 60"
+            fill="none"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0,20 C360,60 720,0 1080,40 C1260,60 1380,30 1440,35 L1440,60 L0,60 Z"
+              fill="#D9EBF8"
+              opacity="0.6"
+            />
+            <path
+              d="M0,35 C420,10 840,55 1200,25 C1320,15 1400,30 1440,30 L1440,60 L0,60 Z"
+              fill="#F4F8FC"
+            />
+          </svg>
         </div>
       </div>
 
-      {/* Overview Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ════════════════════════════════════════════════════════════════════
+          2. OVERVIEW KPI STAT CARDS (4 Columns)
+          - AVAILABLE SURVEYS (2 active in department)
+          - SURVEYS COMPLETED (Your recorded submissions)
+          - PENDING ACTION (Surveys awaiting response)
+          - MY FEEDBACK (Submitted inquiries & notes)
+         ════════════════════════════════════════════════════════════════════ */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <StatCard
-          title="Available Surveys"
-          value={pendingSurveys.length}
+          title="AVAILABLE SURVEYS"
+          value={activeSurveys.length}
           subtitle={`${activeSurveys.length} active in department`}
           icon={ClipboardList}
           color="blue"
         />
         <StatCard
-          title="Surveys Completed"
+          title="SURVEYS COMPLETED"
           value={completedSurveysCount}
           subtitle="Your recorded submissions"
           icon={CheckCircle2}
           color="emerald"
         />
         <StatCard
-          title="Pending Action"
+          title="PENDING ACTION"
           value={pendingSurveys.length}
           subtitle="Surveys awaiting response"
           icon={Clock}
           color="amber"
         />
         <StatCard
-          title="My Feedback"
+          title="MY FEEDBACK"
           value={userFeedbacks.length}
-          subtitle="Submitted inquiries & tickets"
+          subtitle="Submitted inquiries & notes"
           icon={MessageSquarePlus}
-          color="indigo"
+          color="purple"
         />
       </div>
 
-      {/* Currently Active Surveys - Full Width Primary Section */}
-      <div className="w-full space-y-6">
-        <Card className="border-slate-200 bg-white shadow-xs rounded-xl">
-          <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-slate-100">
+      {/* ════════════════════════════════════════════════════════════════════
+          3. CURRENTLY ACTIVE SURVEYS SECTION
+          - White card container with rounded-2xl & subtle border
+          - Section header with Clipboard icon & "View All (2) >" link
+          - Clean survey item cards with Category pill, "Acceptance of Answers"
+            badge, Title, Description, metadata, and "Take Survey ->" button
+         ════════════════════════════════════════════════════════════════════ */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-7 space-y-5">
+        {/* Section Header */}
+        <div className="flex flex-row items-center justify-between pb-4 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-blue-50 text-[#185A9D] border border-blue-100 flex items-center justify-center">
+              <ClipboardList className="h-5 w-5" />
+            </div>
             <div>
-              <CardTitle className="text-base sm:text-lg font-bold text-[#0F172A]">
+              <h2 className="text-base sm:text-lg font-bold text-[#0A2540]">
                 Currently Active Surveys
-              </CardTitle>
+              </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Live evaluations currently accepting student responses.
+                View and respond to surveys currently accepting student responses.
               </p>
             </div>
-            <Button asChild variant="ghost" size="sm" className="text-xs text-[#4682A9] hover:text-[#386B8C]">
-              <Link href="/surveys">
-                View All ({activeSurveys.length})
-                <ArrowRight className="h-3.5 w-3.5 ml-1" />
-              </Link>
-            </Button>
-          </CardHeader>
-          <CardContent className="pt-4 space-y-3">
-            {pendingSurveys.length === 0 ? (
-              <div className="text-center py-12 bg-[#F3F5F7]/50 rounded-xl border border-dashed border-slate-200">
-                <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto mb-2.5" />
-                <p className="text-sm font-bold text-[#0F172A]">You are completely up to date!</p>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  You have answered all currently active department surveys. Check back soon for new evaluations.
-                </p>
-              </div>
-            ) : (
-              pendingSurveys.map((survey) => (
+          </div>
+          <Link
+            href="/surveys"
+            className="text-xs font-bold text-[#185A9D] hover:text-[#124578] flex items-center gap-1 transition-colors"
+          >
+            <span>View All ({activeSurveys.length})</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        {/* Survey Items List */}
+        <div className="space-y-3.5">
+          {activeSurveys.length === 0 ? (
+            <div className="text-center py-12 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+              <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto mb-2.5" />
+              <p className="text-sm font-bold text-[#0A2540]">No active surveys at this time</p>
+              <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                Check back soon for upcoming department evaluations and course surveys.
+              </p>
+            </div>
+          ) : (
+            activeSurveys.map((survey) => {
+              const isCompleted = submittedSurveyIds.has(survey.id);
+              const categoryLabel = (survey.category || 'ACADEMIC').replace('_', ' ').toUpperCase();
+
+              return (
                 <div
                   key={survey.id}
-                  className="p-4 sm:p-5 rounded-xl border border-slate-200 bg-white hover:border-[#85B5D2] hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  className="p-5 rounded-xl border border-slate-200/80 hover:border-blue-300 bg-white hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
-                  <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="space-y-2 flex-1 min-w-0">
+                    {/* Badge Row */}
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#EAF2F8] text-[#2C5E7D] uppercase border border-[#D1E3EC]">
-                        {survey.category.replace('_', ' ')}
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-[#185A9D] uppercase tracking-wide">
+                        {categoryLabel}
                       </span>
-                      {survey.is_anonymous_allowed && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                          <ShieldCheck className="h-3 w-3" />
-                          Anonymous Allowed
-                        </span>
-                      )}
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                        <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                        <span>Acceptance of Answers</span>
+                      </span>
                     </div>
-                    <h2 className="text-sm sm:text-base font-bold text-[#0F172A] leading-snug">
+
+                    {/* Survey Title */}
+                    <h3 className="text-sm sm:text-base font-bold text-[#0A2540] leading-snug">
                       {survey.title}
-                    </h2>
-                    <p className="text-xs text-slate-600 line-clamp-2">
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
                       {survey.description}
                     </p>
-                    <div className="text-xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
-                      <span className="font-medium text-slate-700">{survey.questions_count} questions</span>
-                      <span>•</span>
-                      <span>{survey.responses_count} submitted</span>
-                      <span>•</span>
-                      <span>Deadline: {formatDateTime(survey.end_date)}</span>
+
+                    {/* Metadata Row */}
+                    <div className="text-xs text-slate-500 flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 font-medium">
+                      <span className="inline-flex items-center gap-1.5 text-slate-600">
+                        <Boxes className="h-3.5 w-3.5 text-slate-400" />
+                        <span>{survey.questions_count || 6} questions</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 text-slate-600">
+                        <Users className="h-3.5 w-3.5 text-slate-400" />
+                        <span>{survey.responses_count || 0} submitted</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 text-slate-600">
+                        <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                        <span>Deadline: {formatDateTime(survey.end_date)}</span>
+                      </span>
                     </div>
                   </div>
 
+                  {/* Action Button */}
                   <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-center w-full sm:w-auto">
-                    <Button asChild size="sm" className="bg-[#4682A9] hover:bg-[#386B8C] text-white text-xs flex-shrink-0 min-h-[38px] w-full sm:w-auto px-4 shadow-xs">
-                      <Link href={`/surveys/${survey.id}`}>
-                        Take Survey
-                        <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+                    {isCompleted ? (
+                      <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold w-full sm:w-auto justify-center">
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>Completed</span>
+                      </span>
+                    ) : (
+                      <Link
+                        href={`/surveys/${survey.id}`}
+                        className="rounded-xl bg-[#185A9D] hover:bg-[#124578] text-white text-xs font-bold px-5 py-2.5 shadow-xs flex items-center justify-center gap-1.5 transition-all w-full sm:w-auto cursor-pointer"
+                      >
+                        <span>Take Survey</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
-                    </Button>
+                    )}
                   </div>
                 </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );
