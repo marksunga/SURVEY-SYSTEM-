@@ -66,7 +66,6 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
       icon: Bell,
       badge: unreadCount > 0 ? unreadCount : null,
     },
-    { href: '/profile', label: 'My Profile', icon: User },
   ];
 
   const surveyManagementSubItems = [
@@ -164,38 +163,41 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
             )}
           </Link>
 
-          {/* Authenticated User Badge (Clickable to My Profile) & Logout */}
+          {/* Authenticated User Badge & Logout */}
           <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-            <Link
-              href={isAdmin ? '/admin/profile' : '/profile'}
-              className="flex items-center gap-2 group hover:opacity-90 transition-opacity"
-              title="View My Profile"
-            >
-              <div className="hidden sm:flex flex-col items-end text-right">
-                <span className="text-xs font-bold text-[#0F172A] truncate max-w-[140px] group-hover:text-[#4682A9] transition-colors">
-                  {user.full_name}
-                </span>
-                <span
-                  className={`text-[10px] font-bold px-1.5 py-0.2 rounded uppercase ${
-                    isAdmin
-                      ? 'bg-[#0F172A] text-white'
-                      : 'bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]'
-                  }`}
-                >
-                  {user.role_id}
-                </span>
-              </div>
-
-              <div
-                className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold uppercase flex-shrink-0 group-hover:scale-105 transition-transform ${
-                  isAdmin
-                    ? 'bg-[#0F172A] text-white'
-                    : 'bg-[#4682A9] text-white'
-                }`}
+            {isAdmin ? (
+              <Link
+                href="/admin/profile"
+                className="flex items-center gap-2 group hover:opacity-90 transition-opacity"
+                title="View Administrator Profile"
               >
-                {user.full_name.slice(0, 2)}
+                <div className="hidden sm:flex flex-col items-end text-right">
+                  <span className="text-xs font-bold text-[#0F172A] truncate max-w-[140px] group-hover:text-[#4682A9] transition-colors">
+                    {user.full_name}
+                  </span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded uppercase bg-[#0F172A] text-white">
+                    {user.role_id}
+                  </span>
+                </div>
+                <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold uppercase flex-shrink-0 group-hover:scale-105 transition-transform bg-[#0F172A] text-white">
+                  {user.full_name.slice(0, 2)}
+                </div>
+              </Link>
+            ) : (
+              <div className="flex items-center gap-2 select-none">
+                <div className="hidden sm:flex flex-col items-end text-right">
+                  <span className="text-xs font-bold text-[#0F172A] truncate max-w-[140px]">
+                    {user.full_name}
+                  </span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded uppercase bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]">
+                    {user.role_id}
+                  </span>
+                </div>
+                <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold uppercase flex-shrink-0 bg-[#4682A9] text-white">
+                  {user.full_name.slice(0, 2)}
+                </div>
               </div>
-            </Link>
+            )}
 
             <form action={logoutAction}>
               <button
@@ -228,35 +230,37 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
             </div>
           </DialogHeader>
 
-          {/* User profile banner in drawer (Clickable) */}
-          <Link
-            href={isAdmin ? '/admin/profile' : '/profile'}
-            onClick={() => setMobileNavOpen(false)}
-            className="p-3 border-b border-slate-200/80 bg-[#F3F5F7]/80 hover:bg-[#EAF2F8]/70 flex items-center gap-3 transition-colors cursor-pointer"
-            title="View My Profile"
-          >
-            <div
-              className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 ${
-                isAdmin
-                  ? 'bg-[#0F172A] text-white'
-                  : 'bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]'
-              }`}
+          {/* User profile banner in drawer */}
+          {isAdmin ? (
+            <Link
+              href="/admin/profile"
+              onClick={() => setMobileNavOpen(false)}
+              className="p-3 border-b border-slate-200/80 bg-[#F3F5F7]/80 hover:bg-[#EAF2F8]/70 flex items-center gap-3 transition-colors cursor-pointer"
+              title="View Administrator Profile"
             >
-              {user.full_name.slice(0, 2)}
+              <div className="h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 bg-[#0F172A] text-white">
+                {user.full_name.slice(0, 2)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-[#0F172A] truncate">{user.full_name}</p>
+                <span className="inline-block px-1.5 py-0.2 text-[10px] font-bold rounded uppercase bg-[#0F172A] text-white">
+                  {user.role_id}
+                </span>
+              </div>
+            </Link>
+          ) : (
+            <div className="p-3 border-b border-slate-200/80 bg-[#F3F5F7]/80 flex items-center gap-3 select-none">
+              <div className="h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]">
+                {user.full_name.slice(0, 2)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-[#0F172A] truncate">{user.full_name}</p>
+                <span className="inline-block px-1.5 py-0.2 text-[10px] font-bold rounded uppercase bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]">
+                  {user.role_id}
+                </span>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-[#0F172A] truncate">{user.full_name}</p>
-              <span
-                className={`inline-block px-1.5 py-0.2 text-[10px] font-bold rounded uppercase ${
-                  isAdmin
-                    ? 'bg-[#0F172A] text-white'
-                    : 'bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]'
-                }`}
-              >
-                {user.role_id}
-              </span>
-            </div>
-          </Link>
+          )}
 
           {/* Navigation Links Scrollable Area */}
           <div className="flex-1 overflow-y-auto p-3 space-y-4">

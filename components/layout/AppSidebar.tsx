@@ -65,7 +65,7 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
     }
   }, [pathname, isNotificationsRoute]);
 
-  // Student navigation remains intact
+  // Student navigation (Available surveys, history, feedback, QR scan, notifications)
   const studentNavItems: NavItem[] = [
     { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/surveys', label: 'Available Surveys', icon: ClipboardList },
@@ -78,7 +78,6 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
       icon: Bell,
       badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : null,
     },
-    { href: '/profile', label: 'My Profile', icon: User },
   ];
 
   // Specific Admin Survey Management Dropdown Items
@@ -140,36 +139,40 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
         </div>
       </div>
 
-      {/* Profile snippet - Clickable navigation to respective My Profile */}
-      <Link
-        href={isAdmin ? '/admin/profile' : '/profile'}
-        className="p-3 border-b border-slate-200/70 bg-[#F3F5F7]/80 hover:bg-[#EAF2F8]/70 transition-colors flex items-center gap-3 cursor-pointer group"
-        title="View My Profile"
-      >
-        <div
-          className={`h-9 w-9 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 group-hover:scale-105 transition-transform ${
-            isAdmin
-              ? 'bg-[#0F172A] text-white'
-              : 'bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]'
-          }`}
+      {/* Profile snippet: Admin is clickable to /admin/profile; Student displays clean identity banner */}
+      {isAdmin ? (
+        <Link
+          href="/admin/profile"
+          className="p-3 border-b border-slate-200/70 bg-[#F3F5F7]/80 hover:bg-[#EAF2F8]/70 transition-colors flex items-center gap-3 cursor-pointer group"
+          title="View Administrator Profile"
         >
-          {user.full_name.slice(0, 2)}
+          <div className="h-9 w-9 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 group-hover:scale-105 transition-transform bg-[#0F172A] text-white">
+            {user.full_name.slice(0, 2)}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold text-[#0F172A] truncate group-hover:text-[#4682A9] transition-colors">
+              {user.full_name}
+            </p>
+            <span className="inline-block mt-0.5 px-1.5 py-0.2 text-[10px] font-bold rounded uppercase tracking-wide bg-[#0F172A] text-white">
+              {user.role_id}
+            </span>
+          </div>
+        </Link>
+      ) : (
+        <div className="p-3 border-b border-slate-200/70 bg-[#F3F5F7]/80 flex items-center gap-3 select-none">
+          <div className="h-9 w-9 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]">
+            {user.full_name.slice(0, 2)}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold text-[#0F172A] truncate">
+              {user.full_name}
+            </p>
+            <span className="inline-block mt-0.5 px-1.5 py-0.2 text-[10px] font-bold rounded uppercase tracking-wide bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]">
+              {user.role_id}
+            </span>
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold text-[#0F172A] truncate group-hover:text-[#4682A9] transition-colors">
-            {user.full_name}
-          </p>
-          <span
-            className={`inline-block mt-0.5 px-1.5 py-0.2 text-[10px] font-bold rounded uppercase tracking-wide ${
-              isAdmin
-                ? 'bg-[#0F172A] text-white'
-                : 'bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]'
-            }`}
-          >
-            {user.role_id}
-          </span>
-        </div>
-      </Link>
+      )}
 
       {/* Navigation Scroll */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
