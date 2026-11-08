@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import {
   Bell,
   ShieldCheck,
+  ShieldAlert,
   QrCode,
   Menu,
   GraduationCap,
@@ -18,6 +19,8 @@ import {
   User,
   PlusCircle,
   BarChart3,
+  Send,
+  History,
   LogOut,
   ChevronDown,
 } from 'lucide-react';
@@ -38,6 +41,7 @@ interface AppHeaderProps {
 export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [surveyDropdownOpen, setSurveyDropdownOpen] = useState(true);
+  const [notificationsDropdownOpen, setNotificationsDropdownOpen] = useState(true);
   const pathname = usePathname();
 
   const isAdmin = user.role_id === 'ADMINISTRATOR';
@@ -47,6 +51,8 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
     pathname.startsWith('/admin/feedback') ||
     pathname.startsWith('/admin/reports') ||
     pathname.startsWith('/admin/qr-codes');
+
+  const isNotificationsRoute = pathname.startsWith('/admin/notifications');
 
   const studentNavItems: NavItem[] = [
     { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -87,6 +93,21 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
       label: 'QR Code Management',
       sublabel: null,
       icon: QrCode,
+    },
+  ];
+
+  const notificationsSubItems = [
+    {
+      href: '/admin/notifications/send',
+      label: 'Send Notifications',
+      sublabel: null,
+      icon: Send,
+    },
+    {
+      href: '/admin/notifications/history',
+      label: 'Notification History',
+      sublabel: null,
+      icon: History,
     },
   ];
 
@@ -132,7 +153,7 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
 
           {/* Notifications Icon with accessible label */}
           <Link
-            href={isAdmin ? '/admin/notifications' : '/notifications'}
+            href={isAdmin ? '/admin/notifications/send' : '/notifications'}
             className="relative p-2 rounded-md text-slate-500 hover:bg-[#F3F5F7] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4682A9] cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label={`Notifications, ${unreadCount} unread`}
             title={`Notifications (${unreadCount} unread)`}
@@ -294,7 +315,7 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                         />
                       </button>
 
-                      {/* Sub-items */}
+                      {/* Survey Sub-items */}
                       {surveyDropdownOpen && (
                         <div className="mt-1 ml-4 pl-2.5 border-l-2 border-slate-200 space-y-1 py-0.5">
                           {surveyManagementSubItems.map((subItem) => {
@@ -341,6 +362,93 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                           })}
                         </div>
                       )}
+                    </div>
+
+                    {/* 3. Notifications (Dropdown) */}
+                    <div className="pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setNotificationsDropdownOpen(!notificationsDropdownOpen)}
+                        aria-expanded={notificationsDropdownOpen}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer select-none ${
+                          isNotificationsRoute
+                            ? 'bg-[#EAF2F8]/70 text-[#154675] font-semibold'
+                            : 'text-slate-700 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Bell
+                            className={`h-4 w-4 ${
+                              isNotificationsRoute ? 'text-[#4682A9]' : 'text-slate-500'
+                            }`}
+                          />
+                          <span>Notifications</span>
+                        </div>
+                        <ChevronDown
+                          className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
+                            notificationsDropdownOpen ? 'rotate-180 text-[#4682A9]' : ''
+                          }`}
+                        />
+                      </button>
+
+                      {/* Notifications Sub-items */}
+                      {notificationsDropdownOpen && (
+                        <div className="mt-1 ml-4 pl-2.5 border-l-2 border-slate-200 space-y-1 py-0.5">
+                          {notificationsSubItems.map((subItem) => {
+                            const active =
+                              pathname === subItem.href ||
+                              (subItem.href === '/admin/notifications/send' &&
+                                (pathname === '/admin/notifications/send' || pathname === '/admin/notifications')) ||
+                              (subItem.href === '/admin/notifications/history' &&
+                                pathname === '/admin/notifications/history');
+                            const SubIcon = subItem.icon;
+
+                            return (
+                              <Link
+                                key={subItem.href}
+                                href={subItem.href}
+                                onClick={() => setMobileNavOpen(false)}
+                                className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-xs transition-colors min-h-[38px] ${
+                                  active
+                                    ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
+                                    : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
+                                }`}
+                              >
+                                <SubIcon
+                                  className={`h-4 w-4 flex-shrink-0 ${
+                                    active
+                                      ? 'text-[#4682A9]'
+                                      : 'text-slate-400 group-hover:text-slate-600'
+                                  }`}
+                                />
+                                <span className="truncate">{subItem.label}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 4. Bring back Audit Logs */}
+                    <div className="pt-1">
+                      <Link
+                        href="/admin/audit-logs"
+                        onClick={() => setMobileNavOpen(false)}
+                        className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
+                          pathname === '/admin/audit-logs'
+                            ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
+                            : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <ShieldAlert
+                            className={`h-4 w-4 ${
+                              pathname === '/admin/audit-logs' ? 'text-[#4682A9]' : 'text-slate-400'
+                            }`}
+                          />
+                          <span>Audit Logs</span>
+                        </div>
+                      </Link>
                     </div>
                   </>
                 ) : (

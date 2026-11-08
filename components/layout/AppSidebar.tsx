@@ -14,6 +14,9 @@ import {
   User,
   PlusCircle,
   BarChart3,
+  Send,
+  History,
+  ShieldAlert,
   LogOut,
   GraduationCap,
   ChevronDown,
@@ -43,14 +46,24 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
     pathname.startsWith('/admin/reports') ||
     pathname.startsWith('/admin/qr-codes');
 
-  // Maintain Survey Management dropdown open by default & when visiting sub-routes
+  // Determine if active route is under Notifications dropdown
+  const isNotificationsRoute = pathname.startsWith('/admin/notifications');
+
+  // Maintain dropdowns open by default & auto-open when visiting sub-routes
   const [surveyDropdownOpen, setSurveyDropdownOpen] = useState(true);
+  const [notificationsDropdownOpen, setNotificationsDropdownOpen] = useState(true);
 
   useEffect(() => {
     if (isSurveyRoute) {
       setSurveyDropdownOpen(true);
     }
   }, [pathname, isSurveyRoute]);
+
+  useEffect(() => {
+    if (isNotificationsRoute) {
+      setNotificationsDropdownOpen(true);
+    }
+  }, [pathname, isNotificationsRoute]);
 
   // Student navigation remains intact
   const studentNavItems: NavItem[] = [
@@ -93,6 +106,22 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
       label: 'QR Code Management',
       sublabel: null,
       icon: QrCode,
+    },
+  ];
+
+  // Specific Admin Notifications Dropdown Items
+  const notificationsSubItems = [
+    {
+      href: '/admin/notifications/send',
+      label: 'Send Notifications',
+      sublabel: null,
+      icon: Send,
+    },
+    {
+      href: '/admin/notifications/history',
+      label: 'Notification History',
+      sublabel: null,
+      icon: History,
     },
   ];
 
@@ -199,7 +228,7 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
                     />
                   </button>
 
-                  {/* Collapsible Dropdown Sub-menu */}
+                  {/* Collapsible Survey Sub-menu */}
                   {surveyDropdownOpen && (
                     <div
                       id="admin-survey-management-menu"
@@ -248,6 +277,95 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
                       })}
                     </div>
                   )}
+                </div>
+
+                {/* 3. Notifications (Dropdown) */}
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setNotificationsDropdownOpen(!notificationsDropdownOpen)}
+                    aria-expanded={notificationsDropdownOpen}
+                    aria-controls="admin-notifications-menu"
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer select-none ${
+                      isNotificationsRoute
+                        ? 'bg-[#EAF2F8]/70 text-[#154675] font-semibold'
+                        : 'text-slate-700 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Bell
+                        className={`h-4 w-4 ${
+                          isNotificationsRoute ? 'text-[#4682A9]' : 'text-slate-500'
+                        }`}
+                      />
+                      <span>Notifications</span>
+                    </div>
+                    <ChevronDown
+                      className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
+                        notificationsDropdownOpen ? 'rotate-180 text-[#4682A9]' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {/* Collapsible Notifications Sub-menu */}
+                  {notificationsDropdownOpen && (
+                    <div
+                      id="admin-notifications-menu"
+                      className="mt-1 ml-4 pl-2.5 border-l-2 border-slate-200 space-y-1 py-0.5 animate-in fade-in-50 duration-150"
+                    >
+                      {notificationsSubItems.map((subItem) => {
+                        const active =
+                          pathname === subItem.href ||
+                          (subItem.href === '/admin/notifications/send' &&
+                            (pathname === '/admin/notifications/send' || pathname === '/admin/notifications')) ||
+                          (subItem.href === '/admin/notifications/history' &&
+                            pathname === '/admin/notifications/history');
+                        const SubIcon = subItem.icon;
+
+                        return (
+                          <Link
+                            key={subItem.href}
+                            href={subItem.href}
+                            className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-xs transition-colors min-h-[38px] ${
+                              active
+                                ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
+                                : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
+                            }`}
+                          >
+                            <SubIcon
+                              className={`h-4 w-4 flex-shrink-0 ${
+                                active
+                                  ? 'text-[#4682A9]'
+                                  : 'text-slate-400 group-hover:text-slate-600'
+                              }`}
+                            />
+                            <span className="truncate">{subItem.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* 4. Bring back Audit Logs */}
+                <div className="pt-1">
+                  <Link
+                    href="/admin/audit-logs"
+                    className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
+                      pathname === '/admin/audit-logs'
+                        ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
+                        : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <ShieldAlert
+                        className={`h-4 w-4 ${
+                          pathname === '/admin/audit-logs' ? 'text-[#4682A9]' : 'text-slate-400'
+                        }`}
+                      />
+                      <span>Audit Logs</span>
+                    </div>
+                  </Link>
                 </div>
               </>
             ) : (
