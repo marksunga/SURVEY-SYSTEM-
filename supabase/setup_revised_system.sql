@@ -482,73 +482,14 @@ DROP POLICY IF EXISTS "System can insert audit logs" ON audit_logs;
 CREATE POLICY "System can insert audit logs"
 ON audit_logs FOR INSERT TO authenticated WITH CHECK (true);
 
--- ==============================================================================
+-- ------------------------------------------------------------------------------
 -- INITIAL SEED DATA (ACCOUNTS & DEMO DATA)
--- ==============================================================================
+-- ------------------------------------------------------------------------------
+-- Note: User accounts are created via Supabase Auth (or the web registration form).
+-- When a user registers or is created in Supabase Auth, the 'on_auth_user_created'
+-- trigger automatically syncs and provisions their record in 'public.profiles'.
 
--- 1. Create Seed Auth Users (in auth.users)
--- Default Seed Credentials:
--- Administrator: admin@ua.edu.ph (Username: admin) | Password: Admin123!
--- Student:       student@ua.edu.ph                 | Password: Student123!
-
-INSERT INTO auth.users (
-    instance_id,
-    id,
-    aud,
-    role,
-    email,
-    encrypted_password,
-    email_confirmed_at,
-    raw_app_meta_data,
-    raw_user_meta_data,
-    created_at,
-    updated_at,
-    confirmation_token
-) VALUES 
-(
-    '00000000-0000-0000-0000-000000000000',
-    '11111111-1111-1111-1111-111111111111',
-    'authenticated',
-    'authenticated',
-    'admin@ua.edu.ph',
-    crypt('Admin123!', gen_salt('bf')),
-    NOW(),
-    '{"provider":"email","providers":["email"]}',
-    '{"full_name":"System Administrator","role_id":"ADMINISTRATOR","id_number":"admin","department":"IT Administration"}',
-    NOW(),
-    NOW(),
-    ''
-),
-(
-    '00000000-0000-0000-0000-000000000000',
-    '44444444-4444-4444-4444-444444444444',
-    'authenticated',
-    'authenticated',
-    'student@ua.edu.ph',
-    crypt('Student123!', gen_salt('bf')),
-    NOW(),
-    '{"provider":"email","providers":["email"]}',
-    '{"full_name":"Samantha Hayes","role_id":"STUDENT","id_number":"STU-2026-089","department":"Information Technology"}',
-    NOW(),
-    NOW(),
-    ''
-)
-ON CONFLICT (id) DO UPDATE SET
-    encrypted_password = EXCLUDED.encrypted_password,
-    email_confirmed_at = NOW();
-
--- 2. Populate Corresponding Public Profiles
-INSERT INTO profiles (id, role_id, full_name, email, department, id_number, is_active) VALUES
-('11111111-1111-1111-1111-111111111111', 'ADMINISTRATOR', 'System Administrator', 'admin@ua.edu.ph', 'IT Administration', 'admin', TRUE),
-('44444444-4444-4444-4444-444444444444', 'STUDENT', 'Samantha Hayes', 'student@ua.edu.ph', 'Information Technology', 'STU-2026-089', TRUE)
-ON CONFLICT (id) DO UPDATE SET
-    role_id = EXCLUDED.role_id,
-    full_name = EXCLUDED.full_name,
-    id_number = EXCLUDED.id_number,
-    department = EXCLUDED.department,
-    is_active = TRUE;
-
--- 3. Seed Surveys
+-- 1. Seed Surveys
 INSERT INTO surveys (id, title, description, category, status, target_roles, is_anonymous_allowed, start_date, end_date, created_by) VALUES
 ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 
  'Mid-Term IT Course & Instructor Evaluation', 
