@@ -219,29 +219,29 @@ export default function StudentRegisterPage() {
           - Informational badges: 24/7 IT Access, Fast & Reliable, Official UA
           - Desktop: Large gold UA circular seal on right
          ════════════════════════════════════════════════════════════════════ */}
-      <section className="relative w-full overflow-hidden bg-[#073663] text-white pt-8 sm:pt-12 md:pt-16 lg:pt-20 pb-28 sm:pb-36 lg:pb-44">
+      <section className="relative w-full overflow-hidden bg-[#073663] text-white pt-6 sm:pt-10 md:pt-12 lg:pt-14 pb-28 sm:pb-36 lg:pb-44">
         {/* Real Campus Photo Background */}
         <div className="absolute inset-0 z-0">
           <Image
             src="/images/ua-building.jpg"
             alt="University of the Assumption Campus Facade and Fountain"
             fill
-            className="object-cover object-[72%_35%] sm:object-[65%_35%] lg:object-[58%_35%] filter contrast-105 brightness-100"
+            className="object-cover object-[center_25%] sm:object-[center_28%] lg:object-[center_25%] filter contrast-105 brightness-100"
             priority
           />
 
-          {/* Desktop Gradient Overlay: Solid royal navy on left, transitioning smoothly to transparent on right so statue & building are crisp and natural */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#06315A] via-[#084277]/85 via-50% to-transparent hidden md:block" />
+          {/* Desktop Gradient Overlay: Solid royal navy on left for readability, fading to transparent on right so statue & building are crisp */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#06315A] via-[#084277]/80 via-50% to-transparent hidden md:block" />
 
           {/* Mobile Gradient: Stronger on the left for text legibility, translucent on right so fountain statue stays visible */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#06315A]/95 via-[#073A6B]/80 to-[#073A6B]/30 md:hidden" />
 
           {/* Subtle top & bottom shadow gradient */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-[#073663]/60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-[#073663]/60" />
 
-          {/* Diagonal Stone Watermark Texture */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none select-none">
-            <span className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-widest text-white uppercase transform -rotate-12 whitespace-nowrap">
+          {/* Architectural Lintel Watermark Across Center Horizon matching Building Reference */}
+          <div className="absolute inset-x-0 top-12 sm:top-16 md:top-20 flex items-center justify-center opacity-25 pointer-events-none select-none px-4">
+            <span className="text-xl sm:text-3xl md:text-5xl lg:text-6xl font-black tracking-[0.18em] sm:tracking-[0.25em] md:tracking-[0.3em] text-white uppercase whitespace-nowrap drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)] text-center">
               UNIVERSITY OF THE ASSUMPTION
             </span>
           </div>
@@ -249,6 +249,17 @@ export default function StudentRegisterPage() {
 
         {/* Hero Content Container */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Prominent Architectural Lintel Header - Exact Center */}
+          <div className="w-full flex justify-center mb-6 sm:mb-8 pointer-events-none select-none">
+            <div className="inline-flex items-center gap-2 sm:gap-4 px-4 sm:px-7 py-1.5 sm:py-2 rounded-full bg-white/15 border border-white/30 backdrop-blur-md shadow-[0_8px_25px_rgba(0,0,0,0.3)]">
+              <div className="h-0.5 w-4 sm:w-10 bg-gradient-to-r from-transparent to-[#38BDF8]" />
+              <span className="text-[11px] xs:text-xs sm:text-sm md:text-base font-black tracking-[0.16em] sm:tracking-[0.25em] md:tracking-[0.3em] text-white uppercase drop-shadow-md whitespace-nowrap text-center">
+                UNIVERSITY OF THE ASSUMPTION
+              </span>
+              <div className="h-0.5 w-4 sm:w-10 bg-gradient-to-l from-transparent to-[#38BDF8]" />
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Left Column: Heading, Subtitle, Actions, Badges */}
             <div className="lg:col-span-8 space-y-4 sm:space-y-5 text-center lg:text-left flex flex-col items-center lg:items-start">
