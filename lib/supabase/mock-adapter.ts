@@ -541,8 +541,9 @@ export const MockAdapter = {
     // Single administrator seed account password support ('admin123', 'Admin123!', 'Password123!')
     if (!isValid && profile.role_id === 'ADMINISTRATOR') {
       if (
-        password === 'admin123' ||
+        password === 'admin2122!' ||
         password === 'Admin123!' ||
+        password === 'admin123' ||
         password === 'Password123!' ||
         password === 'admin'
       ) {
