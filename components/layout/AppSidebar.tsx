@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Profile } from '@/lib/types/database';
@@ -11,13 +12,11 @@ import {
   QrCode,
   Bell,
   User,
-  Users,
   PlusCircle,
   BarChart3,
-  Database,
   LogOut,
   GraduationCap,
-  Settings,
+  ChevronDown,
 } from 'lucide-react';
 import { logoutAction } from '@/app/actions/auth';
 
@@ -35,9 +34,25 @@ interface AppSidebarProps {
 
 export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarProps) {
   const pathname = usePathname();
-
   const isAdmin = user.role_id === 'ADMINISTRATOR';
 
+  // Determine if active route is under Survey Management dropdown
+  const isSurveyRoute =
+    pathname.startsWith('/admin/surveys') ||
+    pathname.startsWith('/admin/feedback') ||
+    pathname.startsWith('/admin/reports') ||
+    pathname.startsWith('/admin/qr-codes');
+
+  // Maintain Survey Management dropdown open by default & when visiting sub-routes
+  const [surveyDropdownOpen, setSurveyDropdownOpen] = useState(true);
+
+  useEffect(() => {
+    if (isSurveyRoute) {
+      setSurveyDropdownOpen(true);
+    }
+  }, [pathname, isSurveyRoute]);
+
+  // Student navigation remains intact
   const studentNavItems: NavItem[] = [
     { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/surveys', label: 'Available Surveys', icon: ClipboardList },
@@ -53,20 +68,33 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
     { href: '/profile', label: 'My Profile', icon: User },
   ];
 
-  const adminNavItems: NavItem[] = [
-    { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/users', label: 'Manage Students', icon: Users },
-    { href: '/admin/surveys', label: 'Manage Surveys', icon: ClipboardList },
-    { href: '/admin/surveys/create', label: 'Create Survey', icon: PlusCircle },
-    { href: '/admin/feedback', label: 'Moderate Feedback', icon: MessageSquarePlus },
-    { href: '/admin/qr-codes', label: 'QR Code Hub', icon: QrCode },
-    { href: '/admin/reports', label: 'Reports & Analytics', icon: BarChart3 },
-    { href: '/admin/notifications', label: 'Broadcasts & Reminders', icon: Bell },
-    { href: '/admin/profile', label: 'My Profile', icon: User },
-    { href: '/admin/settings', label: 'System Settings', icon: Settings },
+  // Specific Admin Survey Management Dropdown Items
+  const surveyManagementSubItems = [
+    {
+      href: '/admin/surveys/create',
+      label: 'Create Survey',
+      sublabel: null,
+      icon: PlusCircle,
+    },
+    {
+      href: '/admin/feedback',
+      label: 'Feedback Management',
+      sublabel: 'Moderate Feedback',
+      icon: MessageSquarePlus,
+    },
+    {
+      href: '/admin/reports',
+      label: 'Reports and Analytics',
+      sublabel: null,
+      icon: BarChart3,
+    },
+    {
+      href: '/admin/qr-codes',
+      label: 'QR Code Management',
+      sublabel: null,
+      icon: QrCode,
+    },
   ];
-
-  const navItems = isAdmin ? adminNavItems : studentNavItems;
 
   return (
     <aside className="hidden md:flex w-64 border-r border-slate-200 bg-white flex-col h-screen sticky top-0 z-30 select-none shadow-xs">
@@ -117,39 +145,141 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
       {/* Navigation Scroll */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
         <div>
-          <div className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            {isAdmin ? 'Administrator Management' : 'Student Navigation'}
+          <div className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            {isAdmin ? 'Administrator Navigation' : 'Student Navigation'}
           </div>
+
           <nav className="space-y-1">
-            {navItems.map((item) => {
-              const active =
-                pathname === item.href ||
-                (item.href !== '/admin/dashboard' &&
-                  item.href !== '/student/dashboard' &&
-                  pathname.startsWith(item.href));
-              const Icon = item.icon;
-              return (
+            {isAdmin ? (
+              <>
+                {/* 1. Maintain Dashboard */}
                 <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center justify-between px-2.5 py-2 rounded-md text-xs font-medium transition-colors ${
-                    active
+                  href="/admin/dashboard"
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
+                    pathname === '/admin/dashboard'
                       ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
                       : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`h-4 w-4 ${active ? 'text-[#4682A9]' : 'text-slate-400'}`} />
-                    <span>{item.label}</span>
+                    <LayoutDashboard
+                      className={`h-4 w-4 ${
+                        pathname === '/admin/dashboard' ? 'text-[#4682A9]' : 'text-slate-400'
+                      }`}
+                    />
+                    <span>Dashboard</span>
                   </div>
-                  {item.badge && (
-                    <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-500 text-white">
-                      {item.badge}
-                    </span>
-                  )}
                 </Link>
-              );
-            })}
+
+                {/* 2. Survey Management (Dropdown) */}
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setSurveyDropdownOpen(!surveyDropdownOpen)}
+                    aria-expanded={surveyDropdownOpen}
+                    aria-controls="admin-survey-management-menu"
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer select-none ${
+                      isSurveyRoute
+                        ? 'bg-[#EAF2F8]/70 text-[#154675] font-semibold'
+                        : 'text-slate-700 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <ClipboardList
+                        className={`h-4 w-4 ${
+                          isSurveyRoute ? 'text-[#4682A9]' : 'text-slate-500'
+                        }`}
+                      />
+                      <span>Survey Management</span>
+                    </div>
+                    <ChevronDown
+                      className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
+                        surveyDropdownOpen ? 'rotate-180 text-[#4682A9]' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {/* Collapsible Dropdown Sub-menu */}
+                  {surveyDropdownOpen && (
+                    <div
+                      id="admin-survey-management-menu"
+                      className="mt-1 ml-4 pl-2.5 border-l-2 border-slate-200 space-y-1 py-0.5 animate-in fade-in-50 duration-150"
+                    >
+                      {surveyManagementSubItems.map((subItem) => {
+                        const active =
+                          pathname === subItem.href ||
+                          (subItem.href === '/admin/surveys/create' &&
+                            pathname.startsWith('/admin/surveys/create')) ||
+                          (subItem.href === '/admin/feedback' &&
+                            pathname.startsWith('/admin/feedback')) ||
+                          (subItem.href === '/admin/reports' &&
+                            pathname.startsWith('/admin/reports')) ||
+                          (subItem.href === '/admin/qr-codes' &&
+                            pathname.startsWith('/admin/qr-codes'));
+                        const SubIcon = subItem.icon;
+
+                        return (
+                          <Link
+                            key={subItem.href}
+                            href={subItem.href}
+                            className={`group flex items-start gap-2.5 px-2.5 py-2 rounded-md text-xs transition-colors min-h-[38px] ${
+                              active
+                                ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
+                                : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
+                            }`}
+                          >
+                            <SubIcon
+                              className={`h-4 w-4 mt-0.5 flex-shrink-0 ${
+                                active
+                                  ? 'text-[#4682A9]'
+                                  : 'text-slate-400 group-hover:text-slate-600'
+                              }`}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="leading-tight truncate">{subItem.label}</div>
+                              {subItem.sublabel && (
+                                <div className="text-[10px] text-slate-400 font-normal leading-tight mt-0.5">
+                                  ({subItem.sublabel})
+                                </div>
+                              )}
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              // Student Nav Items
+              studentNavItems.map((item) => {
+                const active =
+                  pathname === item.href ||
+                  (item.href !== '/student/dashboard' && pathname.startsWith(item.href));
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center justify-between px-2.5 py-2 rounded-md text-xs font-medium transition-colors ${
+                      active
+                        ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
+                        : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon className={`h-4 w-4 ${active ? 'text-[#4682A9]' : 'text-slate-400'}`} />
+                      <span>{item.label}</span>
+                    </div>
+                    {item.badge && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-500 text-white">
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })
+            )}
           </nav>
         </div>
       </div>

@@ -16,12 +16,10 @@ import {
   CheckCircle2,
   MessageSquarePlus,
   User,
-  Users,
   PlusCircle,
   BarChart3,
-  Database,
   LogOut,
-  Settings,
+  ChevronDown,
 } from 'lucide-react';
 import { logoutAction } from '@/app/actions/auth';
 
@@ -39,9 +37,16 @@ interface AppHeaderProps {
 
 export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [surveyDropdownOpen, setSurveyDropdownOpen] = useState(true);
   const pathname = usePathname();
 
   const isAdmin = user.role_id === 'ADMINISTRATOR';
+
+  const isSurveyRoute =
+    pathname.startsWith('/admin/surveys') ||
+    pathname.startsWith('/admin/feedback') ||
+    pathname.startsWith('/admin/reports') ||
+    pathname.startsWith('/admin/qr-codes');
 
   const studentNavItems: NavItem[] = [
     { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -58,20 +63,32 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
     { href: '/profile', label: 'My Profile', icon: User },
   ];
 
-  const adminNavItems: NavItem[] = [
-    { href: '/admin/dashboard', label: 'Admin Dashboard', icon: LayoutDashboard },
-    { href: '/admin/users', label: 'Manage Students', icon: Users },
-    { href: '/admin/surveys', label: 'Manage Surveys', icon: ClipboardList },
-    { href: '/admin/surveys/create', label: 'Create Survey', icon: PlusCircle },
-    { href: '/admin/feedback', label: 'Moderate Feedback', icon: MessageSquarePlus },
-    { href: '/admin/qr-codes', label: 'QR Code Hub', icon: QrCode },
-    { href: '/admin/reports', label: 'Reports & Analytics', icon: BarChart3 },
-    { href: '/admin/notifications', label: 'Broadcasts & Reminders', icon: Bell },
-    { href: '/admin/profile', label: 'My Profile', icon: User },
-    { href: '/admin/settings', label: 'System Settings', icon: Settings },
+  const surveyManagementSubItems = [
+    {
+      href: '/admin/surveys/create',
+      label: 'Create Survey',
+      sublabel: null,
+      icon: PlusCircle,
+    },
+    {
+      href: '/admin/feedback',
+      label: 'Feedback Management',
+      sublabel: 'Moderate Feedback',
+      icon: MessageSquarePlus,
+    },
+    {
+      href: '/admin/reports',
+      label: 'Reports and Analytics',
+      sublabel: null,
+      icon: BarChart3,
+    },
+    {
+      href: '/admin/qr-codes',
+      label: 'QR Code Management',
+      sublabel: null,
+      icon: QrCode,
+    },
   ];
-
-  const currentNavItems = isAdmin ? adminNavItems : studentNavItems;
 
   return (
     <>
@@ -138,20 +155,22 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                   {user.full_name}
                 </span>
                 <span
-                  className={`text-[10px] font-bold px-1.5 py-0.2 rounded uppercase ${isAdmin
+                  className={`text-[10px] font-bold px-1.5 py-0.2 rounded uppercase ${
+                    isAdmin
                       ? 'bg-[#0F172A] text-white'
                       : 'bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]'
-                    }`}
+                  }`}
                 >
                   {user.role_id}
                 </span>
               </div>
 
               <div
-                className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold uppercase flex-shrink-0 group-hover:scale-105 transition-transform ${isAdmin
+                className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold uppercase flex-shrink-0 group-hover:scale-105 transition-transform ${
+                  isAdmin
                     ? 'bg-[#0F172A] text-white'
                     : 'bg-[#4682A9] text-white'
-                  }`}
+                }`}
               >
                 {user.full_name.slice(0, 2)}
               </div>
@@ -196,20 +215,22 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
             title="View My Profile"
           >
             <div
-              className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 ${isAdmin
+              className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 ${
+                isAdmin
                   ? 'bg-[#0F172A] text-white'
                   : 'bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]'
-                }`}
+              }`}
             >
               {user.full_name.slice(0, 2)}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold text-[#0F172A] truncate">{user.full_name}</p>
               <span
-                className={`inline-block px-1.5 py-0.2 text-[10px] font-bold rounded uppercase ${isAdmin
+                className={`inline-block px-1.5 py-0.2 text-[10px] font-bold rounded uppercase ${
+                  isAdmin
                     ? 'bg-[#0F172A] text-white'
                     : 'bg-[#EAF2F8] text-[#2C5E7D] border border-[#D1E3EC]'
-                  }`}
+                }`}
               >
                 {user.role_id}
               </span>
@@ -219,35 +240,139 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
           {/* Navigation Links Scrollable Area */}
           <div className="flex-1 overflow-y-auto p-3 space-y-4">
             <div>
-              <div className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <div className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                 {isAdmin ? 'Administrator Navigation' : 'Student Navigation'}
               </div>
+
               <nav className="space-y-1">
-                {currentNavItems.map((item) => {
-                  const active = pathname === item.href || (item.href !== '/admin/dashboard' && item.href !== '/student/dashboard' && pathname.startsWith(item.href));
-                  const Icon = item.icon;
-                  return (
+                {isAdmin ? (
+                  <>
+                    {/* 1. Maintain Dashboard */}
                     <Link
-                      key={item.href}
-                      href={item.href}
+                      href="/admin/dashboard"
                       onClick={() => setMobileNavOpen(false)}
-                      className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${active
+                      className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
+                        pathname === '/admin/dashboard'
                           ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
                           : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
-                        }`}
+                      }`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <Icon className={`h-4 w-4 ${active ? 'text-[#4682A9]' : 'text-slate-400'}`} />
-                        <span>{item.label}</span>
+                        <LayoutDashboard
+                          className={`h-4 w-4 ${
+                            pathname === '/admin/dashboard' ? 'text-[#4682A9]' : 'text-slate-400'
+                          }`}
+                        />
+                        <span>Dashboard</span>
                       </div>
-                      {item.badge && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-500 text-white">
-                          {item.badge}
-                        </span>
-                      )}
                     </Link>
-                  );
-                })}
+
+                    {/* 2. Survey Management (Dropdown) */}
+                    <div className="pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setSurveyDropdownOpen(!surveyDropdownOpen)}
+                        aria-expanded={surveyDropdownOpen}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer select-none ${
+                          isSurveyRoute
+                            ? 'bg-[#EAF2F8]/70 text-[#154675] font-semibold'
+                            : 'text-slate-700 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <ClipboardList
+                            className={`h-4 w-4 ${
+                              isSurveyRoute ? 'text-[#4682A9]' : 'text-slate-500'
+                            }`}
+                          />
+                          <span>Survey Management</span>
+                        </div>
+                        <ChevronDown
+                          className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
+                            surveyDropdownOpen ? 'rotate-180 text-[#4682A9]' : ''
+                          }`}
+                        />
+                      </button>
+
+                      {/* Sub-items */}
+                      {surveyDropdownOpen && (
+                        <div className="mt-1 ml-4 pl-2.5 border-l-2 border-slate-200 space-y-1 py-0.5">
+                          {surveyManagementSubItems.map((subItem) => {
+                            const active =
+                              pathname === subItem.href ||
+                              (subItem.href === '/admin/surveys/create' &&
+                                pathname.startsWith('/admin/surveys/create')) ||
+                              (subItem.href === '/admin/feedback' &&
+                                pathname.startsWith('/admin/feedback')) ||
+                              (subItem.href === '/admin/reports' &&
+                                pathname.startsWith('/admin/reports')) ||
+                              (subItem.href === '/admin/qr-codes' &&
+                                pathname.startsWith('/admin/qr-codes'));
+                            const SubIcon = subItem.icon;
+
+                            return (
+                              <Link
+                                key={subItem.href}
+                                href={subItem.href}
+                                onClick={() => setMobileNavOpen(false)}
+                                className={`group flex items-start gap-2.5 px-2.5 py-2 rounded-md text-xs transition-colors min-h-[38px] ${
+                                  active
+                                    ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
+                                    : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
+                                }`}
+                              >
+                                <SubIcon
+                                  className={`h-4 w-4 mt-0.5 flex-shrink-0 ${
+                                    active
+                                      ? 'text-[#4682A9]'
+                                      : 'text-slate-400 group-hover:text-slate-600'
+                                  }`}
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="leading-tight truncate">{subItem.label}</div>
+                                  {subItem.sublabel && (
+                                    <div className="text-[10px] text-slate-400 font-normal leading-tight mt-0.5">
+                                      ({subItem.sublabel})
+                                    </div>
+                                  )}
+                                </div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  studentNavItems.map((item) => {
+                    const active =
+                      pathname === item.href ||
+                      (item.href !== '/student/dashboard' && pathname.startsWith(item.href));
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMobileNavOpen(false)}
+                        className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
+                          active
+                            ? 'bg-[#EAF2F8] text-[#2C5E7D] font-semibold border-l-2 border-[#4682A9]'
+                            : 'text-slate-600 hover:bg-[#F3F5F7] hover:text-[#0F172A]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Icon className={`h-4 w-4 ${active ? 'text-[#4682A9]' : 'text-slate-400'}`} />
+                          <span>{item.label}</span>
+                        </div>
+                        {item.badge && (
+                          <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-500 text-white">
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })
+                )}
               </nav>
             </div>
           </div>
