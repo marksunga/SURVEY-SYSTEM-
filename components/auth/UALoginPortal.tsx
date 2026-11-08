@@ -24,7 +24,7 @@ interface UALoginPortalProps {
 
 export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
   const [role, setRole] = useState<'STUDENT' | 'ADMINISTRATOR'>(initialRole);
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -35,8 +35,21 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
     setLoading(true);
     setError(null);
 
+    // Quick client-side check for student email domain
+    if (role === 'STUDENT' && identifier.includes('@') && !identifier.toLowerCase().endsWith('@ua.edu.ph')) {
+      setError('Student login requires an official University of the Assumption email ending with @ua.edu.ph (e.g. student@ua.edu.ph).');
+      setLoading(false);
+      return;
+    }
+
     const formData = new FormData();
-    formData.append('email', email);
+    if (role === 'ADMINISTRATOR') {
+      formData.append('username', identifier);
+      formData.append('email', identifier);
+    } else {
+      formData.append('email', identifier);
+      formData.append('username', identifier);
+    }
     formData.append('password', password);
 
     const res =
@@ -200,27 +213,36 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
               </div>
             )}
 
-            {/* Form: Username and Password Fields from Reference Image 1 */}
+            {/* Form: Username/Email and Password Fields */}
             <form onSubmit={handleSubmit} className="space-y-3.5">
-              {/* Username Input */}
+              {/* Username / Email Input */}
               <div className="space-y-1">
                 <div className="relative">
                   <User className="h-4 w-4 absolute left-3.5 top-3.5 text-slate-400 pointer-events-none" />
                   <Input
-                    name="email"
-                    type="text"
+                    name={role === 'ADMINISTRATOR' ? 'username' : 'email'}
+                    type={role === 'ADMINISTRATOR' ? 'text' : 'email'}
                     required
-                    autoComplete="username"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete={role === 'ADMINISTRATOR' ? 'username' : 'email'}
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
                     placeholder={
                       role === 'ADMINISTRATOR'
-                        ? 'Administrator Email'
-                        : 'Username or Institutional Email'
+                        ? 'Username (e.g. admin)'
+                        : 'Student Email (@ua.edu.ph)'
                     }
                     className="pl-10 text-xs h-11 bg-slate-50/70 border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus-visible:ring-[#2563A6] focus-visible:bg-white transition-colors"
                   />
                 </div>
+                {role === 'ADMINISTRATOR' ? (
+                  <p className="text-[10px] text-slate-400 pl-1">
+                    Single Administrator Account • Username: <strong className="text-slate-700">admin</strong>
+                  </p>
+                ) : (
+                  <p className="text-[10px] text-slate-400 pl-1">
+                    Enter your official <strong className="text-slate-700">@ua.edu.ph</strong> student email.
+                  </p>
+                )}
               </div>
 
               {/* Password Input */}
@@ -267,19 +289,27 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
 
             {/* Quick Links & Information */}
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-              <Link
-                href="/auth/forgot-password?portal=student"
-                className="hover:text-[#205A93] hover:underline transition-colors"
-              >
-                Forgot password?
-              </Link>
-              <Link
-                href="/student/register"
-                className="font-semibold text-[#205A93] hover:underline flex items-center gap-1"
-              >
-                <UserPlus className="h-3 w-3" />
-                <span>Create Student Account</span>
-              </Link>
+              {role === 'STUDENT' ? (
+                <>
+                  <Link
+                    href="/auth/forgot-password?portal=student"
+                    className="hover:text-[#205A93] hover:underline transition-colors"
+                  >
+                    Forgot password?
+                  </Link>
+                  <Link
+                    href="/student/register"
+                    className="font-semibold text-[#205A93] hover:underline flex items-center gap-1"
+                  >
+                    <UserPlus className="h-3 w-3" />
+                    <span>Create Student Account</span>
+                  </Link>
+                </>
+              ) : (
+                <div className="w-full text-center text-slate-400 text-[10px]">
+                  Institutional Administrator Access • Managed by IT Department
+                </div>
+              )}
             </div>
 
             {/* Bottom Card Footer */}

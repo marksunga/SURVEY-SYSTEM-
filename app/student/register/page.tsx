@@ -36,6 +36,11 @@ export default function StudentRegisterPage() {
     setError(null);
 
     // Client-side quick validations
+    if (!email.toLowerCase().endsWith('@ua.edu.ph')) {
+      setError('Registration requires an official University of the Assumption email ending with @ua.edu.ph (e.g. yourname@ua.edu.ph).');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match. Please re-enter.');
       return;
@@ -124,7 +129,7 @@ export default function StudentRegisterPage() {
               {/* Student Institutional Email */}
               <div className="space-y-1">
                 <Label htmlFor="email" className="text-xs font-semibold text-slate-700">
-                  Student Institutional Email <span className="text-rose-500">*</span>
+                  Student Institutional Email (@ua.edu.ph) <span className="text-rose-500">*</span>
                 </Label>
                 <div className="relative">
                   <Mail className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
@@ -137,10 +142,12 @@ export default function StudentRegisterPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-9 text-xs h-10 border-slate-300 focus-visible:ring-[#4682A9]"
-                    placeholder="student@itdept.edu"
+                    placeholder="student@ua.edu.ph"
                   />
                 </div>
-                <p className="text-[10px] text-slate-400">Must be a valid institutional student email.</p>
+                <p className="text-[10px] text-slate-400">
+                  Must be a valid University of the Assumption student email ending with <strong className="text-slate-600">@ua.edu.ph</strong>
+                </p>
               </div>
 
               {/* Password */}

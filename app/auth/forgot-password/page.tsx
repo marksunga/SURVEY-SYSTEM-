@@ -136,7 +136,7 @@ export default function ForgotPasswordPage() {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="recovery-email" className="text-xs font-semibold text-slate-700">
-                    Student Institutional Email
+                    Student Institutional Email (@ua.edu.ph)
                   </Label>
                   <div className="relative">
                     <Mail className="h-4 w-4 absolute left-3 top-3.5 text-slate-400" />
@@ -148,12 +148,12 @@ export default function ForgotPasswordPage() {
                       autoComplete="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="student@itdept.edu"
+                      placeholder="student@ua.edu.ph"
                       className="pl-9 text-xs h-11 border-slate-300 focus-visible:ring-[#4682A9]"
                     />
                   </div>
                   <p className="text-[11px] text-slate-500">
-                    Self-service recovery is exclusively available for enrolled student accounts.
+                    Self-service recovery is exclusively available for enrolled student accounts with an active @ua.edu.ph email.
                   </p>
                 </div>
 

@@ -7,10 +7,10 @@
 -- Note: In production Supabase, users are created in auth.users first.
 -- These UUIDs represent demo users for local/staging verification.
 INSERT INTO profiles (id, role_id, full_name, email, department, id_number, is_active) VALUES
-('11111111-1111-1111-1111-111111111111', 'ADMINISTRATOR', 'Dr. Evelyn Vance (Admin)', 'admin@itdept.edu', 'IT Administration', 'ADMIN-001', TRUE),
-('22222222-2222-2222-2222-222222222222', 'STUDENT', 'Marcus Brody (Student)', 'officer@itdept.edu', 'Network Operations', 'STU-OFF-104', TRUE),
-('33333333-3333-3333-3333-333333333333', 'STUDENT', 'Raymond Cruz (Student)', 'professor@itdept.edu', 'Computer Science Dept', 'STU-FAC-802', TRUE),
-('44444444-4444-4444-4444-444444444444', 'STUDENT', 'Samantha Hayes (Student)', 'student@itdept.edu', 'Information Technology', 'STU-2026-089', TRUE)
+('11111111-1111-1111-1111-111111111111', 'ADMINISTRATOR', 'System Administrator', 'admin@ua.edu.ph', 'IT Administration', 'admin', TRUE),
+('22222222-2222-2222-2222-222222222222', 'STUDENT', 'Marcus Brody (Student)', 'marcus.brody@ua.edu.ph', 'Network Operations', 'STU-OFF-104', TRUE),
+('33333333-3333-3333-3333-333333333333', 'STUDENT', 'Raymond Cruz (Student)', 'raymond.cruz@ua.edu.ph', 'Computer Science Dept', 'STU-FAC-802', TRUE),
+('44444444-4444-4444-4444-444444444444', 'STUDENT', 'Samantha Hayes (Student)', 'student@ua.edu.ph', 'Information Technology', 'STU-2026-089', TRUE)
 ON CONFLICT (id) DO UPDATE SET
   role_id = EXCLUDED.role_id,
   full_name = EXCLUDED.full_name,

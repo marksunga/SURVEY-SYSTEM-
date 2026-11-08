@@ -18,17 +18,17 @@ function getAppBaseUrl(): string {
  * Only accounts with role 'ADMINISTRATOR' are permitted.
  */
 export async function adminLoginAction(formData: FormData) {
-  const email = (formData.get('email') as string)?.trim().toLowerCase();
+  const username = ((formData.get('username') || formData.get('email')) as string)?.trim();
   const password = formData.get('password') as string;
 
-  if (!email || !password) {
-    return { error: 'Both administrator email and password are required.' };
+  if (!username || !password) {
+    return { error: 'Both administrator username and password are required.' };
   }
 
   // 1. Verify credentials via one-way password hashing (scrypt)
-  const authResult = MockAdapter.verifyUserCredentials(email, password);
+  const authResult = MockAdapter.verifyUserCredentials(username, password);
   if (!authResult.success || !authResult.user) {
-    return { error: authResult.error || 'Invalid administrator email or password.' };
+    return { error: authResult.error || 'Invalid administrator username or password.' };
   }
 
   const profile = authResult.user;
@@ -36,7 +36,7 @@ export async function adminLoginAction(formData: FormData) {
   // 2. Strict Role Verification: Only ADMINISTRATOR role permitted
   if (profile.role_id !== 'ADMINISTRATOR') {
     return {
-      error: 'Access denied. Only Administrator accounts can log in here. Students must log in at /student/login.',
+      error: 'Access denied. Only Administrator accounts can log in here. Students must log in at /student/login with their @ua.edu.ph email.',
     };
   }
 
@@ -50,6 +50,7 @@ export async function adminLoginAction(formData: FormData) {
   MockAdapter.logAudit(profile.email, 'ADMIN_LOGIN', 'USER', profile.id, {
     method: 'PASSWORD',
     portal: 'ADMIN_PORTAL',
+    username: username.toLowerCase(),
   });
 
   revalidatePath('/');
@@ -60,17 +61,24 @@ export async function adminLoginAction(formData: FormData) {
  * Strict Student Authentication
  * Verifies both email and one-way hashed password.
  * Only accounts with role 'STUDENT' are permitted.
+ * Requires official University of the Assumption email ending with @ua.edu.ph.
  */
 export async function studentLoginAction(formData: FormData) {
-  const email = (formData.get('email') as string)?.trim().toLowerCase();
+  const identifier = ((formData.get('email') || formData.get('username')) as string)?.trim();
   const password = formData.get('password') as string;
 
-  if (!email || !password) {
+  if (!identifier || !password) {
     return { error: 'Both student email and password are required.' };
   }
 
+  // If email domain entered, enforce @ua.edu.ph
+  const cleanId = identifier.toLowerCase();
+  if (cleanId.includes('@') && !cleanId.endsWith('@ua.edu.ph') && !cleanId.endsWith('@itdept.edu')) {
+    return { error: 'Student login requires an official @ua.edu.ph institutional email (e.g. student@ua.edu.ph).' };
+  }
+
   // 1. Verify credentials via one-way password hashing (scrypt)
-  const authResult = MockAdapter.verifyUserCredentials(email, password);
+  const authResult = MockAdapter.verifyUserCredentials(identifier, password);
   if (!authResult.success || !authResult.user) {
     return { error: authResult.error || 'Invalid student email or password.' };
   }
@@ -103,6 +111,7 @@ export async function studentLoginAction(formData: FormData) {
 /**
  * Student Self-Registration
  * Automatically assigns role 'STUDENT' and securely hashes passwords.
+ * Requires institutional student email ending with @ua.edu.ph.
  */
 export async function studentRegisterAction(formData: FormData) {
   const email = (formData.get('email') as string)?.trim().toLowerCase();
@@ -123,10 +132,13 @@ export async function studentRegisterAction(formData: FormData) {
     return { error: 'Password is required.' };
   }
 
-  // 2. Email format validation
+  // 2. Institutional Email domain validation (@ua.edu.ph required)
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return { error: 'Please enter a valid institutional email address (e.g. yourname@itdept.edu).' };
+  if (!emailRegex.test(email) || !email.endsWith('@ua.edu.ph')) {
+    return {
+      error:
+        'Registration requires an official University of the Assumption email ending with @ua.edu.ph (e.g. yourname@ua.edu.ph).',
+    };
   }
 
   // 3. Password requirements validation (at least 8 chars, mixed case, numbers, special)
