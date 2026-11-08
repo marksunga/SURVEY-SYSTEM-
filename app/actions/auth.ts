@@ -7,6 +7,8 @@ import { UserRole } from '@/lib/types/database';
 import { setSessionUser, clearSessionUser, getCurrentUser } from '@/lib/auth/session';
 import { validatePasswordStrength, verifyPassword, hashPassword } from '@/lib/crypto/passwords';
 import { sendPasswordResetEmail } from '@/lib/email/mailer';
+import { createAdminClient, isLiveSupabaseConfigured } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 
 function getAppBaseUrl(): string {
   return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -23,6 +25,54 @@ export async function adminLoginAction(formData: FormData) {
 
   if (!username || !password) {
     return { error: 'Both administrator username and password are required.' };
+  }
+
+  // Live Supabase Authentication (when configured)
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const adminEmail = username.toLowerCase() === 'admin' ? 'admin@ua.edu.ph' : username;
+      const supabaseAdmin = createAdminClient();
+
+      // Check against Supabase auth
+      const supabase = createClient();
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: adminEmail,
+        password,
+      });
+
+      if (!authError && authData.user) {
+        const { data: dbProfile } = await supabaseAdmin
+          .from('profiles')
+          .select('*')
+          .eq('id', authData.user.id)
+          .single();
+
+        if (dbProfile) {
+          if (dbProfile.role_id !== 'ADMINISTRATOR') {
+            return { error: 'Access denied. Only Administrator accounts can log in here.' };
+          }
+          if (!dbProfile.is_active) {
+            return { error: 'This administrator account is deactivated. Contact Department Administration.' };
+          }
+
+          if (!MockAdapter.getProfileById(dbProfile.id)) {
+            MockAdapter.createUser(dbProfile, password);
+          }
+
+          await setSessionUser(dbProfile.id);
+          MockAdapter.logAudit(dbProfile.email, 'ADMIN_LOGIN', 'USER', dbProfile.id, {
+            method: 'SUPABASE_AUTH',
+            portal: 'ADMIN_PORTAL',
+          });
+
+          revalidatePath('/');
+          redirect('/admin/dashboard');
+        }
+      }
+    } catch (err: any) {
+      if (err?.message === 'NEXT_REDIRECT') throw err;
+      console.warn('Supabase admin login fallback:', err?.message);
+    }
   }
 
   // 1. Verify credentials via one-way password hashing (scrypt)
@@ -75,6 +125,53 @@ export async function studentLoginAction(formData: FormData) {
   const cleanId = identifier.toLowerCase();
   if (cleanId.includes('@') && !cleanId.endsWith('@ua.edu.ph') && !cleanId.endsWith('@itdept.edu')) {
     return { error: 'Student login requires an official @ua.edu.ph institutional email (e.g. student@ua.edu.ph).' };
+  }
+
+  // Live Supabase Authentication (when configured)
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const supabaseAdmin = createAdminClient();
+      const supabase = createClient();
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: cleanId,
+        password,
+      });
+
+      if (!authError && authData.user) {
+        const { data: dbProfile } = await supabaseAdmin
+          .from('profiles')
+          .select('*')
+          .eq('id', authData.user.id)
+          .single();
+
+        if (dbProfile) {
+          if (dbProfile.role_id !== 'STUDENT') {
+            return {
+              error: 'Access denied. Administrator accounts must log in through the Administrator portal at /admin/login.',
+            };
+          }
+          if (!dbProfile.is_active) {
+            return { error: 'This student account has been deactivated by the IT Administrator.' };
+          }
+
+          if (!MockAdapter.getProfileById(dbProfile.id)) {
+            MockAdapter.createUser(dbProfile, password);
+          }
+
+          await setSessionUser(dbProfile.id);
+          MockAdapter.logAudit(dbProfile.email, 'STUDENT_LOGIN', 'USER', dbProfile.id, {
+            method: 'SUPABASE_AUTH',
+            portal: 'STUDENT_PORTAL',
+          });
+
+          revalidatePath('/');
+          redirect('/student/dashboard');
+        }
+      }
+    } catch (err: any) {
+      if (err?.message === 'NEXT_REDIRECT') throw err;
+      console.warn('Supabase student login fallback:', err?.message);
+    }
   }
 
   // 1. Verify credentials via one-way password hashing (scrypt)
@@ -165,7 +262,84 @@ export async function studentRegisterAction(formData: FormData) {
     }
   }
 
-  const id = crypto.randomUUID();
+  let id = crypto.randomUUID();
+
+  // 5. Create in Live Supabase database if configured
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const supabaseAdmin = createAdminClient();
+
+      // Check if duplicate exists in Supabase
+      const { data: existingUser } = await supabaseAdmin
+        .from('profiles')
+        .select('id, email')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (existingUser) {
+        return { error: 'An account with this institutional email already exists in the system.' };
+      }
+
+      if (idNumber) {
+        const { data: existingIdRec } = await supabaseAdmin
+          .from('profiles')
+          .select('id, id_number')
+          .eq('id_number', idNumber)
+          .maybeSingle();
+
+        if (existingIdRec) {
+          return { error: 'A student account with this Student ID Number is already registered.' };
+        }
+      }
+
+      // Create in Supabase Auth (auth.users)
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: fullName,
+          role_id: 'STUDENT',
+          id_number: idNumber || null,
+          department,
+        },
+      });
+
+      if (authError || !authData?.user) {
+        return { error: authError?.message || 'Failed to create student account on Supabase Auth.' };
+      }
+
+      id = authData.user.id;
+
+      // Upsert into public.profiles
+      const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
+        id,
+        email,
+        full_name: fullName,
+        role_id: 'STUDENT',
+        id_number: idNumber || null,
+        department,
+        is_active: true,
+      });
+
+      if (profileError) {
+        console.error('Error inserting into public.profiles:', profileError);
+      }
+
+      // Record audit log
+      await supabaseAdmin.from('audit_logs').insert({
+        actor_id: id,
+        actor_email: email,
+        action: 'STUDENT_REGISTERED',
+        entity_type: 'USER',
+        entity_id: id,
+        details: { role: 'STUDENT', id_number: idNumber },
+      });
+    } catch (err: any) {
+      console.error('Supabase registration error:', err);
+      return { error: err?.message || 'Failed to connect to Supabase. Please check your credentials.' };
+    }
+  }
 
   // Role is strictly hardcoded to STUDENT; password is one-way hashed with scrypt
   const newProfile = MockAdapter.createUser(
