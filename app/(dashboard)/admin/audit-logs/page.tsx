@@ -46,13 +46,23 @@ export default function AdminAuditLogsPage() {
       log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
       log.entity_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (log.ip_address && log.ip_address.includes(searchTerm));
-    const matchesAction = selectedAction === 'ALL' || log.action === selectedAction;
+
+    const matchesAction =
+      selectedAction === 'ALL' ||
+      log.action === selectedAction ||
+      (selectedAction === 'STUDENT_LOGIN' && (log.action === 'STUDENT_LOGIN' || log.action === 'USER_LOGIN')) ||
+      (selectedAction === 'NOTIFICATION_SENT' &&
+        (log.action === 'NOTIFICATION_SENT' ||
+          log.action === 'NOTIFICATION_BROADCAST' ||
+          log.action === 'SURVEY_REMINDERS_SENT'));
+
     return matchesSearch && matchesAction;
   });
 
   // Action badge color mapping
   function getActionBadgeClass(action: string) {
     if (action.includes('LOGIN')) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (action.includes('NOTIFICATION')) return 'bg-sky-50 text-sky-700 border-sky-200';
     if (action.includes('SURVEY')) return 'bg-blue-50 text-blue-700 border-blue-200';
     if (action.includes('FEEDBACK')) return 'bg-purple-50 text-purple-700 border-purple-200';
     if (action.includes('SECURITY') || action.includes('DENIED') || action.includes('BLOCKED'))
@@ -112,15 +122,15 @@ export default function AdminAuditLogsPage() {
             className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4682A9] cursor-pointer"
           >
             <option value="ALL">All Event Types ({logs.length})</option>
-            <option value="USER_LOGIN">USER_LOGIN</option>
+            <option value="STUDENT_LOGIN">STUDENT_LOGIN</option>
             <option value="ADMIN_LOGIN">ADMIN_LOGIN</option>
+            <option value="NOTIFICATION_SENT">NOTIFICATION_SENT</option>
             <option value="SURVEY_CREATED">SURVEY_CREATED</option>
             <option value="SURVEY_SUBMITTED">SURVEY_SUBMITTED</option>
             <option value="SURVEY_STATUS_CHANGED">SURVEY_STATUS_CHANGED</option>
             <option value="FEEDBACK_SUBMITTED">FEEDBACK_SUBMITTED</option>
             <option value="FEEDBACK_STATUS_UPDATED">FEEDBACK_STATUS_UPDATED</option>
             <option value="QR_CODE_GENERATED">QR_CODE_GENERATED</option>
-            <option value="NOTIFICATION_SENT">NOTIFICATION_SENT</option>
           </select>
         </div>
       </div>

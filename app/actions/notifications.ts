@@ -62,7 +62,7 @@ export async function createBroadcastNotificationAction(data: {
       }
     }
 
-    MockAdapter.logAudit(admin.email, 'NOTIFICATION_BROADCAST', 'NOTIFICATION', notif.id, {
+    MockAdapter.logAudit(admin.email, 'NOTIFICATION_SENT', 'NOTIFICATION', notif.id, {
       target: data.targetRole,
       title: data.title,
     });
@@ -179,7 +179,8 @@ export async function sendSurveyRemindersAction(surveyId: string) {
     notifsCreated.push(notif);
   }
 
-  MockAdapter.logAudit(admin.email, 'SURVEY_REMINDERS_SENT', 'SURVEY', survey.id, {
+  MockAdapter.logAudit(admin.email, 'NOTIFICATION_SENT', 'SURVEY', survey.id, {
+    action_type: 'SURVEY_REMINDER',
     roles: targetRoles,
     survey_title: survey.title,
   });

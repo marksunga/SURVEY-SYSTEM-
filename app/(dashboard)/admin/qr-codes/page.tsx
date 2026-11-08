@@ -11,15 +11,26 @@ export const metadata = {
 export default async function AdminQRCodesPage() {
   await requireRole(['ADMINISTRATOR']);
 
-  const surveys = MockAdapter.getSurveys();
+  let surveys = MockAdapter.getSurveys().filter((s) => s.status === 'ACTIVE');
   let qrCodes: QRCodeRecord[] = MockAdapter.getQRCodes();
 
   if (isLiveSupabaseConfigured()) {
     try {
       const supabase = createAdminClient();
-      const { data, error } = await supabase.from('survey_qr_codes').select('*');
-      if (!error && data && data.length > 0) {
-        qrCodes = data as QRCodeRecord[];
+      const [sRes, qRes] = await Promise.all([
+        supabase
+          .from('surveys')
+          .select('*')
+          .eq('status', 'ACTIVE')
+          .order('created_at', { ascending: false }),
+        supabase.from('survey_qr_codes').select('*'),
+      ]);
+
+      if (sRes.data && sRes.data.length > 0) {
+        surveys = sRes.data;
+      }
+      if (qRes.data && qRes.data.length > 0) {
+        qrCodes = qRes.data as QRCodeRecord[];
       }
     } catch (err) {
       console.error('Failed to fetch live Supabase QR codes:', err);

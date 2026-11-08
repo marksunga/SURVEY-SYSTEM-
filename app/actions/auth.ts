@@ -414,9 +414,16 @@ export async function loginAction(formData: FormData) {
 
   await setSessionUser(profile.id);
 
-  MockAdapter.logAudit(profile.email, 'USER_LOGIN', 'USER', profile.id, {
-    method: 'PASSWORD',
-  });
+  MockAdapter.logAudit(
+    profile.email,
+    profile.role_id === 'ADMINISTRATOR' ? 'ADMIN_LOGIN' : 'STUDENT_LOGIN',
+    'USER',
+    profile.id,
+    {
+      method: 'PASSWORD',
+      role: profile.role_id,
+    }
+  );
 
   revalidatePath('/');
 

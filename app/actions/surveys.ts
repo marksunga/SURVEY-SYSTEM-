@@ -42,16 +42,25 @@ export async function createSurveyAction(data: {
       creator_name: user.full_name,
     });
 
-    // 2. Insert questions
-    for (let i = 0; i < data.questions.length; i++) {
-      const q = data.questions[i];
+    // 2. Insert questions with consistent UUIDs
+    const preparedQuestions = data.questions.map((q, idx) => ({
+      id: crypto.randomUUID(),
+      survey_id: newSurvey.id,
+      question_text: q.question_text,
+      question_type: q.question_type,
+      options: q.options || [],
+      is_required: q.is_required,
+      order_index: idx,
+    }));
+
+    for (const q of preparedQuestions) {
       MockAdapter.createQuestion({
-        survey_id: newSurvey.id,
+        survey_id: q.survey_id,
         question_text: q.question_text,
         question_type: q.question_type,
         options: q.options,
         is_required: q.is_required,
-        order_index: i,
+        order_index: q.order_index,
       });
     }
 
@@ -102,16 +111,8 @@ export async function createSurveyAction(data: {
           created_by: user.id,
         });
 
-        if (data.questions.length > 0) {
-          const questionRows = data.questions.map((q, idx) => ({
-            survey_id: newSurvey.id,
-            question_text: q.question_text,
-            question_type: q.question_type,
-            options: q.options || [],
-            is_required: q.is_required,
-            order_index: idx,
-          }));
-          await supabase.from('survey_questions').insert(questionRows);
+        if (preparedQuestions.length > 0) {
+          await supabase.from('survey_questions').insert(preparedQuestions);
         }
 
         await supabase.from('survey_qr_codes').insert({
@@ -298,10 +299,52 @@ export async function submitSurveyAnswersAction(
   }
 
   // Validate required questions
-  const questions = MockAdapter.getQuestionsBySurveyId(surveyId);
-  for (const q of questions) {
+  let questions = MockAdapter.getQuestionsBySurveyId(surveyId);
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      const { data: dbQuestions } = await supabase
+        .from('survey_questions')
+        .select('*')
+        .eq('survey_id', surveyId)
+        .order('order_index', { ascending: true });
+      if (dbQuestions && dbQuestions.length > 0) {
+        questions = dbQuestions;
+        MockAdapter.upsertSurveyFromDb(survey, dbQuestions);
+      }
+    } catch (qErr) {
+      console.warn('Supabase questions fetch error in submit:', qErr);
+    }
+  }
+
+  // Normalize answers dictionary in case client used index or text key
+  const normalizedAnswers: Record<string, any> = { ...answers };
+  for (let i = 0; i < questions.length; i++) {
+    const q = questions[i];
+    let val = normalizedAnswers[q.id];
+
+    if (val === undefined || val === null || val === '') {
+      // Check if client submitted with numerical index or string index
+      val = normalizedAnswers[i] ?? normalizedAnswers[String(i)] ?? normalizedAnswers[q.question_text];
+    }
+
+    if (val === undefined || val === null || val === '') {
+      // Case-insensitive ID or question text match
+      const matchingKey = Object.keys(normalizedAnswers).find(
+        (k) =>
+          k.toLowerCase() === q.id.toLowerCase() ||
+          k.trim().toLowerCase() === q.question_text.trim().toLowerCase()
+      );
+      if (matchingKey) {
+        val = normalizedAnswers[matchingKey];
+      }
+    }
+
+    if (val !== undefined && val !== null && val !== '') {
+      normalizedAnswers[q.id] = val;
+    }
+
     if (q.is_required) {
-      const val = answers[q.id];
       if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)) {
         return { error: `Please answer required question: "${q.question_text}"` };
       }
@@ -313,7 +356,7 @@ export async function submitSurveyAnswersAction(
       surveyId,
       user.id,
       isAnonymous,
-      answers
+      normalizedAnswers
     );
 
     // If live Supabase is configured, persist response, answers and participation receipt
@@ -331,7 +374,7 @@ export async function submitSurveyAnswersAction(
           receipt_token: result.token,
         });
 
-        const answerRows = Object.entries(answers).map(([qId, val]) => ({
+        const answerRows = Object.entries(normalizedAnswers).map(([qId, val]) => ({
           id: crypto.randomUUID(),
           response_id: responseId,
           question_id: qId,

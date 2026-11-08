@@ -71,14 +71,15 @@ export function QRCodeManager({ initialSurveys, initialQRCodes }: QRCodeManagerP
     }
   }
 
-  // Map each survey to its active QR code (if any)
-  const items = surveys.map((s) => ({
+  // Filter only ACTIVE surveys (remove SCHEDULED and DRAFT, leaving only ACTIVE)
+  const activeSurveys = surveys.filter((s) => s.status === 'ACTIVE');
+  const items = activeSurveys.map((s) => ({
     survey: s,
     qr: qrCodes.find((q) => q.survey_id === s.id),
   }));
 
-  const totalQRs = qrCodes.length;
-  const totalScans = qrCodes.reduce((acc, q) => acc + (q.scans_count || 0), 0);
+  const totalQRs = items.filter((i) => i.qr).length;
+  const totalScans = items.reduce((acc, i) => acc + (i.qr?.scans_count || 0), 0);
 
   return (
     <div className="space-y-6">
@@ -138,20 +139,34 @@ export function QRCodeManager({ initialSurveys, initialQRCodes }: QRCodeManagerP
       </div>
 
       {/* Grid of QR Code Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map(({ survey, qr }) => (
-          <div key={survey.id} className="space-y-2 flex flex-col">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">
-                {survey.status} {qr ? `• ${qr.scans_count} Scans` : '• No QR Assigned'}
-              </span>
-              <Link
-                href={`/surveys/${survey.id}`}
-                className="text-xs font-semibold text-[#4682A9] hover:underline flex items-center gap-1"
-              >
-                Survey <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
+      {items.length === 0 ? (
+        <Card className="border-slate-200">
+          <CardContent className="p-12 text-center space-y-3">
+            <QrCode className="h-10 w-10 text-slate-300 mx-auto" />
+            <h3 className="text-sm font-semibold text-slate-700">No Active Surveys</h3>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+              Only active surveys are displayed in QR code management. To manage QR codes, activate an existing survey in Survey Management.
+            </p>
+            <Button asChild size="sm" variant="outline" className="text-xs mt-2">
+              <Link href="/admin/surveys">View Surveys</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {items.map(({ survey, qr }) => (
+            <div key={survey.id} className="space-y-2 flex flex-col">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">
+                  {survey.status} {qr ? `• ${qr.scans_count} Scans` : '• No QR Assigned'}
+                </span>
+                <Link
+                  href={`/surveys/${survey.id}`}
+                  className="text-xs font-semibold text-[#4682A9] hover:underline flex items-center gap-1"
+                >
+                  Survey <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
 
             {qr ? (
               <QRCodeDisplay
@@ -200,7 +215,8 @@ export function QRCodeManager({ initialSurveys, initialQRCodes }: QRCodeManagerP
           </div>
         ))}
       </div>
-    </div>
-  );
+    )}
+  </div>
+);
 }
 
