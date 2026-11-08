@@ -59,22 +59,22 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
   return (
     <>
       <header className="h-16 border-b border-slate-200/80 bg-white sticky top-0 z-30 shadow-2xs select-none">
-        <div className="h-full px-4 sm:px-6 flex items-center justify-between gap-4">
+        <div className="h-full px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 overflow-hidden">
           {/* Left: University Seal, Branding & Breadcrumb */}
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             {/* Mobile menu toggle */}
             <button
               type="button"
               onClick={() => setMobileNavOpen(true)}
               aria-label="Open mobile navigation menu"
-              className="md:hidden p-1.5 text-slate-700 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
+              className="md:hidden p-1.5 text-slate-700 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors flex-shrink-0"
             >
               <Menu className="h-5 w-5" />
             </button>
 
             {/* University Seal */}
-            <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
-              <div className="relative w-9 h-9 sm:w-10 sm:h-10 transition-transform group-hover:scale-105">
+            <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group min-w-0">
+              <div className="relative w-8 h-8 sm:w-10 sm:h-10 transition-transform group-hover:scale-105 flex-shrink-0">
                 <Image
                   src="/images/ua-seal.png"
                   alt="University of the Assumption Seal"
@@ -84,11 +84,12 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                   priority
                 />
               </div>
-              <div className="flex flex-col text-left">
-                <span className="text-xs sm:text-sm font-black text-[#0A2540] tracking-wider block uppercase leading-none">
-                  UNIVERSITY OF THE ASSUMPTION
+              <div className="flex flex-col text-left min-w-0">
+                <span className="text-xs sm:text-sm font-black text-[#0A2540] tracking-wider uppercase leading-tight truncate">
+                  <span className="hidden sm:inline">UNIVERSITY OF THE ASSUMPTION</span>
+                  <span className="sm:hidden font-extrabold">UA IT PORTAL</span>
                 </span>
-                <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 tracking-wide block mt-1 leading-none">
+                <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 tracking-wide hidden sm:block mt-0.5 leading-none truncate">
                   IT Department Portal
                 </span>
               </div>
@@ -107,7 +108,7 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
           </div>
 
           {/* Right: Quick Action, Notifications & User Profile */}
-          <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
             {/* Quick Action Button */}
             {isAdmin ? (
               <Link
@@ -130,26 +131,26 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
             {/* Notification Bell with Badge */}
             <Link
               href={isAdmin ? '/admin/notifications/history' : '/notifications'}
-              className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors flex-shrink-0"
               title="Notifications"
             >
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-600" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600" />
                 </span>
               )}
             </Link>
 
             {/* User Profile Pill */}
-            <div className="relative">
+            <div className="relative flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2.5 pl-2.5 pr-2 py-1 rounded-full border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 sm:gap-2.5 pl-1.5 sm:pl-2.5 pr-1.5 sm:pr-2 py-1 rounded-full border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
               >
-                <div className="hidden sm:flex flex-col text-right">
+                <div className="hidden md:flex flex-col text-right">
                   <span className="text-xs font-bold text-[#0A2540] truncate max-w-[140px] leading-tight">
                     {user.full_name}
                   </span>
@@ -160,7 +161,7 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                 <div className="h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 bg-[#185A9D] text-white shadow-2xs">
                   {user.full_name.slice(0, 2)}
                 </div>
-                <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                <ChevronDown className="h-3.5 w-3.5 text-slate-400 hidden sm:block" />
               </button>
 
               {/* Profile Dropdown Menu */}
