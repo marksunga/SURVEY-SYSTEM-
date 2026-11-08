@@ -61,13 +61,6 @@ export default async function AdminDashboardPage() {
           {/* Deep Navy/Blue Atmospheric Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#071E36] via-[#0C2F55]/95 to-[#0A2644]/75 mix-blend-multiply" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
-
-          {/* Diagonal Stone Watermark Texture */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none select-none">
-            <span className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-widest text-white uppercase transform -rotate-12 whitespace-nowrap">
-              UNIVERSITY OF THE ASSUMPTION
-            </span>
-          </div>
         </div>
 
         {/* Hero Content */}

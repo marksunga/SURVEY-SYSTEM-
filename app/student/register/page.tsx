@@ -238,28 +238,10 @@ export default function StudentRegisterPage() {
 
           {/* Subtle top & bottom shadow gradient */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-[#073663]/60" />
-
-          {/* Architectural Lintel Watermark Across Center Horizon matching Building Reference */}
-          <div className="absolute inset-x-0 top-12 sm:top-16 md:top-20 flex items-center justify-center opacity-25 pointer-events-none select-none px-4">
-            <span className="text-xl sm:text-3xl md:text-5xl lg:text-6xl font-black tracking-[0.18em] sm:tracking-[0.25em] md:tracking-[0.3em] text-white uppercase whitespace-nowrap drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)] text-center">
-              UNIVERSITY OF THE ASSUMPTION
-            </span>
-          </div>
         </div>
 
         {/* Hero Content Container */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Prominent Architectural Lintel Header - Exact Center */}
-          <div className="w-full flex justify-center mb-6 sm:mb-8 pointer-events-none select-none">
-            <div className="inline-flex items-center gap-2 sm:gap-4 px-4 sm:px-7 py-1.5 sm:py-2 rounded-full bg-white/15 border border-white/30 backdrop-blur-md shadow-[0_8px_25px_rgba(0,0,0,0.3)]">
-              <div className="h-0.5 w-4 sm:w-10 bg-gradient-to-r from-transparent to-[#38BDF8]" />
-              <span className="text-[11px] xs:text-xs sm:text-sm md:text-base font-black tracking-[0.16em] sm:tracking-[0.25em] md:tracking-[0.3em] text-white uppercase drop-shadow-md whitespace-nowrap text-center">
-                UNIVERSITY OF THE ASSUMPTION
-              </span>
-              <div className="h-0.5 w-4 sm:w-10 bg-gradient-to-l from-transparent to-[#38BDF8]" />
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Left Column: Heading, Subtitle, Actions, Badges */}
             <div className="lg:col-span-8 space-y-4 sm:space-y-5 text-center lg:text-left flex flex-col items-center lg:items-start">
