@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
 import { requireRole } from '@/lib/auth/session';
+import { createAdminClient, isLiveSupabaseConfigured } from '@/lib/supabase/admin';
 import { createAdminUserAction, toggleUserActiveAction, deleteUserAction } from '@/app/actions/users';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,8 +13,48 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const roleParam = searchParams.get('role');
 
-    let users = MockAdapter.getProfiles();
+    let users: any[] = [];
+    let adminCount = 0;
+    let studentCount = 0;
 
+    if (isLiveSupabaseConfigured()) {
+      try {
+        const supabase = createAdminClient();
+        const { data: allProfiles, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && allProfiles) {
+          adminCount = allProfiles.filter((p: any) => p.role_id === 'ADMINISTRATOR').length;
+          studentCount = allProfiles.filter((p: any) => p.role_id === 'STUDENT').length;
+
+          if (roleParam === 'ADMINISTRATOR') {
+            users = allProfiles.filter((u: any) => u.role_id === 'ADMINISTRATOR');
+          } else if (roleParam === 'STUDENT') {
+            users = allProfiles.filter((u: any) => u.role_id === 'STUDENT');
+          } else {
+            users = allProfiles;
+          }
+
+          return NextResponse.json({
+            users,
+            currentUserId: admin.id,
+            adminCount,
+            studentCount,
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to fetch users from live Supabase:', err);
+      }
+    }
+
+    // Fallback to MockAdapter only if live Supabase is not configured
+    const allMockProfiles = MockAdapter.getProfiles();
+    adminCount = allMockProfiles.filter((p) => p.role_id === 'ADMINISTRATOR').length;
+    studentCount = allMockProfiles.filter((p) => p.role_id === 'STUDENT').length;
+
+    users = allMockProfiles;
     if (roleParam === 'ADMINISTRATOR') {
       users = users.filter((u) => u.role_id === 'ADMINISTRATOR');
     } else if (roleParam === 'STUDENT') {
@@ -20,8 +64,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       users,
       currentUserId: admin.id,
-      adminCount: MockAdapter.getProfiles().filter((p) => p.role_id === 'ADMINISTRATOR').length,
-      studentCount: MockAdapter.getProfiles().filter((p) => p.role_id === 'STUDENT').length,
+      adminCount,
+      studentCount,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 403 });
