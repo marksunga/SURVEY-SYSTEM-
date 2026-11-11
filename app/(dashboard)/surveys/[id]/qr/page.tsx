@@ -25,7 +25,7 @@ export default async function SurveyQRPage({
       if (dbSurvey) {
         survey = dbSurvey as any;
         const { data: dbQr } = await supabase
-          .from('survey_qr_codes')
+          .from('qr_codes')
           .select('*')
           .eq('survey_id', params.id)
           .single();

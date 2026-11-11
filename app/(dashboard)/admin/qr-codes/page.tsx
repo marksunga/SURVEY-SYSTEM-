@@ -23,7 +23,7 @@ export default async function AdminQRCodesPage() {
           .select('*')
           .eq('status', 'ACTIVE')
           .order('created_at', { ascending: false }),
-        supabase.from('survey_qr_codes').select('*'),
+        supabase.from('qr_codes').select('*'),
       ]);
 
       if (sRes.data && sRes.data.length > 0) {

@@ -1425,20 +1425,10 @@ export const MockAdapter = {
 
   // --- Notifications ---
   getNotifications(userId?: string, userRole?: UserRole): SystemNotification[] {
-    const completedIds = userId ? this.getUserCompletedSurveyIds(userId) : [];
-
     return db.notifications
       .filter((n) => {
         if (!userId) return true;
         if (userRole === 'ADMINISTRATOR') return true;
-
-        // Requirement 10: If notification is for a survey this student already completed, remove from notification center
-        if (n.link && completedIds.length > 0) {
-          const match = n.link.match(/\/surveys\/([a-zA-Z0-9_-]+)/);
-          if (match && completedIds.includes(match[1])) {
-            return false;
-          }
-        }
 
         if (n.user_id === userId) return true;
         if (n.target_role && userRole && n.target_role === userRole) return true;

@@ -115,7 +115,7 @@ export async function createSurveyAction(data: {
           await supabase.from('survey_questions').insert(preparedQuestions);
         }
 
-        await supabase.from('survey_qr_codes').insert({
+        await supabase.from('qr_codes').insert({
           survey_id: newSurvey.id,
           code_data: codeData,
           access_url: `/surveys/${newSurvey.id}`,
@@ -377,31 +377,42 @@ export async function submitSurveyAnswersAction(
         const supabase = createAdminClient();
         const responseId = crypto.randomUUID();
 
-        await supabase.from('survey_responses').insert({
+        const { error: respErr } = await supabase.from('survey_responses').insert({
           id: responseId,
           survey_id: surveyId,
           user_id: isAnonymous ? null : user.id,
           is_anonymous: isAnonymous,
           receipt_token: result.token,
         });
+        if (respErr) {
+          console.error('Supabase survey_responses insert error:', respErr);
+        }
 
         const answerRows = Object.entries(normalizedAnswers).map(([qId, val]) => ({
           id: crypto.randomUUID(),
           response_id: responseId,
           question_id: qId,
           answer_text: typeof val === 'object' ? JSON.stringify(val) : String(val),
+          answer_numeric: typeof val === 'number' ? val : (!isNaN(Number(val)) && val !== '' ? Number(val) : null),
+          answer_json: typeof val === 'object' ? val : null,
         }));
 
         if (answerRows.length > 0) {
-          await supabase.from('response_answers').insert(answerRows);
+          const { error: ansErr } = await supabase.from('response_answers').insert(answerRows);
+          if (ansErr) {
+            console.error('Supabase response_answers insert error:', ansErr);
+          }
         }
 
-        await supabase.from('survey_participation_receipts').insert({
+        const { error: recErr } = await supabase.from('survey_participation_receipts').insert({
           id: crypto.randomUUID(),
           survey_id: surveyId,
           user_id: user.id,
           receipt_token: result.token,
         });
+        if (recErr) {
+          console.error('Supabase survey_participation_receipts insert error:', recErr);
+        }
       } catch (dbErr) {
         console.error('Failed to persist survey response to Supabase:', dbErr);
       }
@@ -423,6 +434,8 @@ export async function submitSurveyAnswersAction(
     revalidatePath('/notifications');
     revalidatePath('/admin/notifications');
     revalidatePath('/admin/notifications/history');
+    revalidatePath('/admin/surveys');
+    revalidatePath('/admin/reports');
     revalidatePath(`/admin/surveys/${surveyId}/results`);
     revalidatePath('/admin/dashboard');
 

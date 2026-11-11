@@ -19,9 +19,9 @@ export async function validateQRCodeAction(codeOrSurveyId: string) {
     try {
       const supabase = createAdminClient();
 
-      // Check survey_qr_codes by code_data or survey_id
+      // Check qr_codes by code_data or survey_id
       const { data: dbQr } = await supabase
-        .from('survey_qr_codes')
+        .from('qr_codes')
         .select('*')
         .or(`code_data.ilike.${trimmed},survey_id.eq.${trimmed}`)
         .single();
@@ -48,7 +48,7 @@ export async function validateQRCodeAction(codeOrSurveyId: string) {
         // Increment scan count in Supabase
         if (dbQr) {
           await supabase
-            .from('survey_qr_codes')
+            .from('qr_codes')
             .update({ scans_count: (dbQr.scans_count || 0) + 1 })
             .eq('id', dbQr.id);
         }
@@ -113,7 +113,7 @@ export async function toggleQRCodeActiveAction(id: string, currentState: boolean
       try {
         const supabase = createAdminClient();
         await supabase
-          .from('survey_qr_codes')
+          .from('qr_codes')
           .update({ is_active: !currentState })
           .or(`id.eq.${id},survey_id.eq.${id}`);
       } catch (err) {
@@ -141,7 +141,7 @@ export async function deleteQRCodeAction(id: string) {
     if (isLiveSupabaseConfigured()) {
       try {
         const supabase = createAdminClient();
-        await supabase.from('survey_qr_codes').delete().or(`id.eq.${id},survey_id.eq.${id}`);
+        await supabase.from('qr_codes').delete().or(`id.eq.${id},survey_id.eq.${id}`);
       } catch (err) {
         console.error('Supabase QR code delete error:', err);
       }
@@ -182,7 +182,7 @@ export async function generateQRCodeAction(surveyId: string) {
     if (isLiveSupabaseConfigured()) {
       try {
         const supabase = createAdminClient();
-        await supabase.from('survey_qr_codes').upsert({
+        await supabase.from('qr_codes').upsert({
           id: newQr.id,
           survey_id: survey.id,
           code_data: code,

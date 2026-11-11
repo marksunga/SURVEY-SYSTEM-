@@ -26,9 +26,9 @@ export const revalidate = 0;
 export default async function AdminDashboardPage() {
   const admin = await requireRole(['ADMINISTRATOR']);
 
-  let profiles = MockAdapter.getProfiles();
-  let surveys = MockAdapter.getSurveys();
-  let feedbacks = MockAdapter.getFeedbacks();
+  let profiles: any[] = [];
+  let surveys: any[] = [];
+  let feedbacks: any[] = [];
 
   if (isLiveSupabaseConfigured()) {
     try {
@@ -41,23 +41,29 @@ export default async function AdminDashboardPage() {
 
       if (pRes.data && pRes.data.length > 0) {
         profiles = pRes.data;
+      } else if (!pRes.error) {
+        profiles = pRes.data ?? [];
       }
 
-      if (sRes.data && sRes.data.length > 0) {
-        surveys = await Promise.all(
-          sRes.data.map(async (s: any) => {
-            const [qRes, rRes, rcRes] = await Promise.all([
-              supabase.from('survey_questions').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
-              supabase.from('survey_responses').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
-              supabase.from('survey_participation_receipts').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
-            ]);
-            return {
-              ...s,
-              questions_count: qRes.count || 0,
-              responses_count: Math.max(rRes.count || 0, rcRes.count || 0),
-            };
-          })
-        );
+      if (sRes.data) {
+        if (sRes.data.length === 0) {
+          surveys = [];
+        } else {
+          surveys = await Promise.all(
+            sRes.data.map(async (s: any) => {
+              const [qRes, rRes, rcRes] = await Promise.all([
+                supabase.from('survey_questions').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+                supabase.from('survey_responses').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+                supabase.from('survey_participation_receipts').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+              ]);
+              return {
+                ...s,
+                questions_count: qRes.count || 0,
+                responses_count: Math.max(rRes.count || 0, rcRes.count || 0),
+              };
+            })
+          );
+        }
       }
 
       if (fRes.data) {

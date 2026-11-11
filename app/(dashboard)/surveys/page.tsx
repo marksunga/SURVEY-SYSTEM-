@@ -40,21 +40,25 @@ export default async function AvailableSurveysPage({
         query = query.eq('status', 'ACTIVE');
       }
       const { data: dbSurveys, error } = await query;
-      if (!error && dbSurveys && dbSurveys.length > 0) {
-        allSurveys = await Promise.all(
-          dbSurveys.map(async (s: any) => {
-            const [qRes, rRes, rcRes] = await Promise.all([
-              supabase.from('survey_questions').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
-              supabase.from('survey_responses').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
-              supabase.from('survey_participation_receipts').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
-            ]);
-            return {
-              ...s,
-              questions_count: qRes.count || 0,
-              responses_count: Math.max(rRes.count || 0, rcRes.count || 0),
-            };
-          })
-        );
+      if (!error && dbSurveys) {
+        if (dbSurveys.length === 0) {
+          allSurveys = [];
+        } else {
+          allSurveys = await Promise.all(
+            dbSurveys.map(async (s: any) => {
+              const [qRes, rRes, rcRes] = await Promise.all([
+                supabase.from('survey_questions').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+                supabase.from('survey_responses').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+                supabase.from('survey_participation_receipts').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+              ]);
+              return {
+                ...s,
+                questions_count: qRes.count || 0,
+                responses_count: Math.max(rRes.count || 0, rcRes.count || 0),
+              };
+            })
+          );
+        }
       }
 
       const { data: receipts } = await supabase
@@ -69,7 +73,8 @@ export default async function AvailableSurveysPage({
     }
   }
 
-  if (allSurveys.length === 0) {
+  // Only fall back to MockAdapter when Supabase is NOT configured (dev without .env)
+  if (!isLiveSupabaseConfigured() && allSurveys.length === 0) {
     allSurveys = user.role_id === 'ADMINISTRATOR'
       ? MockAdapter.getSurveys()
       : MockAdapter.getSurveys(user.role_id);
@@ -77,7 +82,7 @@ export default async function AvailableSurveysPage({
     allSurveys = allSurveys.filter((s) => s.target_roles?.includes(user.role_id));
   }
 
-  if (completedIds.length === 0) {
+  if (!isLiveSupabaseConfigured() && completedIds.length === 0) {
     completedIds = MockAdapter.getUserCompletedSurveyIds(user.id);
   }
 

@@ -19,7 +19,10 @@ export async function GET() {
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (!error && dbSurveys && dbSurveys.length > 0) {
+        if (!error && dbSurveys) {
+          if (dbSurveys.length === 0) {
+            return NextResponse.json({ surveys: [] });
+          }
           const surveysWithCounts = await Promise.all(
             dbSurveys.map(async (s: any) => {
               const [qRes, rRes, rcRes] = await Promise.all([

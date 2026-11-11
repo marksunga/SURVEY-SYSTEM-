@@ -35,9 +35,9 @@ export default async function StudentDashboardPage() {
     redirect('/admin/dashboard');
   }
 
-  let surveys = MockAdapter.getSurveys('STUDENT');
-  let completedSurveyIds = MockAdapter.getUserCompletedSurveyIds(user.id);
-  let userFeedbacks = MockAdapter.getFeedbacks().filter((f) => f.user_id === user.id);
+  let surveys: any[] = [];
+  let completedSurveyIds: string[] = [];
+  let userFeedbacks: any[] = [];
 
   if (isLiveSupabaseConfigured()) {
     try {
@@ -59,27 +59,30 @@ export default async function StudentDashboardPage() {
           .eq('is_anonymous', false),
       ]);
 
-      if (surveysRes.data && surveysRes.data.length > 0) {
-        const enriched = await Promise.all(
-          surveysRes.data.map(async (s: any) => {
-            const [qRes, rRes, rcRes] = await Promise.all([
-              supabase.from('survey_questions').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
-              supabase.from('survey_responses').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
-              supabase.from('survey_participation_receipts').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
-            ]);
-            return {
-              ...s,
-              questions_count: qRes.count || 0,
-              responses_count: Math.max(rRes.count || 0, rcRes.count || 0),
-            };
-          })
-        );
-        surveys = enriched.filter((s: any) => !s.target_roles || s.target_roles.includes('STUDENT'));
+      if (surveysRes.data) {
+        if (surveysRes.data.length === 0) {
+          surveys = [];
+        } else {
+          const enriched = await Promise.all(
+            surveysRes.data.map(async (s: any) => {
+              const [qRes, rRes, rcRes] = await Promise.all([
+                supabase.from('survey_questions').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+                supabase.from('survey_responses').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+                supabase.from('survey_participation_receipts').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+              ]);
+              return {
+                ...s,
+                questions_count: qRes.count || 0,
+                responses_count: Math.max(rRes.count || 0, rcRes.count || 0),
+              };
+            })
+          );
+          surveys = enriched.filter((s: any) => !s.target_roles || s.target_roles.includes('STUDENT'));
+        }
       }
 
       if (receiptsRes.data) {
-        const dbReceiptIds = receiptsRes.data.map((r: any) => r.survey_id);
-        completedSurveyIds = Array.from(new Set([...completedSurveyIds, ...dbReceiptIds]));
+        completedSurveyIds = receiptsRes.data.map((r: any) => r.survey_id);
       }
 
       if (feedbackRes.data) {

@@ -28,30 +28,14 @@ export default async function DashboardLayout({
           .eq('is_read', false);
         unreadCount = (!error && count !== null) ? count : 0;
       } else {
-        const [notifsRes, receiptsRes] = await Promise.all([
-          supabase
-            .from('notifications')
-            .select('id, link, is_read')
-            .eq('is_read', false)
-            .or(`user_id.eq.${user.id},and(user_id.is.null,or(target_role.is.null,target_role.eq.${user.role_id}))`),
-          supabase
-            .from('survey_participation_receipts')
-            .select('survey_id')
-            .eq('user_id', user.id),
-        ]);
+        const { data: notifs, error } = await supabase
+          .from('notifications')
+          .select('id, is_read')
+          .eq('is_read', false)
+          .or(`user_id.eq.${user.id},and(user_id.is.null,or(target_role.is.null,target_role.eq.${user.role_id}))`);
 
-        if (!notifsRes.error && notifsRes.data) {
-          const completedIds = (receiptsRes.data || []).map((r: any) => r.survey_id);
-          const activeUnread = notifsRes.data.filter((n: any) => {
-            if (n.link && completedIds.length > 0) {
-              const match = n.link.match(/\/surveys\/([a-zA-Z0-9_-]+)/);
-              if (match && completedIds.includes(match[1])) {
-                return false;
-              }
-            }
-            return true;
-          });
-          unreadCount = activeUnread.length;
+        if (!error && notifs) {
+          unreadCount = notifs.length;
         } else {
           const notifications = MockAdapter.getNotifications(user.id, user.role_id);
           unreadCount = notifications.filter((n) => !n.is_read).length;

@@ -16,7 +16,7 @@ export async function GET() {
         const supabase = createAdminClient();
         const [sRes, qRes] = await Promise.all([
           supabase.from('surveys').select('*').order('created_at', { ascending: false }),
-          supabase.from('survey_qr_codes').select('*'),
+          supabase.from('qr_codes').select('*'),
         ]);
 
         if (sRes.data) surveys = sRes.data;

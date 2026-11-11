@@ -83,7 +83,7 @@ export default function AdminReportsPage() {
     if (!reportData?.totalResponses) return 0;
     // Estimated target audience pool based on roles
     const targetRoles = reportData.survey?.target_roles || [];
-    const poolSize = targetRoles.length * 20; // benchmark student/faculty cohort pool
+    const poolSize = Math.max(1, (targetRoles.length || 1) * 20); // benchmark cohort pool
     return Math.min(100, Math.round((reportData.totalResponses / poolSize) * 100));
   }, [reportData]);
 
