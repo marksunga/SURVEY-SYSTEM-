@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { QuestionBuilder, DraftQuestion } from '@/components/surveys/QuestionBuilder';
 import { createSurveyAction } from '@/app/actions/surveys';
-import { ArrowLeft, Save, PlusCircle, AlertCircle, Sparkles } from 'lucide-react';
+import { Save, PlusCircle, AlertCircle, Sparkles } from 'lucide-react';
 import { SurveyCategory, SurveyStatus, UserRole } from '@/lib/types/database';
 
 function toLocalDateTimeString(d: Date): string {
@@ -116,16 +116,6 @@ export default function CreateSurveyPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <Link
-          href="/admin/surveys"
-          className="inline-flex items-center text-xs font-medium text-slate-500 hover:text-slate-900"
-        >
-          <ArrowLeft className="h-3.5 w-3.5 mr-1" />
-          Back to Surveys
-        </Link>
-      </div>
-
       <div>
         <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Create Department Survey</h1>
         <p className="text-xs text-slate-500">
