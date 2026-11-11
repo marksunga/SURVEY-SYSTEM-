@@ -106,10 +106,32 @@ export async function validateQRCodeAction(codeOrSurveyId: string) {
 }
 
 export async function toggleQRCodeActiveAction(id: string, currentState: boolean) {
-  await requireRole(['ADMINISTRATOR']);
-  // update
-  revalidatePath('/admin/qr-codes');
-  return { success: true };
+  try {
+    const admin = await requireRole(['ADMINISTRATOR']);
+
+    if (isLiveSupabaseConfigured()) {
+      try {
+        const supabase = createAdminClient();
+        await supabase
+          .from('survey_qr_codes')
+          .update({ is_active: !currentState })
+          .or(`id.eq.${id},survey_id.eq.${id}`);
+      } catch (err) {
+        console.error('Supabase QR code toggle error:', err);
+      }
+    }
+
+    const updated = MockAdapter.toggleQRCodeActive(id);
+
+    MockAdapter.logAudit(admin.email, 'QR_CODE_STATUS_TOGGLED', 'QR_CODE', id, {
+      is_active: updated ? updated.is_active : !currentState,
+    });
+
+    revalidatePath('/admin/qr-codes');
+    return { success: true, is_active: updated ? updated.is_active : !currentState };
+  } catch (err: any) {
+    return { error: err.message || 'Failed to update QR code status.' };
+  }
 }
 
 export async function deleteQRCodeAction(id: string) {

@@ -8,8 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:crypto": "tsc scripts/test-crypto.ts --target es2022 --module commonjs --outDir dist-test && node dist-test/scripts/test-crypto.js && node -e \"require('fs').rmSync('dist-test',{recursive:true,force:true})\"",
-    "test:system": "tsc scripts/test-survey-flow.ts --target es2022 --module commonjs --outDir dist-test && node dist-test/scripts/test-survey-flow.js && node -e \"require('fs').rmSync('dist-test',{recursive:true,force:true})\""
+    "test:crypto": "tsc tests/unit/test-crypto.ts --target es2022 --module commonjs --outDir dist-test && node dist-test/tests/unit/test-crypto.js && node -e \"require('fs').rmSync('dist-test',{recursive:true,force:true})\"",
+    "test:system": "tsc tests/e2e/test-survey-flow.ts --target es2022 --module commonjs --outDir dist-test && node dist-test/tests/e2e/test-survey-flow.js && node -e \"require('fs').rmSync('dist-test',{recursive:true,force:true})\""
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.2",

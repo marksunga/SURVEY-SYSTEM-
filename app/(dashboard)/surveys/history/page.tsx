@@ -1,19 +1,65 @@
 import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth/session';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
+import { createAdminClient, isLiveSupabaseConfigured } from '@/lib/supabase/admin';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, ShieldCheck, Calendar, ArrowRight, ClipboardList } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
+// Always fetch fresh data — never serve a cached empty-submissions page
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function SurveyHistoryPage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const completedIds = MockAdapter.getUserCompletedSurveyIds(user.id);
-  const completedSurveys = completedIds
-    .map((id) => MockAdapter.getSurveyById(id))
-    .filter(Boolean);
+  let completedIds: string[] = MockAdapter.getUserCompletedSurveyIds(user.id);
+  let completedSurveys: any[] = [];
+
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      const { data: receipts } = await supabase
+        .from('survey_participation_receipts')
+        .select('survey_id')
+        .eq('user_id', user.id);
+
+      if (receipts && receipts.length > 0) {
+        const dbReceiptIds = receipts.map((r: any) => r.survey_id);
+        completedIds = Array.from(new Set([...completedIds, ...dbReceiptIds]));
+      }
+
+      if (completedIds.length > 0) {
+        const { data: dbSurveys } = await supabase
+          .from('surveys')
+          .select('*')
+          .in('id', completedIds);
+
+        if (dbSurveys && dbSurveys.length > 0) {
+          completedSurveys = dbSurveys;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch survey history from Supabase:', err);
+    }
+  }
+
+  // Fallback / merge with MockAdapter if needed
+  if (completedSurveys.length === 0 && completedIds.length > 0) {
+    completedSurveys = completedIds
+      .map((id) => MockAdapter.getSurveyById(id))
+      .filter(Boolean);
+  } else if (completedIds.length > completedSurveys.length) {
+    const foundIds = new Set(completedSurveys.map((s) => s.id));
+    for (const id of completedIds) {
+      if (!foundIds.has(id)) {
+        const mockS = MockAdapter.getSurveyById(id);
+        if (mockS) completedSurveys.push(mockS);
+      }
+    }
+  }
 
   return (
     <div className="space-y-6">

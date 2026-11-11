@@ -32,3 +32,4 @@ export class AuditService {
     return MockAdapter.getAuditLogs();
   }
 }
+

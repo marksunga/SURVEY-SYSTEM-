@@ -124,7 +124,7 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
   ];
 
   return (
-    <aside className="hidden md:flex w-64 bg-[#08213B] text-white flex-col h-screen sticky top-0 z-30 select-none shadow-xl border-r border-[#0A2644]">
+    <aside className="hidden md:flex w-64 flex-shrink-0 bg-[#08213B] text-white flex-col h-screen sticky top-0 z-30 select-none shadow-xl border-r border-[#0A2644]">
       {/* Brand Header */}
       <div className="h-16 border-b border-white/10 flex items-center px-4 gap-3 bg-[#08213B]">
         <div className="h-9 w-9 rounded-lg bg-white/10 flex items-center justify-center text-[#38BDF8] shadow-xs flex-shrink-0 border border-white/10">

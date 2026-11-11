@@ -1072,7 +1072,10 @@ export const MockAdapter = {
     if (idx === -1) return false;
     db.surveys.splice(idx, 1);
     db.questions = db.questions.filter((q) => q.survey_id !== id);
+    const responseIds = new Set(db.responses.filter((r) => r.survey_id === id).map((r) => r.id));
     db.responses = db.responses.filter((r) => r.survey_id !== id);
+    db.answers = db.answers.filter((a) => !responseIds.has(a.response_id));
+    db.receipts = db.receipts.filter((rc) => rc.survey_id !== id);
     db.qrCodes = db.qrCodes.filter((q) => q.survey_id !== id);
     return true;
   },
@@ -1398,6 +1401,15 @@ export const MockAdapter = {
   incrementQRScan(id: string) {
     const qr = db.qrCodes.find((q) => q.id === id);
     if (qr) qr.scans_count++;
+  },
+
+  toggleQRCodeActive(id: string): QRCodeRecord | undefined {
+    const qr = db.qrCodes.find((q) => q.id === id || q.survey_id === id);
+    if (qr) {
+      qr.is_active = !qr.is_active;
+      qr.updated_at = new Date().toISOString();
+    }
+    return qr;
   },
 
   getQRCodes(): QRCodeRecord[] {

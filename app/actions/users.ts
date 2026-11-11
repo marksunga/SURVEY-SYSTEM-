@@ -32,6 +32,7 @@ export async function toggleUserActiveAction(userId: string) {
   });
 
   revalidatePath('/admin/users');
+  revalidatePath('/admin/dashboard');
   return { success: true, is_active: updated.is_active };
 }
 
@@ -86,6 +87,7 @@ export async function createAdminUserAction(data: {
   });
 
   revalidatePath('/admin/users');
+  revalidatePath('/admin/dashboard');
   return { success: true, user: created };
 }
 
@@ -104,5 +106,6 @@ export async function deleteUserAction(userId: string) {
   MockAdapter.logAudit(admin.email, 'USER_DELETED', 'USER', userId);
 
   revalidatePath('/admin/users');
+  revalidatePath('/admin/dashboard');
   return { success: true };
 }

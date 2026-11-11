@@ -8,6 +8,12 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json(
+      { error: 'Unauthorized: Authentication required to view survey details.' },
+      { status: 401 }
+    );
+  }
 
   if (isLiveSupabaseConfigured()) {
     try {

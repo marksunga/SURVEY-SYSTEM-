@@ -17,6 +17,10 @@ import {
 } from 'lucide-react';
 import { formatDate, formatDateTime } from '@/lib/utils';
 
+// Always serve fresh survey list — completed status must be live per student
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function AvailableSurveysPage({
   searchParams,
 }: {
@@ -39,14 +43,15 @@ export default async function AvailableSurveysPage({
       if (!error && dbSurveys && dbSurveys.length > 0) {
         allSurveys = await Promise.all(
           dbSurveys.map(async (s: any) => {
-            const [qRes, rRes] = await Promise.all([
+            const [qRes, rRes, rcRes] = await Promise.all([
               supabase.from('survey_questions').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
               supabase.from('survey_responses').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+              supabase.from('survey_participation_receipts').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
             ]);
             return {
               ...s,
               questions_count: qRes.count || 0,
-              responses_count: rRes.count || 0,
+              responses_count: Math.max(rRes.count || 0, rcRes.count || 0),
             };
           })
         );

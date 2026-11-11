@@ -1,5 +1,5 @@
-import { MockAdapter } from '../lib/supabase/mock-adapter';
-import { encryptAES256, decryptAES256 } from '../lib/crypto/aes';
+import { MockAdapter } from '../../lib/supabase/mock-adapter';
+import { encryptAES256, decryptAES256 } from '../../lib/crypto/aes';
 
 function runAutomatedVerification() {
   console.log('=====================================================');

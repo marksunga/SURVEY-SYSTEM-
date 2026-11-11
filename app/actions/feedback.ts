@@ -77,6 +77,9 @@ export async function submitFeedbackAction(formData: FormData) {
 
   revalidatePath('/feedback');
   revalidatePath('/admin/feedback');
+  revalidatePath('/admin/dashboard');
+  revalidatePath('/student/dashboard');
+  revalidatePath('/dashboard');
   return { success: true, id: newFeedback.id };
 }
 
@@ -141,6 +144,9 @@ export async function updateFeedbackStatusAction(
 
   revalidatePath('/admin/feedback');
   revalidatePath('/feedback');
+  revalidatePath('/admin/dashboard');
+  revalidatePath('/student/dashboard');
+  revalidatePath('/dashboard');
   return { success: true };
 }
 
@@ -211,6 +217,9 @@ export async function deleteFeedbackAction(id: string) {
 
   revalidatePath('/admin/feedback');
   revalidatePath('/feedback');
+  revalidatePath('/admin/dashboard');
+  revalidatePath('/student/dashboard');
+  revalidatePath('/dashboard');
   return { success: true };
 }
 

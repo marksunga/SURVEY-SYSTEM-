@@ -142,6 +142,9 @@ export async function createSurveyAction(data: {
 
     revalidatePath('/surveys');
     revalidatePath('/admin/surveys');
+    revalidatePath('/admin/dashboard');
+    revalidatePath('/student/dashboard');
+    revalidatePath('/dashboard');
     revalidatePath('/notifications');
     revalidatePath('/admin/notifications');
     revalidatePath('/admin/notifications/history');
@@ -206,6 +209,9 @@ export async function updateSurveyAction(
 
     revalidatePath(`/surveys/${id}`);
     revalidatePath('/admin/surveys');
+    revalidatePath('/admin/dashboard');
+    revalidatePath('/surveys');
+    revalidatePath('/student/dashboard');
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to update survey.' };
@@ -229,7 +235,10 @@ export async function updateSurveyStatusAction(id: string, status: SurveyStatus)
   MockAdapter.logAudit(user.email, 'SURVEY_STATUS_CHANGED', 'SURVEY', id, { status });
 
   revalidatePath('/admin/surveys');
+  revalidatePath('/admin/dashboard');
   revalidatePath('/surveys');
+  revalidatePath('/student/dashboard');
+  revalidatePath('/dashboard');
   return { success: true, status: updated?.status };
 }
 
@@ -250,7 +259,10 @@ export async function deleteSurveyAction(id: string) {
   MockAdapter.logAudit(user.email, 'SURVEY_DELETED', 'SURVEY', id);
 
   revalidatePath('/admin/surveys');
+  revalidatePath('/admin/dashboard');
   revalidatePath('/surveys');
+  revalidatePath('/student/dashboard');
+  revalidatePath('/dashboard');
   return { success: true };
 }
 
@@ -370,7 +382,6 @@ export async function submitSurveyAnswersAction(
           survey_id: surveyId,
           user_id: isAnonymous ? null : user.id,
           is_anonymous: isAnonymous,
-          submission_token: result.token,
           receipt_token: result.token,
         });
 
@@ -378,7 +389,7 @@ export async function submitSurveyAnswersAction(
           id: crypto.randomUUID(),
           response_id: responseId,
           question_id: qId,
-          answer_value: typeof val === 'object' ? JSON.stringify(val) : String(val),
+          answer_text: typeof val === 'object' ? JSON.stringify(val) : String(val),
         }));
 
         if (answerRows.length > 0) {
@@ -407,10 +418,13 @@ export async function submitSurveyAnswersAction(
 
     revalidatePath('/surveys');
     revalidatePath('/surveys/history');
+    revalidatePath('/student/dashboard');
+    revalidatePath('/dashboard');
     revalidatePath('/notifications');
     revalidatePath('/admin/notifications');
     revalidatePath('/admin/notifications/history');
     revalidatePath(`/admin/surveys/${surveyId}/results`);
+    revalidatePath('/admin/dashboard');
 
     return { success: true, token: result.token };
   } catch (err: any) {

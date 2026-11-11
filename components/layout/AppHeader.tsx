@@ -57,7 +57,7 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
 
   return (
     <>
-      <header className="h-16 border-b border-slate-200/80 bg-white sticky top-0 z-30 shadow-2xs select-none">
+      <header className="h-16 flex-shrink-0 w-full border-b border-slate-200/80 bg-white sticky top-0 z-30 shadow-xs select-none">
         <div className="h-full px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 overflow-hidden">
           {/* Left: University Seal, Branding & Breadcrumb */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">

@@ -267,7 +267,7 @@ export default function FeedbackPage() {
                         Submit as Anonymous Feedback
                       </span>
                       <p className="text-[11px] text-slate-500 leading-tight">
-                        Your name and email will NOT be linked to this feedback row in the database.
+                        Your name and email will NOT be linked to this feedback record. (Note: Anonymous feedback cannot be tracked or edited in your personal history tab to preserve zero-knowledge privacy).
                       </p>
                     </div>
 

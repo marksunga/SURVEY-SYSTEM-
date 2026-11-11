@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth/session';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
+import { createAdminClient, isLiveSupabaseConfigured } from '@/lib/supabase/admin';
 import { StatCard } from '@/components/dashboard/StatCard';
 import {
   ClipboardList,
@@ -18,6 +19,10 @@ import {
 } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
 
+// Always render fresh — survey counts and submission status must be live
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function StudentDashboardPage() {
   const user = await getCurrentUser();
 
@@ -30,10 +35,62 @@ export default async function StudentDashboardPage() {
     redirect('/admin/dashboard');
   }
 
-  const surveys = MockAdapter.getSurveys('STUDENT');
-  const completedSurveyIds = MockAdapter.getUserCompletedSurveyIds(user.id);
+  let surveys = MockAdapter.getSurveys('STUDENT');
+  let completedSurveyIds = MockAdapter.getUserCompletedSurveyIds(user.id);
+  let userFeedbacks = MockAdapter.getFeedbacks().filter((f) => f.user_id === user.id);
+
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+
+      const [surveysRes, receiptsRes, feedbackRes] = await Promise.all([
+        supabase
+          .from('surveys')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('survey_participation_receipts')
+          .select('survey_id')
+          .eq('user_id', user.id),
+        supabase
+          .from('feedback')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_anonymous', false),
+      ]);
+
+      if (surveysRes.data && surveysRes.data.length > 0) {
+        const enriched = await Promise.all(
+          surveysRes.data.map(async (s: any) => {
+            const [qRes, rRes, rcRes] = await Promise.all([
+              supabase.from('survey_questions').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+              supabase.from('survey_responses').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+              supabase.from('survey_participation_receipts').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+            ]);
+            return {
+              ...s,
+              questions_count: qRes.count || 0,
+              responses_count: Math.max(rRes.count || 0, rcRes.count || 0),
+            };
+          })
+        );
+        surveys = enriched.filter((s: any) => !s.target_roles || s.target_roles.includes('STUDENT'));
+      }
+
+      if (receiptsRes.data) {
+        const dbReceiptIds = receiptsRes.data.map((r: any) => r.survey_id);
+        completedSurveyIds = Array.from(new Set([...completedSurveyIds, ...dbReceiptIds]));
+      }
+
+      if (feedbackRes.data) {
+        userFeedbacks = feedbackRes.data;
+      }
+    } catch (err) {
+      console.warn('Failed to fetch student dashboard live data from Supabase:', err);
+    }
+  }
+
   const activeSurveys = surveys.filter((s) => s.status === 'ACTIVE');
-  const userFeedbacks = MockAdapter.getFeedbacks().filter((f) => f.user_id === user.id);
 
   // Submissions comparison
   const submittedSurveyIds = new Set(completedSurveyIds);

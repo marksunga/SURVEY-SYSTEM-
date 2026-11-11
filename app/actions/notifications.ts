@@ -22,6 +22,9 @@ export async function markNotificationReadAction(id: string) {
   MockAdapter.markNotificationAsRead(id);
   revalidatePath('/notifications');
   revalidatePath('/admin/notifications');
+  revalidatePath('/admin/dashboard');
+  revalidatePath('/student/dashboard');
+  revalidatePath('/dashboard');
   return { success: true };
 }
 
@@ -71,6 +74,9 @@ export async function createBroadcastNotificationAction(data: {
     revalidatePath('/admin/notifications');
     revalidatePath('/admin/notifications/history');
     revalidatePath('/admin/notifications/send');
+    revalidatePath('/admin/dashboard');
+    revalidatePath('/student/dashboard');
+    revalidatePath('/dashboard');
     return { success: true, notification: notif };
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to dispatch notification' };
@@ -98,6 +104,9 @@ export async function deleteNotificationAction(id: string) {
   revalidatePath('/notifications');
   revalidatePath('/admin/notifications');
   revalidatePath('/admin/notifications/history');
+  revalidatePath('/admin/dashboard');
+  revalidatePath('/student/dashboard');
+  revalidatePath('/dashboard');
   return { success: true };
 }
 
@@ -123,6 +132,10 @@ export async function markAllNotificationsReadAction() {
   }
 
   revalidatePath('/notifications');
+  revalidatePath('/admin/notifications');
+  revalidatePath('/admin/dashboard');
+  revalidatePath('/student/dashboard');
+  revalidatePath('/dashboard');
   return { success: true };
 }
 
@@ -189,5 +202,8 @@ export async function sendSurveyRemindersAction(surveyId: string) {
   revalidatePath('/admin/notifications');
   revalidatePath('/admin/notifications/history');
   revalidatePath('/admin/notifications/send');
+  revalidatePath('/admin/dashboard');
+  revalidatePath('/student/dashboard');
+  revalidatePath('/dashboard');
   return { success: true, count: notifsCreated.length };
 }

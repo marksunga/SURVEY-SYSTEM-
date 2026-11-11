@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { requireRole } from '@/lib/auth/session';
 import { MockAdapter } from '@/lib/supabase/mock-adapter';
+import { createAdminClient, isLiveSupabaseConfigured } from '@/lib/supabase/admin';
 import { StatCard } from '@/components/dashboard/StatCard';
 import {
   Users,
@@ -18,21 +19,63 @@ import {
 } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
 
+// Always render fresh — survey count must reflect latest creates/deletes
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function AdminDashboardPage() {
   const admin = await requireRole(['ADMINISTRATOR']);
 
-  const profiles = MockAdapter.getProfiles();
-  const surveys = MockAdapter.getSurveys();
-  const feedbacks = MockAdapter.getFeedbacks();
+  let profiles = MockAdapter.getProfiles();
+  let surveys = MockAdapter.getSurveys();
+  let feedbacks = MockAdapter.getFeedbacks();
 
-  const studentCount = profiles.filter((p) => p.role_id === 'STUDENT').length;
+  if (isLiveSupabaseConfigured()) {
+    try {
+      const supabase = createAdminClient();
+      const [pRes, sRes, fRes] = await Promise.all([
+        supabase.from('profiles').select('*'),
+        supabase.from('surveys').select('*').order('created_at', { ascending: false }),
+        supabase.from('feedback').select('*').order('created_at', { ascending: false }),
+      ]);
+
+      if (pRes.data && pRes.data.length > 0) {
+        profiles = pRes.data;
+      }
+
+      if (sRes.data && sRes.data.length > 0) {
+        surveys = await Promise.all(
+          sRes.data.map(async (s: any) => {
+            const [qRes, rRes, rcRes] = await Promise.all([
+              supabase.from('survey_questions').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+              supabase.from('survey_responses').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+              supabase.from('survey_participation_receipts').select('*', { count: 'exact', head: true }).eq('survey_id', s.id),
+            ]);
+            return {
+              ...s,
+              questions_count: qRes.count || 0,
+              responses_count: Math.max(rRes.count || 0, rcRes.count || 0),
+            };
+          })
+        );
+      }
+
+      if (fRes.data) {
+        feedbacks = fRes.data;
+      }
+    } catch (err) {
+      console.warn('Failed to fetch admin dashboard live data from Supabase:', err);
+    }
+  }
+
+  const studentCount = profiles.filter((p: any) => p.role_id === 'STUDENT').length;
   const totalUsers = profiles.length;
   const totalSurveys = surveys.length;
-  const activeSurveysList = surveys.filter((s) => s.status === 'ACTIVE');
+  const activeSurveysList = surveys.filter((s: any) => s.status === 'ACTIVE');
   const activeSurveys = activeSurveysList.length;
-  const expiredSurveys = surveys.filter((s) => s.status === 'EXPIRED').length;
-  const totalSubmissions = surveys.reduce((acc, s) => acc + (s.responses_count || 0), 0);
-  const pendingFeedback = feedbacks.filter((f) => f.status === 'PENDING').length;
+  const expiredSurveys = surveys.filter((s: any) => s.status === 'EXPIRED').length;
+  const totalSubmissions = surveys.reduce((acc: number, s: any) => acc + (s.responses_count || 0), 0);
+  const pendingFeedback = feedbacks.filter((f: any) => f.status === 'PENDING').length;
   const participationRate =
     studentCount > 0 ? Math.min(100, Math.round((totalSubmissions / Math.max(1, studentCount * (activeSurveys || 1))) * 100)) : 0;
 

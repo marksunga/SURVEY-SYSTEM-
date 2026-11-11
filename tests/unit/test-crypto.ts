@@ -1,5 +1,5 @@
-import { encryptAES256, decryptAES256, generateSubmissionToken, hashAuditIdentifier } from '../lib/crypto/aes';
-import { hashPassword, verifyPassword, validatePasswordStrength } from '../lib/crypto/passwords';
+import { encryptAES256, decryptAES256, generateSubmissionToken, hashAuditIdentifier } from '../../lib/crypto/aes';
+import { hashPassword, verifyPassword, validatePasswordStrength } from '../../lib/crypto/passwords';
 
 function testCrypto() {
   console.log('========================================================');
