@@ -92,7 +92,7 @@ export default async function StudentDashboardPage() {
             {/* Button 1: Scan Survey QR */}
             <Link
               href="/scan"
-              className="rounded-xl bg-white hover:bg-slate-100 text-[#185A9D] text-xs font-bold px-4 py-2.5 shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all border border-white active:scale-95"
+              className="rounded-full bg-white hover:bg-slate-100 text-[#185A9D] text-xs font-bold px-4 py-2.5 shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all border border-white active:scale-95"
             >
               <QrCode className="h-4 w-4 text-[#185A9D]" />
               <span>Scan Survey QR</span>
@@ -101,7 +101,7 @@ export default async function StudentDashboardPage() {
             {/* Button 2: Submit Feedback */}
             <Link
               href="/feedback"
-              className="rounded-xl bg-[#08223D]/80 hover:bg-[#08223D] border border-white/25 text-white text-xs font-bold px-4 py-2.5 shadow-md backdrop-blur-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+              className="rounded-full bg-white/10 hover:bg-white/20 border border-white/30 text-white text-xs font-bold px-4 py-2.5 shadow-md backdrop-blur-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
             >
               <MessageSquarePlus className="h-4 w-4 text-sky-300" />
               <span>Submit Feedback</span>
@@ -112,19 +112,19 @@ export default async function StudentDashboardPage() {
         {/* Curved Wave Transition SVG inside hero */}
         <div className="absolute bottom-0 inset-x-0 overflow-hidden leading-none z-10 pointer-events-none">
           <svg
-            className="w-full h-6 sm:h-10"
+            className="w-full h-8 sm:h-12"
             viewBox="0 0 1440 60"
             fill="none"
             preserveAspectRatio="none"
           >
             <path
               d="M0,20 C360,60 720,0 1080,40 C1260,60 1380,30 1440,35 L1440,60 L0,60 Z"
-              fill="#D9EBF8"
-              opacity="0.6"
+              fill="#D6E8F6"
+              opacity="0.75"
             />
             <path
               d="M0,35 C420,10 840,55 1200,25 C1320,15 1400,30 1440,30 L1440,60 L0,60 Z"
-              fill="#F4F8FC"
+              fill="#F0F6FB"
             />
           </svg>
         </div>
@@ -144,6 +144,7 @@ export default async function StudentDashboardPage() {
           subtitle={`${activeSurveys.length} active in department`}
           icon={ClipboardList}
           color="blue"
+          iconShape="rounded"
         />
         <StatCard
           title="SURVEYS COMPLETED"
@@ -151,6 +152,7 @@ export default async function StudentDashboardPage() {
           subtitle="Your recorded submissions"
           icon={CheckCircle2}
           color="emerald"
+          iconShape="circle"
         />
         <StatCard
           title="PENDING ACTION"
@@ -158,6 +160,7 @@ export default async function StudentDashboardPage() {
           subtitle="Surveys awaiting response"
           icon={Clock}
           color="amber"
+          iconShape="circle"
         />
         <StatCard
           title="MY FEEDBACK"
@@ -165,6 +168,7 @@ export default async function StudentDashboardPage() {
           subtitle="Submitted inquiries & notes"
           icon={MessageSquarePlus}
           color="purple"
+          iconShape="rounded"
         />
       </div>
 
@@ -187,7 +191,7 @@ export default async function StudentDashboardPage() {
                 Currently Active Surveys
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                View and respond to surveys currently accepting student responses.
+                Surveys currently open for student submissions and evaluations.
               </p>
             </div>
           </div>
@@ -223,7 +227,13 @@ export default async function StudentDashboardPage() {
                   <div className="space-y-2 flex-1 min-w-0">
                     {/* Badge Row */}
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-[#185A9D] uppercase tracking-wide">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        categoryLabel === 'ACADEMIC'
+                          ? 'bg-[#E0F2FE] text-[#0284C7]'
+                          : categoryLabel === 'FACILITY'
+                          ? 'bg-[#E0F7FA] text-[#00838F]'
+                          : 'bg-blue-100 text-[#185A9D]'
+                      }`}>
                         {categoryLabel}
                       </span>
                       <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
@@ -262,14 +272,14 @@ export default async function StudentDashboardPage() {
                   {/* Action Button */}
                   <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-center w-full sm:w-auto">
                     {isCompleted ? (
-                      <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold w-full sm:w-auto justify-center">
+                      <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold w-full sm:w-auto justify-center">
                         <CheckCircle2 className="h-4 w-4" />
                         <span>Completed</span>
                       </span>
                     ) : (
                       <Link
                         href={`/surveys/${survey.id}`}
-                        className="rounded-xl bg-[#185A9D] hover:bg-[#124578] text-white text-xs font-bold px-5 py-2.5 shadow-xs flex items-center justify-center gap-1.5 transition-all w-full sm:w-auto cursor-pointer"
+                        className="rounded-full bg-[#1E88E5] hover:bg-[#1565C0] text-white text-xs font-bold px-5 py-2.5 shadow-md shadow-blue-600/20 flex items-center justify-center gap-1.5 transition-all w-full sm:w-auto cursor-pointer active:scale-95"
                       >
                         <span>Take Survey</span>
                         <ArrowRight className="h-3.5 w-3.5" />

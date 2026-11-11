@@ -194,8 +194,8 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
                   onClick={() => setOptimisticPath('/admin/dashboard')}
                   className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                     isAdminNavItemActive('/admin/dashboard', activePath)
-                      ? 'bg-[#EAF3FA] text-[#0A2540] shadow-sm'
-                      : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                      ? 'bg-white text-[#0A2540] shadow-sm font-bold'
+                      : 'text-slate-200 hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
@@ -364,8 +364,8 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
                     onClick={() => setOptimisticPath(item.href)}
                     className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                       active
-                        ? 'bg-[#EAF3FA] text-[#0A2540] shadow-sm'
-                        : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                        ? 'bg-white text-[#0A2540] shadow-sm font-bold'
+                        : 'text-slate-200 hover:bg-white/10 hover:text-white'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -389,38 +389,43 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
         </div>
       </div>
 
-      {/* Bottom Sign Out Action */}
-      <div className="p-3 border-t border-white/10 bg-[#08213B]/80">
-        <form action={logoutAction}>
-          <button
-            type="submit"
-            className="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-semibold text-slate-300 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors cursor-pointer"
-          >
-            <LogOut className="h-4 w-4 text-slate-400 group-hover:text-rose-300" />
-            <span>Sign Out</span>
-          </button>
-        </form>
-      </div>
-
-      {/* Decorative Wave at the Bottom Left of Sidebar matching design */}
-      <div className="w-full overflow-hidden leading-none pointer-events-none -mt-1">
+      {/* Decorative Wave at the Bottom of Sidebar matching reference image */}
+      <div className="relative w-full overflow-hidden leading-none pointer-events-none mt-auto">
         <svg
-          className="w-full h-8"
-          viewBox="0 0 256 32"
+          className="w-full h-16"
+          viewBox="0 0 256 64"
           fill="none"
           preserveAspectRatio="none"
         >
           <path
-            d="M0,0 C64,24 192,8 256,24 L256,32 L0,32 Z"
-            fill="#1E88E5"
-            opacity="0.3"
+            d="M0,20 C60,45 180,10 256,40 L256,64 L0,64 Z"
+            fill="#0F3B69"
+            opacity="0.7"
           />
           <path
-            d="M0,12 C80,32 180,18 256,32 L256,32 L0,32 Z"
-            fill="#38BDF8"
-            opacity="0.4"
+            d="M0,32 C80,12 160,52 256,30 L256,64 L0,64 Z"
+            fill="#1E65A6"
+            opacity="0.8"
+          />
+          <path
+            d="M0,44 C90,24 180,56 256,46 L256,64 L0,64 Z"
+            fill="#2196F3"
+            opacity="0.6"
           />
         </svg>
+      </div>
+
+      {/* Bottom Sign Out Action */}
+      <div className="p-3 border-t border-white/10 bg-[#061C33]/90 relative z-10">
+        <form action={logoutAction}>
+          <button
+            type="submit"
+            className="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 rounded-xl transition-all cursor-pointer"
+          >
+            <LogOut className="h-4 w-4 text-slate-400 group-hover:text-white" />
+            <span>Sign Out</span>
+          </button>
+        </form>
       </div>
     </aside>
   );

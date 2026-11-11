@@ -113,7 +113,7 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
             {isAdmin ? (
               <Link
                 href="/admin/surveys/create"
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-[#185A9D] text-xs font-semibold shadow-2xs transition-colors"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-blue-200 bg-white hover:bg-blue-50 text-[#185A9D] text-xs font-bold shadow-2xs transition-colors"
               >
                 <PlusCircle className="h-4 w-4 text-[#185A9D]" />
                 <span>Create Survey</span>
@@ -121,7 +121,7 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
             ) : (
               <Link
                 href="/scan"
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-[#185A9D] text-xs font-semibold shadow-2xs transition-colors"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-blue-200 bg-white hover:bg-blue-50 text-[#185A9D] text-xs font-bold shadow-2xs transition-colors"
               >
                 <QrCode className="h-4 w-4 text-[#185A9D]" />
                 <span>Scan QR</span>

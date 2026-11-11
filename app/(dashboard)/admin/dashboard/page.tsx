@@ -88,7 +88,7 @@ export default async function AdminDashboardPage() {
             {/* Button 1: Create Survey */}
             <Link
               href="/admin/surveys/create"
-              className="rounded-xl bg-white hover:bg-slate-100 text-[#185A9D] text-xs font-bold px-4 py-2.5 shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all border border-white active:scale-95"
+              className="rounded-full bg-white hover:bg-slate-100 text-[#185A9D] text-xs font-bold px-4 py-2.5 shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all border border-white active:scale-95"
             >
               <PlusCircle className="h-4 w-4 text-[#185A9D]" />
               <span>Create Survey</span>
@@ -97,7 +97,7 @@ export default async function AdminDashboardPage() {
             {/* Button 2: Analytics & Reports */}
             <Link
               href="/admin/reports"
-              className="rounded-xl bg-[#08223D]/80 hover:bg-[#08223D] border border-white/25 text-white text-xs font-bold px-4 py-2.5 shadow-md backdrop-blur-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+              className="rounded-full bg-white/10 hover:bg-white/20 border border-white/30 text-white text-xs font-bold px-4 py-2.5 shadow-md backdrop-blur-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
             >
               <BarChart3 className="h-4 w-4 text-sky-300" />
               <span>Analytics & Reports</span>
@@ -105,22 +105,22 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Curved Wave Transition SVG inside hero */}
+        {/* Curved Wave Transition SVG inside hero matching reference */}
         <div className="absolute bottom-0 inset-x-0 overflow-hidden leading-none z-10 pointer-events-none">
           <svg
-            className="w-full h-6 sm:h-10"
+            className="w-full h-8 sm:h-12"
             viewBox="0 0 1440 60"
             fill="none"
             preserveAspectRatio="none"
           >
             <path
               d="M0,20 C360,60 720,0 1080,40 C1260,60 1380,30 1440,35 L1440,60 L0,60 Z"
-              fill="#D9EBF8"
-              opacity="0.6"
+              fill="#D6E8F6"
+              opacity="0.75"
             />
             <path
               d="M0,35 C420,10 840,55 1200,25 C1320,15 1400,30 1440,30 L1440,60 L0,60 Z"
-              fill="#F4F8FC"
+              fill="#F0F6FB"
             />
           </svg>
         </div>
@@ -128,10 +128,10 @@ export default async function AdminDashboardPage() {
 
       {/* ════════════════════════════════════════════════════════════════════
           2. OVERVIEW KPI STAT CARDS (4 Columns)
-          - REGISTERED STUDENTS
-          - ACTIVE SURVEYS
-          - TOTAL SUBMISSIONS
-          - PENDING FEEDBACK
+          - REGISTERED STUDENTS (circle blue)
+          - ACTIVE SURVEYS (rounded emerald)
+          - TOTAL SUBMISSIONS (circle purple)
+          - PENDING FEEDBACK (rounded amber)
          ════════════════════════════════════════════════════════════════════ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <StatCard
@@ -140,6 +140,7 @@ export default async function AdminDashboardPage() {
           subtitle={`Total accounts: ${totalUsers}`}
           icon={Users}
           color="blue"
+          iconShape="circle"
         />
         <StatCard
           title="ACTIVE SURVEYS"
@@ -147,6 +148,7 @@ export default async function AdminDashboardPage() {
           subtitle={`${expiredSurveys} expired • ${totalSurveys} total`}
           icon={ClipboardList}
           color="emerald"
+          iconShape="rounded"
         />
         <StatCard
           title="TOTAL SUBMISSIONS"
@@ -154,6 +156,7 @@ export default async function AdminDashboardPage() {
           subtitle={`~${participationRate}% est. student participation`}
           icon={CheckCircle2}
           color="purple"
+          iconShape="circle"
         />
         <StatCard
           title="PENDING FEEDBACK"
@@ -161,6 +164,7 @@ export default async function AdminDashboardPage() {
           subtitle="Awaiting moderation"
           icon={MessageSquare}
           color="amber"
+          iconShape="rounded"
         />
       </div>
 
@@ -217,7 +221,13 @@ export default async function AdminDashboardPage() {
                   <div className="space-y-2 flex-1 min-w-0">
                     {/* Badges Row */}
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-[#185A9D] uppercase tracking-wide">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        categoryLabel === 'ACADEMIC'
+                          ? 'bg-[#E0F2FE] text-[#0284C7]'
+                          : categoryLabel === 'FACILITY'
+                          ? 'bg-[#E0F7FA] text-[#00838F]'
+                          : 'bg-blue-100 text-[#185A9D]'
+                      }`}>
                         {categoryLabel}
                       </span>
                       <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
@@ -259,14 +269,14 @@ export default async function AdminDashboardPage() {
                   <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-center w-full sm:w-auto">
                     <Link
                       href={`/admin/surveys/${survey.id}/results`}
-                      className="rounded-xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold px-4 py-2.5 shadow-2xs transition-colors flex items-center justify-center gap-1.5 w-full sm:w-auto"
+                      className="rounded-full border border-sky-200 bg-sky-50/70 hover:bg-sky-100 text-[#0284C7] text-xs font-bold px-4 py-2 shadow-2xs transition-all flex items-center justify-center gap-1.5 w-full sm:w-auto"
                     >
-                      <BarChart3 className="h-3.5 w-3.5 text-[#185A9D]" />
+                      <BarChart3 className="h-3.5 w-3.5 text-[#0284C7]" />
                       <span>Results</span>
                     </Link>
                     <Link
                       href={`/admin/surveys/${survey.id}/edit`}
-                      className="rounded-xl bg-[#0A2540] hover:bg-[#12365A] text-white text-xs font-bold px-4 py-2.5 shadow-xs transition-colors flex items-center justify-center gap-1.5 w-full sm:w-auto"
+                      className="rounded-full bg-[#0A2540] hover:bg-[#12365A] text-white text-xs font-bold px-4 py-2 shadow-xs transition-all flex items-center justify-center gap-1.5 w-full sm:w-auto"
                     >
                       <Edit className="h-3.5 w-3.5" />
                       <span>Edit</span>

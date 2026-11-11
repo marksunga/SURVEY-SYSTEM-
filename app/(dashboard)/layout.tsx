@@ -67,9 +67,30 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F4F8FC] text-slate-800 antialiased">
+    <div className="relative flex min-h-screen bg-[#F0F6FB] text-slate-800 antialiased overflow-x-hidden">
+      {/* Soft Ambient Organic Curved Background Accents matching reference image */}
+      <div className="fixed inset-y-0 right-0 w-[420px] pointer-events-none z-0 overflow-hidden hidden xl:block opacity-60">
+        <svg
+          className="absolute right-0 top-0 h-full w-[420px]"
+          viewBox="0 0 420 1080"
+          fill="none"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M200,0 C280,320 140,680 340,1080 L420,1080 L420,0 Z"
+            fill="#E1EEF8"
+            opacity="0.45"
+          />
+          <path
+            d="M280,0 C360,380 220,720 380,1080 L420,1080 L420,0 Z"
+            fill="#D5E8F6"
+            opacity="0.5"
+          />
+        </svg>
+      </div>
+
       <AppSidebar user={user} unreadNotificationsCount={unreadCount} />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="relative z-10 flex-1 flex flex-col min-w-0">
         <AppHeader user={user} unreadCount={unreadCount} />
         <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto">{children}</main>
       </div>

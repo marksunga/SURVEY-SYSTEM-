@@ -11,15 +11,16 @@ interface StatCardProps {
     isPositive?: boolean;
   };
   color?: 'blue' | 'emerald' | 'amber' | 'rose' | 'indigo' | 'purple';
+  iconShape?: 'circle' | 'rounded';
 }
 
 const COLOR_MAP = {
-  blue: { bg: 'bg-blue-50', text: 'text-[#185A9D]', border: 'border-blue-100' },
-  emerald: { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100' },
-  amber: { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100' },
-  rose: { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-100' },
-  indigo: { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-100' },
-  purple: { bg: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-100' },
+  blue: { bg: 'bg-[#EBF5FF]', text: 'text-[#1E88E5]', border: 'border-blue-100' },
+  emerald: { bg: 'bg-[#ECFDF5]', text: 'text-[#10B981]', border: 'border-emerald-100' },
+  amber: { bg: 'bg-[#FFFBEB]', text: 'text-[#F59E0B]', border: 'border-amber-100' },
+  rose: { bg: 'bg-[#FFF1F2]', text: 'text-[#F43F5E]', border: 'border-rose-100' },
+  indigo: { bg: 'bg-[#EEF2FF]', text: 'text-[#6366F1]', border: 'border-indigo-100' },
+  purple: { bg: 'bg-[#F5F3FF]', text: 'text-[#8B5CF6]', border: 'border-purple-100' },
 };
 
 export function StatCard({
@@ -29,16 +30,18 @@ export function StatCard({
   icon: Icon,
   trend,
   color = 'blue',
+  iconShape = 'rounded',
 }: StatCardProps) {
   const c = COLOR_MAP[color];
+  const shapeClass = iconShape === 'circle' ? 'rounded-full' : 'rounded-xl';
 
   return (
-    <Card className="hover:border-slate-300 transition-all bg-white rounded-2xl border border-slate-200/80 shadow-xs">
+    <Card className="hover:border-slate-300 transition-all bg-white rounded-2xl border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-md">
       <CardContent className="p-5 flex items-start justify-between">
         <div className="space-y-1">
-          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{title}</p>
-          <div className="text-2xl sm:text-3xl font-extrabold text-[#0A2540] tracking-tight">{value}</div>
-          {subtitle && <p className="text-xs text-slate-500">{subtitle}</p>}
+          <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider">{title}</p>
+          <div className="text-2xl sm:text-3xl font-black text-[#0A2540] tracking-tight">{value}</div>
+          {subtitle && <p className="text-xs text-slate-500 font-medium">{subtitle}</p>}
           {trend && (
             <div className="flex items-center gap-1 text-[11px] pt-1">
               <span
@@ -52,7 +55,7 @@ export function StatCard({
             </div>
           )}
         </div>
-        <div className={`p-2.5 rounded-xl ${c.bg} ${c.text} ${c.border} border`} aria-hidden="true">
+        <div className={`h-10 w-10 ${shapeClass} ${c.bg} ${c.text} ${c.border} border flex items-center justify-center shrink-0`} aria-hidden="true">
           <Icon className="h-5 w-5" />
         </div>
       </CardContent>
