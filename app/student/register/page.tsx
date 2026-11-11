@@ -228,7 +228,7 @@ export default function StudentRegisterPage() {
             fill
             sizes="100vw"
             quality={95}
-            className="object-cover object-[center_35%] sm:object-[center_40%] lg:object-[center_35%]"
+            className="object-cover object-[center_38%] sm:object-[center_40%] lg:object-[center_38%]"
             priority
           />
 
