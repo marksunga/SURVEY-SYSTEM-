@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { studentLoginAction, adminLoginAction } from '@/app/actions/auth';
@@ -17,13 +17,8 @@ import {
   ShieldCheck,
   UserPlus,
   Monitor,
-  CheckCircle2,
   Zap,
-  Menu,
-  X,
   Shield,
-  HelpCircle,
-  Hexagon,
 } from 'lucide-react';
 
 interface UALoginPortalProps {
@@ -37,24 +32,6 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const cardRef = useRef<HTMLDivElement>(null);
-  const identifierInputRef = useRef<HTMLInputElement>(null);
-
-  function scrollToLoginCard(targetRole?: 'STUDENT' | 'ADMINISTRATOR') {
-    if (targetRole) {
-      setRole(targetRole);
-    }
-    setError(null);
-    setMobileMenuOpen(false);
-    if (cardRef.current) {
-      cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => {
-        identifierInputRef.current?.focus();
-      }, 400);
-    }
-  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -128,78 +105,19 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
             </div>
           </Link>
 
-          {/* Desktop Right: Admin link + Student Login button */}
-          <nav className="hidden md:flex items-center gap-4 lg:gap-6 flex-shrink-0">
-            <button
-              type="button"
-              onClick={() => scrollToLoginCard('ADMINISTRATOR')}
-              className={`text-xs font-semibold transition-colors cursor-pointer ${
-                role === 'ADMINISTRATOR'
-                  ? 'text-[#185A9D] font-bold underline underline-offset-4'
-                  : 'text-slate-600 hover:text-[#185A9D]'
-              }`}
-            >
-              Admin
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollToLoginCard('STUDENT')}
-              className="rounded-full bg-[#185A9D] hover:bg-[#124578] text-white text-xs font-semibold px-4 py-2 shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
-            >
-              <GraduationCap className="h-3.5 w-3.5" />
-              <span>Student Login</span>
-            </button>
-          </nav>
-
-          {/* Mobile Right: Hamburger button */}
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle navigation menu"
-            className="md:hidden p-2 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
-          >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
-        </div>
-
-        {/* Mobile Slide-down Navigation Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-b border-slate-200 px-4 py-3 space-y-2 shadow-lg animate-in slide-in-from-top-2 duration-200">
-            <button
-              type="button"
-              onClick={() => scrollToLoginCard('STUDENT')}
-              className="w-full flex items-center justify-between p-2.5 rounded-lg bg-[#EAF2F8] text-[#185A9D] font-bold text-xs cursor-pointer"
-            >
-              <span className="flex items-center gap-2">
-                <GraduationCap className="h-4 w-4" />
-                <span>Student Login Portal</span>
+          {/* Right: Institutional Security Badge */}
+          <div className="flex items-center gap-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200/90 text-[11px] sm:text-xs font-medium text-slate-600 shadow-2xs">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollToLoginCard('ADMINISTRATOR')}
-              className="w-full flex items-center justify-between p-2.5 rounded-lg text-slate-700 hover:bg-slate-50 font-semibold text-xs cursor-pointer"
-            >
-              <span className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-[#4682A9]" />
-                <span>Administrator Login</span>
-              </span>
-              <ArrowRight className="h-3.5 w-3.5 text-slate-400" />
-            </button>
-            <Link
-              href="/student/register"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full flex items-center justify-between p-2.5 rounded-lg text-slate-700 hover:bg-slate-50 font-semibold text-xs"
-            >
-              <span className="flex items-center gap-2">
-                <UserPlus className="h-4 w-4 text-[#4682A9]" />
-                <span>Create Student Account</span>
-              </span>
-              <ArrowRight className="h-3.5 w-3.5 text-slate-400" />
-            </Link>
+              <span className="font-semibold text-slate-700">Official Portal</span>
+              <span className="hidden sm:inline text-slate-300">·</span>
+              <span className="hidden sm:inline text-slate-500">Secure Access</span>
+            </div>
           </div>
-        )}
+        </div>
       </header>
 
       {/* ════════════════════════════════════════════════════════════════════
@@ -274,47 +192,19 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
                 Course evaluations, academic surveys, and departmental feedback system.
               </p>
 
-              {/* Action Buttons: "-> Login to Portal" & "Create Student Account" */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => scrollToLoginCard('STUDENT')}
-                  className="w-full sm:w-auto rounded-full bg-[#1E88E5] hover:bg-[#1565C0] text-white text-xs sm:text-sm font-bold px-6 py-2.5 sm:py-3 shadow-md shadow-blue-950/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                >
-                  <ArrowRight className="h-4 w-4" />
-                  <span>Login to Portal</span>
-                </button>
-                <Link
-                  href="/student/register"
-                  className="w-full sm:w-auto rounded-full border border-white/40 bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold px-5 py-2.5 sm:py-3 backdrop-blur-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                >
-                  <UserPlus className="h-4 w-4 text-sky-200" />
-                  <span>Create Student Account</span>
-                </Link>
-              </div>
-
-              {/* 3 Informational Badges Row (Secure Access, Fast & Reliable, Official UA System) */}
-              <div className="pt-2 flex items-center justify-center lg:justify-start gap-4 sm:gap-6 text-xs text-white/90 font-medium flex-wrap">
-                <div className="flex items-center gap-1.5">
+              {/* 3 Informational Trust Badges Row (Secure Access, Fast & Reliable, Official UA System) */}
+              <div className="pt-2 flex items-center justify-center lg:justify-start gap-2.5 sm:gap-3.5 text-xs text-white/95 font-medium flex-wrap">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 border border-white/25 backdrop-blur-xs shadow-2xs">
                   <Shield className="h-3.5 w-3.5 text-[#38BDF8]" />
-                  <span>
-                    <span className="hidden sm:inline">Secure Access</span>
-                    <span className="sm:hidden">Secure</span>
-                  </span>
+                  <span>Secure Access</span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 border border-white/25 backdrop-blur-xs shadow-2xs">
                   <Zap className="h-3.5 w-3.5 text-[#38BDF8]" />
-                  <span>
-                    <span className="hidden sm:inline">Fast & Reliable</span>
-                    <span className="sm:hidden">Reliable</span>
-                  </span>
+                  <span>Fast &amp; Reliable</span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 border border-white/25 backdrop-blur-xs shadow-2xs">
                   <ShieldCheck className="h-3.5 w-3.5 text-[#38BDF8]" />
-                  <span>
-                    <span className="hidden sm:inline">Official UA System</span>
-                    <span className="sm:hidden">Official</span>
-                  </span>
+                  <span>Official UA System</span>
                 </div>
               </div>
             </div>
@@ -376,7 +266,6 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
          ════════════════════════════════════════════════════════════════════ */}
       <main className="relative z-20 w-full px-4 sm:px-6 -mt-16 sm:-mt-24 md:-mt-28 lg:-mt-32 pb-8 flex-1 flex flex-col items-center">
         <div
-          ref={cardRef}
           className="w-full max-w-[460px] bg-white rounded-3xl shadow-[0_20px_50px_rgba(15,23,42,0.12)] border border-slate-100/90 p-6 sm:p-8 backdrop-blur-xs transition-all"
         >
           {/* Role Selector: Student vs Administrator Pills */}
@@ -431,7 +320,6 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
               <div className="relative">
                 <User className="h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 <Input
-                  ref={identifierInputRef}
                   name="identifier"
                   type={role === 'STUDENT' ? 'email' : 'text'}
                   required
