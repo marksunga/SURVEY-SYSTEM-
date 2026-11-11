@@ -227,8 +227,8 @@ export default function StudentRegisterPage() {
             alt="University of the Assumption Campus and Rotunda"
             fill
             sizes="100vw"
-            quality={95}
-            className="object-cover object-[center_38%] sm:object-[center_40%] lg:object-[center_38%]"
+            unoptimized
+            className="object-cover object-[center_28%] sm:object-[center_30%] lg:object-[center_28%]"
             priority
           />
 
