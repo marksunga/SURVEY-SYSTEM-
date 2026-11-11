@@ -92,3 +92,15 @@
   background: #94a3b8;
 }
 
+/* Smooth 360-degree rotation hover animation for College of Information Technology logo */
+.cit-logo-spin {
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: rotate(0deg);
+  will-change: transform;
+}
+
+.cit-logo-spin:hover {
+  transform: rotate(360deg);
+}
+
+

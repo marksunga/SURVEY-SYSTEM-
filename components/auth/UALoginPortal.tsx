@@ -246,6 +246,22 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
                 <span>INFORMATION TECHNOLOGY DEPARTMENT</span>
               </div>
 
+              {/* Mobile & Tablet College of Information Technology Logo (< lg) */}
+              <div className="flex lg:hidden justify-center items-center py-1">
+                <div className="relative group cursor-pointer p-1">
+                  <div className="relative w-28 h-28 sm:w-32 sm:h-32 drop-shadow-[0_12px_28px_rgba(0,0,0,0.5)] cit-logo-spin">
+                    <Image
+                      src="/images/cit-logo.png"
+                      alt="College of Information Technology Logo"
+                      width={128}
+                      height={128}
+                      className="w-full h-full object-contain select-none"
+                      priority
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Main Heading: IT Department Portal */}
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold text-white tracking-tight leading-[1.1]">
                 IT Department <span className="text-[#38BDF8]">Portal</span>
@@ -301,17 +317,19 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
               </div>
             </div>
 
-            {/* Right Column (Desktop): Iconic Large Circular Seal */}
+            {/* Right Column (Desktop): College of Information Technology Logo with 360-degree Smooth Hover Animation */}
             <div className="hidden lg:col-span-4 lg:flex justify-end items-center">
-              <div className="relative w-48 h-48 xl:w-56 xl:h-56 drop-shadow-[0_15px_30px_rgba(0,0,0,0.45)] transition-transform hover:scale-105 duration-300">
-                <Image
-                  src="/images/ua-seal.png"
-                  alt="University of the Assumption Circular Seal"
-                  width={224}
-                  height={224}
-                  className="object-contain"
-                  priority
-                />
+              <div className="relative group cursor-pointer p-1">
+                <div className="relative w-48 h-48 xl:w-56 xl:h-56 drop-shadow-[0_15px_35px_rgba(0,0,0,0.5)] cit-logo-spin">
+                  <Image
+                    src="/images/cit-logo.png"
+                    alt="College of Information Technology Logo"
+                    width={224}
+                    height={224}
+                    className="w-full h-full object-contain select-none"
+                    priority
+                  />
+                </div>
               </div>
             </div>
           </div>
