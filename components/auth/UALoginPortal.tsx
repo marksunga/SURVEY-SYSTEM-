@@ -221,7 +221,9 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
             src="/images/ua-campus-new.jpg"
             alt="University of the Assumption Campus and Rotunda"
             fill
-            className="object-cover object-[center_35%] sm:object-[center_40%] lg:object-[center_35%] filter contrast-105 brightness-100"
+            sizes="100vw"
+            quality={95}
+            className="object-cover object-[center_35%] sm:object-[center_40%] lg:object-[center_35%]"
             priority
           />
 
