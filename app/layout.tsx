@@ -4,6 +4,15 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'IT Department Feedback and Survey System',
   description: 'Enterprise web-based survey management, encrypted feedback, and reporting portal for the IT Department.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png', sizes: '192x192' },
+    ],
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
 };
 
 export default function RootLayout({

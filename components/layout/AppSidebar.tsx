@@ -389,34 +389,8 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
         </div>
       </div>
 
-      {/* Decorative Wave at the Bottom of Sidebar matching reference image */}
-      <div className="relative w-full overflow-hidden leading-none pointer-events-none mt-auto">
-        <svg
-          className="w-full h-16"
-          viewBox="0 0 256 64"
-          fill="none"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,20 C60,45 180,10 256,40 L256,64 L0,64 Z"
-            fill="#0F3B69"
-            opacity="0.7"
-          />
-          <path
-            d="M0,32 C80,12 160,52 256,30 L256,64 L0,64 Z"
-            fill="#1E65A6"
-            opacity="0.8"
-          />
-          <path
-            d="M0,44 C90,24 180,56 256,46 L256,64 L0,64 Z"
-            fill="#2196F3"
-            opacity="0.6"
-          />
-        </svg>
-      </div>
-
       {/* Bottom Sign Out Action */}
-      <div className="p-3 border-t border-white/10 bg-[#061C33]/90 relative z-10">
+      <div className="p-3 border-t border-white/10 mt-auto relative z-10 bg-[#08213B]/80">
         <form action={logoutAction}>
           <button
             type="submit"
@@ -426,6 +400,32 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
             <span>Sign Out</span>
           </button>
         </form>
+      </div>
+
+      {/* Decorative Blue Wave placed UNDER the Sign Out button */}
+      <div className="relative w-full overflow-hidden leading-none pointer-events-none -mt-0.5">
+        <svg
+          className="w-full h-14"
+          viewBox="0 0 256 56"
+          fill="none"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M0,15 C60,38 180,8 256,32 L256,56 L0,56 Z"
+            fill="#0F3B69"
+            opacity="0.75"
+          />
+          <path
+            d="M0,25 C80,10 160,44 256,24 L256,56 L0,56 Z"
+            fill="#1E65A6"
+            opacity="0.85"
+          />
+          <path
+            d="M0,35 C90,20 180,48 256,38 L256,56 L0,56 Z"
+            fill="#2196F3"
+            opacity="0.65"
+          />
+        </svg>
       </div>
     </aside>
   );

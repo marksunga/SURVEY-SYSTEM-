@@ -105,7 +105,7 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Curved Wave Transition SVG inside hero matching reference */}
+        {/* Curved Wave Transition SVG inside hero - Blue and Gray styling */}
         <div className="absolute bottom-0 inset-x-0 overflow-hidden leading-none z-10 pointer-events-none">
           <svg
             className="w-full h-8 sm:h-12"
@@ -113,14 +113,17 @@ export default async function AdminDashboardPage() {
             fill="none"
             preserveAspectRatio="none"
           >
+            {/* Blue Wave Layer */}
             <path
               d="M0,20 C360,60 720,0 1080,40 C1260,60 1380,30 1440,35 L1440,60 L0,60 Z"
-              fill="#D6E8F6"
-              opacity="0.75"
+              fill="#1E88E5"
+              opacity="0.85"
             />
+            {/* Gray Wave Layer */}
             <path
               d="M0,35 C420,10 840,55 1200,25 C1320,15 1400,30 1440,30 L1440,60 L0,60 Z"
-              fill="#F0F6FB"
+              fill="#64748B"
+              opacity="0.9"
             />
           </svg>
         </div>
