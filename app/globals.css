@@ -4,35 +4,45 @@
 
 @layer base {
   :root {
-    --background: 210 14% 96.5%;     /* #F3F5F7 Clean Light Gray */
-    --foreground: 222 47% 11%;      /* #0F172A Dark Navy */
+    --background: 210 14% 96.5%;
+    /* #F3F5F7 Clean Light Gray */
+    --foreground: 222 47% 11%;
+    /* #0F172A Dark Navy */
 
-    --card: 0 0% 100%;             /* #FFFFFF Pure White Cards */
-    --card-foreground: 222 47% 11%; /* Dark Navy Text */
+    --card: 0 0% 100%;
+    /* #FFFFFF Pure White Cards */
+    --card-foreground: 222 47% 11%;
+    /* Dark Navy Text */
 
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 204 42% 47%;         /* #4682A9 Pacific Blue */
+    --primary: 204 42% 47%;
+    /* #4682A9 Pacific Blue */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 207 43% 95%;       /* #EAF2F8 Soft Pacific Blue Tint */
+    --secondary: 207 43% 95%;
+    /* #EAF2F8 Soft Pacific Blue Tint */
     --secondary-foreground: 204 42% 30%;
 
     --muted: 210 14% 94%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 204 42% 47%;          /* #4682A9 Pacific Blue */
+    --accent: 204 42% 47%;
+    /* #4682A9 Pacific Blue */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 28% 90%;          /* Subtle Slate Border #E2E8F0 */
+    --border: 214 28% 90%;
+    /* Subtle Slate Border #E2E8F0 */
     --input: 214 28% 90%;
-    --ring: 204 42% 47%;            /* #4682A9 Pacific Blue Ring */
+    --ring: 204 42% 47%;
+    /* #4682A9 Pacific Blue Ring */
 
-    --radius: 0.625rem;             /* 10px Soft Rounded Corners */
+    --radius: 0.625rem;
+    /* 10px Soft Rounded Corners */
   }
 
   .dark {
@@ -70,6 +80,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -81,17 +92,19 @@
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
-
 /* Smooth 360-degree rotation hover animation for College of Information Technology logo */
 .cit-logo-spin {
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -102,5 +115,3 @@
 .cit-logo-spin:hover {
   transform: rotate(360deg);
 }
-
-

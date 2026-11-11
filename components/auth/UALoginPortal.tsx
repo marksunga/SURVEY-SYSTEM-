@@ -218,21 +218,21 @@ export function UALoginPortal({ initialRole = 'STUDENT' }: UALoginPortalProps) {
         {/* Real Campus Photo Background */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/images/ua-building.jpg"
-            alt="University of the Assumption Campus Facade and Fountain"
+            src="/images/ua-campus-new.jpg"
+            alt="University of the Assumption Campus and Rotunda"
             fill
-            className="object-cover object-[center_25%] sm:object-[center_28%] lg:object-[center_25%] filter contrast-105 brightness-100"
+            className="object-cover object-[center_35%] sm:object-[center_40%] lg:object-[center_35%] filter contrast-105 brightness-100"
             priority
           />
 
-          {/* Desktop Gradient Overlay: Solid royal navy on left for readability, fading to transparent on right so statue & building are crisp */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#06315A] via-[#084277]/80 via-50% to-transparent hidden md:block" />
+          {/* Desktop Gradient Overlay: Subtle dark navy-blue overlay maintaining high text readability while keeping the campus architecture, warm lights, and statue clearly visible */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#062A4D]/85 via-[#073A6B]/65 via-50% to-[#062A4D]/30 hidden md:block" />
 
-          {/* Mobile Gradient: Stronger on the left for text legibility, translucent on right so fountain statue stays visible */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#06315A]/95 via-[#073A6B]/80 to-[#073A6B]/30 md:hidden" />
+          {/* Mobile Gradient: Balanced dark navy-blue for mobile text readability while keeping the building visible */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#062A4D]/90 via-[#073A6B]/75 to-[#062A4D]/45 md:hidden" />
 
           {/* Subtle top & bottom shadow gradient */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-[#073663]/60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-[#073663]/60" />
         </div>
 
         {/* Hero Content Container */}
