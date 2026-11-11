@@ -183,7 +183,7 @@ export function AppHeader({ user, unreadCount = 0 }: AppHeaderProps) {
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-white/10"
                 >
                   <ClipboardList className="h-4 w-4 text-[#38BDF8]" />
-                  <span>Surveys</span>
+                  <span>Department Survey Management</span>
                 </Link>
                 <Link
                   href="/admin/feedback"

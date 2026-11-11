@@ -73,6 +73,19 @@ export function isAdminNavItemActive(itemHref: string, currentPath: string): boo
     );
   }
 
+  if (itemHref === '/admin/surveys') {
+    if (
+      currentPath === '/admin/surveys/create' ||
+      currentPath.startsWith('/admin/surveys/create/')
+    ) {
+      return false;
+    }
+    return (
+      currentPath === '/admin/surveys' ||
+      currentPath.startsWith('/admin/surveys/')
+    );
+  }
+
   if (itemHref === '/admin/feedback') {
     return (
       currentPath === '/admin/feedback' ||

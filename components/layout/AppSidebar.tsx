@@ -13,6 +13,7 @@ import {
   Bell,
   User,
   PlusCircle,
+  FileText,
   BarChart3,
   Send,
   History,
@@ -92,6 +93,11 @@ export function AppSidebar({ user, unreadNotificationsCount = 0 }: AppSidebarPro
       href: '/admin/surveys/create',
       label: 'Create Survey',
       icon: PlusCircle,
+    },
+    {
+      href: '/admin/surveys',
+      label: 'Department Survey Management',
+      icon: FileText,
     },
     {
       href: '/admin/feedback',
